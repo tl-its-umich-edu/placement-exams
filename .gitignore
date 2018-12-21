@@ -2,6 +2,8 @@
 saml
 .idea/
 .DS_Store
+opt/
+test/PERSIST
 
 # From https://github.com/github/gitignore/blob/master/Python.gitignore
 
@@ -97,7 +99,7 @@ celerybeat-schedule
 .env
 .venv
 env/
-venv/
+venv*/
 ENV/
 env.bak/
 venv.bak/

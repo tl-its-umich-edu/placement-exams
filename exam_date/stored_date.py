@@ -10,10 +10,10 @@ class AssignmentLatestSubmittedDate():
         self.path = path
         self.file_name = file_name
 
-    def _create_directory_if_not_exit(self) -> None:
+    def _create_directory_if_not_exit(self):
         """
         creates a directory if doesn't exit with permission 0o777
-        :return:
+        raises exception in case of anamolies
         """
         try:
             if not Path(self.path).exists():
@@ -26,14 +26,15 @@ class AssignmentLatestSubmittedDate():
     def get_assign_submitted_date(self) -> str:
         """
         creating a directory/file if not available that holds the latest score date. It writes the current UTC date
-        if not provided so that initial run will end up happening.
+        if not provided so that initial run will end up happening. Raises exception when creating a directory and
+        reading the content of the persisted.txt
         :return: latest_score_timestamp
         """
         try:
             self._create_directory_if_not_exit()
         except (OSError, Exception) as e:
             self.__log.error(f"error in creating a directory due to {e}")
-            return None
+            raise e
         try:
             path_to_persisted_file: str = self.path + '/'+self.file_name
             self.__log.info(f"file to opened {path_to_persisted_file}")
@@ -46,7 +47,7 @@ class AssignmentLatestSubmittedDate():
 
         except (OSError, IOError, Exception) as e:
             self.__log.error(f"error while reading the file {self.file_name} due to {e}")
-            return None
+            raise e
 
     def _create_write_persisted_file(self, path_to_persisted_file: str) -> str:
         try:

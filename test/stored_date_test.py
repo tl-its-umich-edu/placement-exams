@@ -15,7 +15,7 @@ class TestSPEProcess(unittest.TestCase):
     def setUpClass(self):
         self.__log.info("you got into the testing zone")
         this_dir = os.path.dirname(os.path.abspath(__file__))
-        self.persisted_dir: str = this_dir + '/' + 'PERSIST/'
+        self.persisted_dir: str = '/tmp/' + 'PERSIST'
         self.file_name: str = 'test_persisted.txt'
 
     def _check_date_format(self, utc_date: str):
@@ -39,11 +39,12 @@ class TestSPEProcess(unittest.TestCase):
         latest_test_taken_date = date_holder.get_assign_submitted_date()
         self.assertEqual("Date is in correct format", self._check_date_format(latest_test_taken_date))
 
-    def test_can_write_to_file(self):
+    def test_write_to_file(self):
         """
         testing persisted.txt return the utc time stamp
         :return:
         """
+
         with open(self.persisted_dir+'/'+self.file_name, 'w') as f:
             f.write('anything but time')
         date_holder = AssignmentLatestSubmittedDate(self.persisted_dir, self.file_name)

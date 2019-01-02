@@ -1,6 +1,4 @@
 import logging, sys
-from typing import Any, Union
-
 from autologging import logged
 from exam_date.stored_date import AssignmentLatestSubmittedDate
 from spe_utils import utils
@@ -27,7 +25,12 @@ def main():
     file_name: str = os.getenv(utils.FILE_NAME)
     more_path: str = os.path.dirname(os.path.abspath(__file__)) + path
     read_date: AssignmentLatestSubmittedDate = AssignmentLatestSubmittedDate(more_path, file_name)
-    read_date.get_assign_submitted_date()
+    try:
+        read_date.get_assign_submitted_date()
+    except (OSError, IOError, Exception) as e:
+        logging.error(f"error retrieving the latest assignment submitted date due to {e}")
+
+
 
 
 if __name__ == '__main__':

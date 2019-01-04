@@ -2,7 +2,6 @@
 saml
 .idea/
 .DS_Store
-opt/
 
 # From https://github.com/github/gitignore/blob/master/Python.gitignore
 

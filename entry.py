@@ -23,8 +23,7 @@ def main():
     set_up_logging()
     path: str = os.getenv(utils.PERSISTENT_PATH)
     file_name: str = os.getenv(utils.FILE_NAME)
-    more_path: str = os.path.dirname(os.path.abspath(__file__)) + path
-    read_date: AssignmentLatestSubmittedDate = AssignmentLatestSubmittedDate(more_path, file_name)
+    read_date: AssignmentLatestSubmittedDate = AssignmentLatestSubmittedDate(path, file_name)
     try:
         read_date.get_assign_submitted_date()
     except (OSError, IOError, Exception) as e:

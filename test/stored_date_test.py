@@ -14,7 +14,6 @@ class TestSPEProcess(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         self.__log.info("you got into the testing zone")
-        this_dir = os.path.dirname(os.path.abspath(__file__))
         self.persisted_dir: str = '/tmp/' + 'PERSIST'
         self.file_name: str = 'test_persisted.txt'
 

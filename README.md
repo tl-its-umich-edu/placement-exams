@@ -14,3 +14,6 @@ is used in both cases for getting and sending the grades.
 4. run the script as `python entry.py`
 
 
+### Docker run
+1. docker build -t spe .
+2. docker run --env-file .env -it --rm --name spe-run spe

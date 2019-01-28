@@ -1,5 +1,5 @@
 # FROM directive instructing base image to build upon
-FROM python:3.6
+FROM python:3.7
 
 COPY requirements.txt /requirements.txt
 

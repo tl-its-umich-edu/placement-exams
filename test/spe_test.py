@@ -55,6 +55,22 @@ class TestSPEProcess(unittest.TestCase):
         date = date_holder.get_assign_submitted_date()
         self.assertEqual('anything but time', date)
 
+    def test_strip_end_space_in_date(self):
+        with open(self.persisted_dir + '/' + self.file_name, 'w') as f:
+            f.write('space_in_end ')
+        date_holder = AssignmentLatestSubmittedDate(self.persisted_dir, self.file_name)
+        date = date_holder.get_assign_submitted_date()
+        self.assertEqual('space_in_end', date)
+
+    def test_strip_begin_space_in_date(self):
+        with open(self.persisted_dir + '/' + self.file_name, 'w') as f:
+            f.write(' space_in_front')
+        date_holder = AssignmentLatestSubmittedDate(self.persisted_dir, self.file_name)
+        date = date_holder.get_assign_submitted_date()
+        self.assertEqual('space_in_front', date)
+
+
+
     def test_get_spanish_scores(self):
         self.__log.info(
             f"test_get_spanish_scores will take time as pulling grades submitted since {self.submitted_date}")

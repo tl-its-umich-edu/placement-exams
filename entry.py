@@ -1,4 +1,6 @@
 import logging, sys
+from typing import Optional, Any
+
 from autologging import logged
 
 from exam_date.stored_date import AssignmentLatestSubmittedDate
@@ -26,16 +28,22 @@ def main():
 
     path: str = os.getenv(utils.PERSISTENT_PATH)
     file_name: str = os.getenv(utils.FILE_NAME)
-    read_date: AssignmentLatestSubmittedDate = AssignmentLatestSubmittedDate(path, file_name)
+    query_date_holder: AssignmentLatestSubmittedDate = AssignmentLatestSubmittedDate(path, file_name)
 
     try:
-        stored_submission_date: str = read_date.get_assign_submitted_date()
+        stored_submission_date: str = query_date_holder.get_assign_submitted_date()
     except (OSError, IOError, Exception) as e:
         logging.error(f"error retrieving the latest assignment submitted date due to {e}")
         return
 
     score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(stored_submission_date)
-    score_handler.orchestrator()
+    next_query_date: str = score_handler.orchestrator()
+    if not next_query_date:
+        logging.info(f"There is no new scores yet for date {stored_submission_date}")
+        return
+
+    query_date_holder.store_next_query_date(next_query_date)
+
 
 
 if __name__ == '__main__':

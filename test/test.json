@@ -1,0 +1,84 @@
+[
+  {
+    "id": 25174,
+    "grade": "1615.2",
+    "score": 1615.2,
+    "submitted_at": "2019-01-15T23:20:24Z",
+    "user": {
+      "name": "student a ",
+      "login_id": "studenta"
+    }
+  },
+  {
+    "id": 2210,
+    "grade": "5134",
+    "score": 5134.0,
+    "submitted_at": "2019-01-15T23:31:12Z",
+    "submission_type": "online_quiz",
+    "workflow_state": "graded",
+    "user": {
+      "name": "student b",
+      "login_id": "studentb"
+    }
+  },
+  {
+    "id": 3038,
+    "grade": "3930.2",
+    "score": 3930.2,
+    "submitted_at": "2019-01-11T02:10:13Z",
+    "user": {
+      "name": "student c",
+      "login_id": "studentc"
+    }
+  },
+  {
+    "id": 3096,
+    "grade": "3632",
+    "score": 3632.0,
+    "submitted_at": "2019-01-15T23:52:00Z",
+    "user": {
+      "name": "student d",
+      "login_id": "studentd"
+    }
+  },
+  {
+    "id": 3116,
+    "grade": "5234.5",
+    "score": 5234.5,
+    "submitted_at": "2019-01-15T23:51:59Z",
+    "user": {
+      "name": "student e",
+      "login_id": "studente"
+    }
+  },
+  {
+    "id": 380,
+    "grade": "3718.2",
+    "score": 3718.2,
+    "submitted_at": "2019-01-12T03:39:14Z",
+    "user": {
+      "name": "Student f",
+      "login_id": "studentf"
+    }
+  },
+  {
+    "id": 3153,
+    "grade": "2830",
+    "score": 2830.0,
+    "submitted_at": "2019-01-15T23:54:26Z",
+    "user": {
+      "name": "Student g",
+      "login_id": "studentg"
+    }
+  },
+  {
+    "id": 31496,
+    "grade": "1615.2",
+    "score": 1615.2,
+    "submitted_at": "2019-01-15T23:16:06Z",
+    "user": {
+      "name": "student h",
+      "login_id": "studenth"
+    }
+  }
+]

@@ -1,6 +1,8 @@
 import logging, sys
 from autologging import logged
+
 from exam_date.stored_date import AssignmentLatestSubmittedDate
+from scores_orchestration.orchestration import SpanishScoresOrchestration
 from spe_utils import utils
 import os
 
@@ -21,15 +23,19 @@ def set_up_logging():
 @logged
 def main():
     set_up_logging()
+
     path: str = os.getenv(utils.PERSISTENT_PATH)
     file_name: str = os.getenv(utils.FILE_NAME)
     read_date: AssignmentLatestSubmittedDate = AssignmentLatestSubmittedDate(path, file_name)
+
     try:
-        read_date.get_assign_submitted_date()
+        stored_submission_date: str = read_date.get_assign_submitted_date()
     except (OSError, IOError, Exception) as e:
         logging.error(f"error retrieving the latest assignment submitted date due to {e}")
+        return
 
-
+    score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(stored_submission_date)
+    score_handler.orchestrator()
 
 
 if __name__ == '__main__':

@@ -14,3 +14,14 @@ is used in both cases for getting and sending the grades.
 4. run the script as `python entry.py`
 
 
+### Docker run
+1. Build the app `docker build -t <build-name> .` 
+2. Run the app and providing the .env file from command line. `docker run --env-file .env -it --rm --name <run-name> <build-name>`
+
+### Openshift setup
+1. login to openshift from command line
+2. `oc new-project <name-you-like>`
+3. creating a new bash app for storing `persisted.txt` file `oc new-app --docker-image=bash` and add a persistent storage
+   and mount the volumn on bash pod
+4. creating a new app from a git branch `oc new-app https://github.com/pushyamig/spanish-placement-exam-python#i3_dockerizing_spe`
+    a. link the persisted.txt to this pod

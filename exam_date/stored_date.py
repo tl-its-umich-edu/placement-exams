@@ -67,7 +67,7 @@ class AssignmentLatestSubmittedDate():
                 latest_exam_date: str = f.read()
                 self.__log.info(f"""reading from to file {self.file_name} the latest test taken date in
                                 UTC with current timestamp {latest_exam_date}""")
-                return latest_exam_date
+                return latest_exam_date.strip()
         except (OSError, IOError, Exception) as e:
             self.__log.error(f"failed do read the file {path_to_persisted_file} due to {e}")
             raise e

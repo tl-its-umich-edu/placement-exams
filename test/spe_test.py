@@ -17,9 +17,9 @@ class TestSPEProcess(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         self.__log.info("you got into the testing zone")
-        self.persisted_dir: str = '/tmp/' + 'PERSIST'
+        self.persisted_dir: str = '/tmp/PERSIST'
         self.file_name: str = 'test_persisted.txt'
-        self.submitted_date = '2019-01-01T22:11:41Z'
+        self.submitted_date: str = '2019-01-01T22:11:41Z'
         self.score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(self.submitted_date)
 
     def _check_date_format(self, utc_date: str):

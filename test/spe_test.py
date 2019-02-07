@@ -3,13 +3,14 @@ import os
 import shutil
 import unittest
 from autologging import logged
-from datetime import datetime
+import datetime
 from dotenv import load_dotenv
 from exam_date.stored_date import AssignmentLatestSubmittedDate
 from scores_orchestration.orchestration import SpanishScoresOrchestration
 import json
+from spe_utils import utils
 
-logging.basicConfig(level=os.getenv("log_level", "TRACE"))
+logging.basicConfig(level=os.getenv("log_level", "DEBUG"))
 load_dotenv(dotenv_path=os.path.dirname(os.path.abspath(__file__))[:-4] + "/.env")
 
 
@@ -26,7 +27,7 @@ class TestSPEProcess(unittest.TestCase):
 
     def _check_date_format(self, utc_date: str):
         try:
-            datetime.strptime(utc_date, '%Y-%m-%dT%H:%M:%SZ')
+            datetime.datetime.strptime(utc_date, '%Y-%m-%dT%H:%M:%SZ')
             return "Date is in correct format"
         except ValueError:
             raise ValueError("Incorrect data format")
@@ -82,16 +83,25 @@ class TestSPEProcess(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_increment_persisted_time_by_sec(self):
-        submitted_date = '2019-01-01T22:11:00Z'
-        score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(submitted_date)
-        actual = score_handler.get_query_date_increment_by_sec()
+        increment_date = '2019-01-01T22:11:00Z'
+        actual = SpanishScoresOrchestration.get_query_date_increment_decrement_by_sec(increment_date, '+')
         self.assertEqual('2019-01-01T22:11:01Z',actual)
 
         # increment minute when 59 sec is the case
-        submitted_date = '2019-01-01T22:11:59Z'
-        score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(submitted_date)
-        actual = score_handler.get_query_date_increment_by_sec()
+        increment_date = '2019-01-01T22:11:59Z'
+        actual = SpanishScoresOrchestration.get_query_date_increment_decrement_by_sec(increment_date, '+')
         self.assertEqual('2019-01-01T22:12:00Z',actual)
+
+    def test_decrement_persisted_time_by_sec(self):
+
+        decrement_date = '2019-01-01T22:11:00Z'
+        actual = SpanishScoresOrchestration.get_query_date_increment_decrement_by_sec(decrement_date, '-')
+        self.assertEqual('2019-01-01T22:10:59Z',actual)
+
+        # increment minute when 59 sec is the case
+        decrement_date = '2019-01-01T22:11:59Z'
+        actual = SpanishScoresOrchestration.get_query_date_increment_decrement_by_sec(decrement_date, '-')
+        self.assertEqual('2019-01-01T22:11:58Z',actual)
 
     def test_submission_date_sort(self):
         actual = []
@@ -115,10 +125,32 @@ class TestSPEProcess(unittest.TestCase):
         self.assertEqual('2019-01-15T23:54:26Z', actual)
 
     def test_writing_next_query_date(self):
-        date_to_be_stored = '2019-01-15T23:54:26Z'
+        date_to_be_stored: str = '2019-01-15T23:54:26Z'
         self.date_holder.store_next_query_date('2019-01-15T23:54:26Z')
         actual = self.date_holder.read_persisted_file()
         self.assertEqual(date_to_be_stored, actual)
+
+    def test_unhappy_path_all_scores_not_sent(self):
+        scores = self.get_sorted_scores()
+        self.score_handler.sending_scores_manager(scores, 'test')
+        actual = self.score_handler.next_persisted_query_date
+        self.assertEqual('2019-01-11T02:10:12Z', actual)
+
+    def test_unhappy_path_few_scores_not_sent(self):
+        scores = self.get_sorted_scores()
+        self.score_handler.sending_scores_manager(scores, 'test', True)
+        actual = self.score_handler.next_persisted_query_date
+        self.__log.info(f"test_unhappy_path_few_scores_not_sent: actual result {actual}")
+        actual_date = datetime.datetime.strptime(actual, utils.ISO8601_FORMAT)
+        list = ['2019-01-11T02:10:13Z','2019-01-12T03:39:14Z','2019-01-15T23:16:06Z','2019-01-15T23:20:24Z','2019-01-15T23:31:12Z',
+                    '2019-01-15T23:51:59Z','2019-01-15T23:52:00Z','2019-01-15T23:54:26Z']
+        closest_date= min(list, key = lambda x: abs(datetime.datetime.strptime(x, utils.ISO8601_FORMAT)-actual_date))
+        expected = SpanishScoresOrchestration.get_query_date_increment_decrement_by_sec(closest_date,'-')
+        self.__log.info(f"test_unhappy_path_few_scores_not_sent: expected result {expected}")
+        self.assertEqual(expected, actual)
+
+
+
 
 
 

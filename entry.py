@@ -39,11 +39,15 @@ def main():
     score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(stored_submission_date)
     next_query_date: str = score_handler.orchestrator()
     if not next_query_date:
-        logging.info(f"There is no new scores yet for date {stored_submission_date}")
+        logging.info(f"There are no new scores yet for date {stored_submission_date}")
         return
 
-    query_date_holder.store_next_query_date(next_query_date)
-
+    try:
+        query_date_holder.store_next_query_date(next_query_date)
+    except (OSError, IOError, Exception) as e:
+        logging.error(f"""error storing the latest assignment submitted date due to {e} 
+                        stored date in persisted storage is {stored_submission_date}""")
+        return
 
 
 if __name__ == '__main__':

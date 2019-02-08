@@ -10,7 +10,6 @@ from exam_date.stored_date import AssignmentLatestSubmittedDate
 from scores_orchestration.orchestration import SpanishScoresOrchestration
 from spe_utils import constants
 
-
 load_dotenv(dotenv_path=os.path.dirname(os.path.abspath(__file__)) + "/.env")
 
 
@@ -41,16 +40,13 @@ def main():
 
     score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(stored_submission_date)
     next_query_date: str = score_handler.orchestrator()
-    if not next_query_date:
-        logging.info(f"There are no new scores yet for date {stored_submission_date}")
-        return
-
-    try:
-        query_date_holder.store_next_query_date(next_query_date)
-    except (OSError, IOError, Exception) as e:
-        logging.error(f"""error storing the latest assignment submitted date due to {e} 
+    if next_query_date:
+        try:
+            query_date_holder.store_next_query_date(next_query_date)
+        except (OSError, IOError, Exception) as e:
+            logging.error(f"""error storing the latest assignment submitted date due to {e} 
                         stored date in persisted storage is {stored_submission_date}""")
-        return
+
     end_time: datetime = datetime.now()
     logging.info(f"ending of new cron run at {end_time} ")
     logging.info(f"This cron run took about {end_time - start_time}")

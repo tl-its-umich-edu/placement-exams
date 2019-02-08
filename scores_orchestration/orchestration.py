@@ -216,11 +216,16 @@ class SpanishScoresOrchestration:
             return
 
         scores_json: List[Dict[str, Any]] = json.loads(scores_resp.text)
+
         self.__log.info(
             f"{len(scores_json)} grades received with latest submission date: {self.persisted_submitted_date}")
         scores: List[Dict[str, str]] = self.sort_scores_by_submitted_date(scores_json)
         self.__log.info(f"""The received grades sorted list: 
         {scores}""")
+
+        if not scores_json:
+            self.__log.info(f"There are no new scores yet for date {self.persisted_submitted_date}")
+            return
         # these 2 variables are testing purposes and won't be needed in Prod env. unit tests are written demonstrating
         # the usecase of the variables.
         enable_randomizer: str = os.getenv(constants.SCORE_RANDOMIZER_FOR_TEST)

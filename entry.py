@@ -1,14 +1,15 @@
-import logging, sys
-from typing import Optional, Any
+import logging
+import os
+import sys
 
 from autologging import logged
+from dotenv import load_dotenv
+from datetime import datetime
 
 from exam_date.stored_date import AssignmentLatestSubmittedDate
 from scores_orchestration.orchestration import SpanishScoresOrchestration
 from spe_utils import utils
-import os
 
-from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=os.path.dirname(os.path.abspath(__file__)) + "/.env")
 
@@ -24,6 +25,8 @@ def set_up_logging():
 
 @logged
 def main():
+    start_time: datetime = datetime.now()
+    logging.info(f"Starting of new cron run at {start_time} ")
     set_up_logging()
 
     path: str = os.getenv(utils.PERSISTENT_PATH)
@@ -48,6 +51,9 @@ def main():
         logging.error(f"""error storing the latest assignment submitted date due to {e} 
                         stored date in persisted storage is {stored_submission_date}""")
         return
+    end_time: datetime = datetime.now()
+    logging.info(f"ending of new cron run at {end_time} ")
+    logging.info(f"This cron run took about {end_time - start_time}")
 
 
 if __name__ == '__main__':

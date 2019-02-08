@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from exam_date.stored_date import AssignmentLatestSubmittedDate
 from scores_orchestration.orchestration import SpanishScoresOrchestration
 import json
-from spe_utils import utils
+from spe_utils import constants
 
 logging.basicConfig(level=os.getenv("log_level", "DEBUG"))
 load_dotenv(dotenv_path=os.path.dirname(os.path.abspath(__file__))[:-4] + "/.env")
@@ -104,6 +104,11 @@ class TestSPEProcess(unittest.TestCase):
         self.assertEqual('2019-01-01T22:11:58Z',actual)
 
     def test_submission_date_sort(self):
+        """
+        the test for sorting of the grades received from the GET call. We are not making any API call to get the
+        grades but reading from the test.json for convenience
+        :return:
+        """
         actual = []
         for item in self.get_sorted_scores():
             actual.append(item['submitted_date'])
@@ -112,6 +117,11 @@ class TestSPEProcess(unittest.TestCase):
         self.assertEqual(expected,actual)
 
     def get_sorted_scores(self):
+        """
+        reading the sample sample of json that reflect a sample of from the GET API call. This method will be reused
+        when testing the date with grades
+        :return:
+        """
         with open('test.json') as f:
             data = f.read()
         f = json.loads(data)
@@ -141,10 +151,10 @@ class TestSPEProcess(unittest.TestCase):
         self.score_handler.sending_scores_manager(scores, 'test', True)
         actual = self.score_handler.next_persisted_query_date
         self.__log.info(f"test_unhappy_path_few_scores_not_sent: actual result {actual}")
-        actual_date = datetime.datetime.strptime(actual, utils.ISO8601_FORMAT)
+        actual_date = datetime.datetime.strptime(actual, constants.ISO8601_FORMAT)
         list = ['2019-01-11T02:10:13Z','2019-01-12T03:39:14Z','2019-01-15T23:16:06Z','2019-01-15T23:20:24Z','2019-01-15T23:31:12Z',
                     '2019-01-15T23:51:59Z','2019-01-15T23:52:00Z','2019-01-15T23:54:26Z']
-        closest_date= min(list, key = lambda x: abs(datetime.datetime.strptime(x, utils.ISO8601_FORMAT)-actual_date))
+        closest_date= min(list, key = lambda x: abs(datetime.datetime.strptime(x, constants.ISO8601_FORMAT) - actual_date))
         expected = SpanishScoresOrchestration.get_query_date_increment_decrement_by_sec(closest_date,'-')
         self.__log.info(f"test_unhappy_path_few_scores_not_sent: expected result {expected}")
         self.assertEqual(expected, actual)

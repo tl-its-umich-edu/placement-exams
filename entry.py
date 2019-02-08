@@ -8,7 +8,7 @@ from datetime import datetime
 
 from exam_date.stored_date import AssignmentLatestSubmittedDate
 from scores_orchestration.orchestration import SpanishScoresOrchestration
-from spe_utils import utils
+from spe_utils import constants
 
 
 load_dotenv(dotenv_path=os.path.dirname(os.path.abspath(__file__)) + "/.env")
@@ -16,7 +16,7 @@ load_dotenv(dotenv_path=os.path.dirname(os.path.abspath(__file__)) + "/.env")
 
 @logged
 def set_up_logging():
-    level = utils.LOGGING_LEVEL
+    level = constants.LOGGING_LEVEL
     log_level = os.getenv(level)
     if log_level:
         logging.basicConfig(level=log_level, stream=sys.stdout,
@@ -26,11 +26,11 @@ def set_up_logging():
 @logged
 def main():
     start_time: datetime = datetime.now()
-    logging.info(f"Starting of new cron run at {start_time} ")
     set_up_logging()
+    logging.info(f"Starting of new cron run at {start_time} ")
 
-    path: str = os.getenv(utils.PERSISTENT_PATH)
-    file_name: str = os.getenv(utils.FILE_NAME)
+    path: str = os.getenv(constants.PERSISTENT_PATH)
+    file_name: str = os.getenv(constants.FILE_NAME)
     query_date_holder: AssignmentLatestSubmittedDate = AssignmentLatestSubmittedDate(path, file_name)
 
     try:

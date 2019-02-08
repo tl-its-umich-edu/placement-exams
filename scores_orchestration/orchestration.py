@@ -2,7 +2,7 @@ import os
 
 import pkg_resources
 
-from spe_utils import utils
+from spe_utils import constants
 
 from typing import Dict, Union, Optional, List, Any
 from umich_api.api_utils import ApiUtil
@@ -19,9 +19,9 @@ class SpanishScoresOrchestration:
 
     def __init__(self, persisted_submitted_date: str) -> None:
         self.persisted_submitted_date: str = persisted_submitted_date
-        self.client_id: str = os.getenv(utils.API_DIR_CLIENT_ID)
-        self.secret: str = os.getenv(utils.API_DIR_SECRET)
-        self.url: str = os.getenv(utils.API_DIR_URL)
+        self.client_id: str = os.getenv(constants.API_DIR_CLIENT_ID)
+        self.secret: str = os.getenv(constants.API_DIR_SECRET)
+        self.url: str = os.getenv(constants.API_DIR_URL)
         self.api_json: str = pkg_resources.resource_filename(__name__, 'apis.json')
         self.api_handler: ApiUtil = ApiUtil(self.url, self.client_id, self.secret, self.api_json)
         self._next_persisted_query_date = None
@@ -51,7 +51,7 @@ class SpanishScoresOrchestration:
         :param operation: operation like  +, -
         :return: string date
         """
-        date: datetime = datetime.datetime.strptime(date, utils.ISO8601_FORMAT)
+        date: datetime = datetime.datetime.strptime(date, constants.ISO8601_FORMAT)
         if operation is '+':
             date_in_sec_after_operation: str = f"{(date + datetime.timedelta(seconds=1)).isoformat()}Z"
         if operation is '-':
@@ -63,8 +63,8 @@ class SpanishScoresOrchestration:
         getting the spanish scores in a course for an assignment
         :return: Response object or None in case of exception
         """
-        course_id: str = os.getenv(utils.COURSE_ID)
-        assignment_id: str = os.getenv(utils.ASSIGNMENT_ID)
+        course_id: str = os.getenv(constants.COURSE_ID)
+        assignment_id: str = os.getenv(constants.ASSIGNMENT_ID)
         canvas_query_date: str = SpanishScoresOrchestration. \
             get_query_date_increment_decrement_by_sec(self.persisted_submitted_date, '+')
         get_scores_url: str = f"aa/CanvasReadOnly/courses/{course_id}/students/submissions"
@@ -105,7 +105,8 @@ class SpanishScoresOrchestration:
     def _is_sending_score_success(self, res: Union[Response, None], user_score: str, user: str, env: str,
                                   enable_randomizer: bool) -> bool:
         """
-
+        This is checking the possibility option that a response sent after sending grades.
+        This also simulates failure of the sending a score for testing purposes only
         :param res: Response object or None
         :param user_score: score in spanish test
         :param user: unique name
@@ -114,7 +115,7 @@ class SpanishScoresOrchestration:
         :return: bool
         """
 
-        if env == utils.TEST:
+        if env == constants.TEST:
             if enable_randomizer:
                 return random.choice([True, False])
 
@@ -222,8 +223,8 @@ class SpanishScoresOrchestration:
         {scores}""")
         # these 2 variables are testing purposes and won't be needed in Prod env. unit tests are written demonstrating
         # the usecase of the variables.
-        enable_randomizer: str = os.getenv(utils.SCORE_RANDOMIZER_FOR_TEST)
-        env: str = os.getenv(utils.ENV)
+        enable_randomizer: str = os.getenv(constants.SCORE_RANDOMIZER_FOR_TEST)
+        env: str = os.getenv(constants.ENV)
 
         self.sending_scores_manager(scores, env, enable_randomizer)
         return self.next_persisted_query_date

@@ -25,9 +25,11 @@ class SpanishScoresOrchestration:
         self.api_json: str = pkg_resources.resource_filename(__name__, 'apis.json')
         self.api_handler: ApiUtil = ApiUtil(self.url, self.client_id, self.secret, self.api_json)
         self._next_persisted_query_date = None
+        self._scores_sent_list: List[Dict[str, str]] = []
+        self._scores_future_sent_list: List[Dict[str, str]] = []
 
     @property
-    def next_persisted_query_date(self)->str:
+    def next_persisted_query_date(self) -> str:
         """
         getter for _next_persisted_query_date property
         :return:
@@ -42,6 +44,26 @@ class SpanishScoresOrchestration:
         :return:
         """
         self._next_persisted_query_date: str = value
+
+    @property
+    def scores_sent_list(self) -> List[Dict[str, str]]:
+        """
+        getter for the _scores_sent_list
+        :return:
+        """
+        return self._scores_sent_list
+
+    @scores_sent_list.setter
+    def scores_sent_list(self, value: Dict[str, str]) -> None:
+        self._scores_sent_list.append(value)
+
+    @property
+    def scores_future_sent_list(self) -> List[Dict[str, str]]:
+        return self._scores_future_sent_list
+
+    @scores_future_sent_list.setter
+    def scores_future_sent_list(self, value: List[Dict[str, str]]) -> None:
+        self._scores_future_sent_list = value
 
     @staticmethod
     def get_query_date_increment_decrement_by_sec(date: str, operation: str) -> str:
@@ -67,6 +89,7 @@ class SpanishScoresOrchestration:
         assignment_id: str = os.getenv(constants.ASSIGNMENT_ID)
         canvas_query_date: str = SpanishScoresOrchestration. \
             get_query_date_increment_decrement_by_sec(self.persisted_submitted_date, '+')
+        self.__log.info(f"{self.persisted_submitted_date} Persisted date incremented to 1sec as {canvas_query_date}")
         get_scores_url: str = f"aa/CanvasReadOnly/courses/{course_id}/students/submissions"
         payload: Dict[str, str] = {
             'student_ids[]': 'all',
@@ -75,7 +98,8 @@ class SpanishScoresOrchestration:
             'include[]': 'user',
             'submitted_since': canvas_query_date
         }
-        self.__log.info(f"Getting grades for course/{course_id}/assignment/{assignment_id}/query_date/{canvas_query_date}")
+        self.__log.info(
+            f"Getting grades for course/{course_id}/assignment/{assignment_id}/query_date/{canvas_query_date}")
         try:
             response: Response = self.api_handler.api_call(get_scores_url, 'canvasreadonly', 'GET', payload)
         except (AttributeError, Exception) as e:
@@ -114,24 +138,28 @@ class SpanishScoresOrchestration:
         :param enable_randomizer: again for testing purpose, decides whether to randomizes bool options
         :return: bool
         """
+        success = False
 
         if env == constants.TEST:
             if enable_randomizer:
-                return random.choice([True, False])
+                success = random.choice([True, False])
 
-            if not enable_randomizer:
-                return False
+            if not success:
+                self.__log.error(f"Failure Emulation: sending spanish score {user_score} for user {user} failed!")
+            return success
 
         if res is None:
             # returning with no error msg here but logging it before
-            return False
+            return success
 
         if not res.ok:
             self.__log.error(f"""sending spanish score {user_score} for user {user} failed with
                                  status code of {res.status_code} due to {res.text}""")
-            return False
+            return success
 
-        return True
+        success = True
+
+        return success
 
     def send_spanish_score(self, score: float, student_id: str) -> Union[Response, None]:
         """
@@ -141,7 +169,6 @@ class SpanishScoresOrchestration:
         :return: Response object or None in case of exception
         """
         send_scores_url: str = f"aa/SpanishPlacementScores/UniqName/{student_id}/Score/{score}"
-        # send_scores_url: str = f"aa/SpanishPlacementScores/UniqName/{student_id}/Score/{score}"
         try:
             response: Response = self.api_handler.api_call(send_scores_url, 'spanishplacementscores', 'PUT')
         except(AttributeError, Exception) as e:
@@ -158,7 +185,7 @@ class SpanishScoresOrchestration:
         extracted_scores_list: List[Dict[str, str]] = []
         for score in scores:
             extracted_score_dict: Dict[str, str] = {'score': score['score'], 'user': score['user']['login_id'],
-                                    'submitted_date': score['submitted_at']}
+                                                    'submitted_date': score['submitted_at']}
             extracted_scores_list.append(extracted_score_dict)
         extracted_scores_list.sort(key=lambda r: r['submitted_date'])
         return extracted_scores_list
@@ -175,7 +202,6 @@ class SpanishScoresOrchestration:
         :param enable_randomizer: again for testing purpose, decides whether to randomizes bool options
         :return:
         """
-        scores_not_sent_list: List[Dict[str, str]] = []
 
         # iterating over the list and sending one score at a time
         for score in scores:
@@ -183,26 +209,23 @@ class SpanishScoresOrchestration:
             user: str = score['user']
             res: Response = self.send_spanish_score(user_score, user)
 
-            if not self._is_sending_score_success(res, user_score, user, env, enable_randomizer):
-                scores_not_sent_list.append(score)
-                continue
-            self.__log.info(f"sending user: {user} score: {user_score} is success! ")
+            if self._is_sending_score_success(res, user_score, user, env, enable_randomizer):
+                self.next_persisted_query_date: str = score['submitted_date']
+                self.__log.info(
+                    f"sending user: {user} score: {user_score} submitted at {score['submitted_date']} is success! ")
+                self.scores_sent_list: List[Dict[str, str]] = score
+            else:
+                self.scores_future_sent_list: List[Dict[str, str]] = [single_score for single_score in scores if
+                                                                      single_score not in self.scores_sent_list]
+                # we don't want to send further grades after error while iterating since next run of the cron process
+                # should start from the first user score error earlier. Duplicate record sent from our process will
+                # end as duplicates in Mpathways system and needs a manual correction
+                break
 
-            if not scores_not_sent_list:
-                self.next_persisted_query_date = score['submitted_date']
+        self.__log.debug(f"scores_sent_list: {self.scores_sent_list}")
+        self.__log.debug(f"future_sent_list: {self.scores_future_sent_list}")
 
-        self.__log.debug(f"scores_not_sent_list: {scores_not_sent_list}")
-
-        if scores_not_sent_list:
-            self.__log.info(f"""Some scores are not sent to Mpathway, storing the next query date based from list
-                               {scores_not_sent_list} """)
-            # scores_not_sent_list is a sorted list so it is good to pick the first item on the list for next query date
-            # and we decrementing date by sec so that next query of grades will pick up the scores after that date
-            date_to_stored = SpanishScoresOrchestration.get_query_date_increment_decrement_by_sec(
-                scores_not_sent_list[0]['submitted_date'], '-')
-            self.next_persisted_query_date = date_to_stored
-
-        self.__log.info(f"grades_received/grades_sent: {len(scores)}/{len(scores) - len(scores_not_sent_list)}")
+        self.__log.info(f"grades_received/grades_sent: {len(scores)}/{len(self.scores_sent_list)}")
 
     def orchestrator(self) -> str:
         """

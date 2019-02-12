@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 from exam_date.stored_date import AssignmentLatestSubmittedDate
 from scores_orchestration.orchestration import SpanishScoresOrchestration
 import json
-from spe_utils import constants
 
 logging.basicConfig(level=os.getenv("log_level", "DEBUG"))
 load_dotenv(dotenv_path=os.path.dirname(os.path.abspath(__file__))[:-4] + "/.env")
@@ -85,23 +84,23 @@ class TestSPEProcess(unittest.TestCase):
     def test_increment_persisted_time_by_sec(self):
         increment_date = '2019-01-01T22:11:00Z'
         actual = SpanishScoresOrchestration.get_query_date_increment_decrement_by_sec(increment_date, '+')
-        self.assertEqual('2019-01-01T22:11:01Z',actual)
+        self.assertEqual('2019-01-01T22:11:01Z', actual)
 
         # increment minute when 59 sec is the case
         increment_date = '2019-01-01T22:11:59Z'
         actual = SpanishScoresOrchestration.get_query_date_increment_decrement_by_sec(increment_date, '+')
-        self.assertEqual('2019-01-01T22:12:00Z',actual)
+        self.assertEqual('2019-01-01T22:12:00Z', actual)
 
     def test_decrement_persisted_time_by_sec(self):
 
         decrement_date = '2019-01-01T22:11:00Z'
         actual = SpanishScoresOrchestration.get_query_date_increment_decrement_by_sec(decrement_date, '-')
-        self.assertEqual('2019-01-01T22:10:59Z',actual)
+        self.assertEqual('2019-01-01T22:10:59Z', actual)
 
         # increment minute when 59 sec is the case
         decrement_date = '2019-01-01T22:11:59Z'
         actual = SpanishScoresOrchestration.get_query_date_increment_decrement_by_sec(decrement_date, '-')
-        self.assertEqual('2019-01-01T22:11:58Z',actual)
+        self.assertEqual('2019-01-01T22:11:58Z', actual)
 
     def test_submission_date_sort(self):
         """
@@ -112,9 +111,10 @@ class TestSPEProcess(unittest.TestCase):
         actual = []
         for item in self.get_sorted_scores():
             actual.append(item['submitted_date'])
-        expected = ['2019-01-11T02:10:13Z','2019-01-12T03:39:14Z','2019-01-15T23:16:06Z','2019-01-15T23:20:24Z','2019-01-15T23:31:12Z',
-                    '2019-01-15T23:51:59Z','2019-01-15T23:52:00Z','2019-01-15T23:54:26Z']
-        self.assertEqual(expected,actual)
+        expected = ['2019-01-11T02:10:13Z', '2019-01-12T03:39:14Z', '2019-01-15T23:16:06Z', '2019-01-15T23:20:24Z',
+                    '2019-01-15T23:31:12Z',
+                    '2019-01-15T23:51:59Z', '2019-01-15T23:52:00Z', '2019-01-15T23:54:26Z']
+        self.assertEqual(expected, actual)
 
     def get_sorted_scores(self):
         """
@@ -129,9 +129,11 @@ class TestSPEProcess(unittest.TestCase):
         return sorted_list
 
     def test_happy_path_case_getting_next_query_date(self):
+        submitted_date: str = '2019-01-01T22:11:41Z'
+        score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(submitted_date)
         scores = self.get_sorted_scores()
-        self.score_handler.sending_scores_manager(scores)
-        actual = self.score_handler.next_persisted_query_date
+        score_handler.sending_scores_manager(scores)
+        actual = score_handler.next_persisted_query_date
         self.assertEqual('2019-01-15T23:54:26Z', actual)
 
     def test_writing_next_query_date(self):
@@ -140,29 +142,46 @@ class TestSPEProcess(unittest.TestCase):
         actual = self.date_holder.read_persisted_file()
         self.assertEqual(date_to_be_stored, actual)
 
-    def test_unhappy_path_all_scores_not_sent(self):
+    def test_unhappy_path_first_sent_item_failure(self):
+        """
+        If the very first item in the scores sending list fail then we don't write anything to persisted.txt
+        but just keep what is there
+        :return:
+        """
         scores = self.get_sorted_scores()
         self.score_handler.sending_scores_manager(scores, 'test')
-        actual = self.score_handler.next_persisted_query_date
-        self.assertEqual('2019-01-11T02:10:12Z', actual)
+        actual = self.score_handler.persisted_submitted_date
+        self.__log.debug(f"test_unhappy_path_first_sent_item_failure:=> actual {actual}")
+        self.assertEqual(self.submitted_date, actual)
 
     def test_unhappy_path_few_scores_not_sent(self):
+        submitted_date: str = '2019-01-01T22:11:41Z'
+        score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(submitted_date)
         scores = self.get_sorted_scores()
-        self.score_handler.sending_scores_manager(scores, 'test', True)
-        actual = self.score_handler.next_persisted_query_date
-        self.__log.info(f"test_unhappy_path_few_scores_not_sent: actual result {actual}")
-        actual_date = datetime.datetime.strptime(actual, constants.ISO8601_FORMAT)
-        list = ['2019-01-11T02:10:13Z','2019-01-12T03:39:14Z','2019-01-15T23:16:06Z','2019-01-15T23:20:24Z','2019-01-15T23:31:12Z',
-                    '2019-01-15T23:51:59Z','2019-01-15T23:52:00Z','2019-01-15T23:54:26Z']
-        closest_date= min(list, key = lambda x: abs(datetime.datetime.strptime(x, constants.ISO8601_FORMAT) - actual_date))
-        expected = SpanishScoresOrchestration.get_query_date_increment_decrement_by_sec(closest_date,'-')
-        self.__log.info(f"test_unhappy_path_few_scores_not_sent: expected result {expected}")
-        self.assertEqual(expected, actual)
+        self.__log.info(f"sorted_list: {scores}")
+        score_handler.sending_scores_manager(scores, 'test', True)
+        actual_list = ['2019-01-11T02:10:13Z', '2019-01-12T03:39:14Z', '2019-01-15T23:16:06Z', '2019-01-15T23:20:24Z',
+                       '2019-01-15T23:31:12Z', '2019-01-15T23:51:59Z', '2019-01-15T23:52:00Z', '2019-01-15T23:54:26Z']
 
+        scores_future_sent_list_len = len(score_handler.scores_future_sent_list)
+        scores_sent_list_len = len(score_handler.scores_sent_list)
+        actual_list_len = len(actual_list)
 
+        if scores_future_sent_list_len == 0:
+            self.__log.info("TestCase: all the scores sent")
+            self.assertEqual('2019-01-15T23:54:26Z', score_handler.next_persisted_query_date)
+            return
+        if scores_future_sent_list_len == actual_list_len:
+            self.__log.info(
+                "TestCase: none of the scores sent, matches the test cases \"test_unhappy_path_few_scores_not_sent\"")
+            actual = score_handler.persisted_submitted_date
+            self.assertEqual(submitted_date, actual)
+            return
 
-
-
-
-
-
+        if scores_future_sent_list_len > 0:
+            self.__log.info("TestCase: starts out with few success sent and fail later")
+            self.__log.info(f"scores_sent_list {score_handler.scores_sent_list}")
+            self.__log.info(f"scores_future_sent_list_len {score_handler.scores_future_sent_list}")
+            actual = score_handler.next_persisted_query_date
+            expected = actual_list[scores_sent_list_len - 1]
+            self.assertEqual(expected, actual)

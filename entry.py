@@ -48,7 +48,7 @@ def main():
                         stored date in persisted storage is {stored_submission_date}""")
 
     end_time: datetime = datetime.now()
-    logging.info(f"ending of new cron run at {end_time} ")
+    logging.info(f"ending of the cron run at {end_time} ")
     logging.info(f"This cron run took about {end_time - start_time}")
 
 

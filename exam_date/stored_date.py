@@ -75,7 +75,7 @@ class AssignmentLatestSubmittedDate():
     def store_next_query_date(self, next_query_date):
         try:
             with open(self.path_to_persisted_file, 'w+') as f:
-                self.__log.info(f"""writing to file {self.file_name} the next query date/latest test taken date in
+                self.__log.info(f"""writing to file {self.path_to_persisted_file} the next query date/latest test taken date in
                                 UTC {next_query_date}""")
                 f.write(next_query_date)
         except (OSError, IOError, Exception) as e:

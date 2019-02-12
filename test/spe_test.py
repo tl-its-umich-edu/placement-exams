@@ -41,7 +41,6 @@ class TestSPEProcess(unittest.TestCase):
         if os.path.exists(self.persisted_dir):
             shutil.rmtree(self.persisted_dir)
         self.assertEqual(False, os.path.exists(self.persisted_dir))
-        # date_holder = AssignmentLatestSubmittedDate(self.persisted_dir, self.file_name)
         latest_test_taken_date = self.date_holder.get_assign_submitted_date()
         self.assertEqual("Date is in correct format", self._check_date_format(latest_test_taken_date))
 
@@ -53,21 +52,18 @@ class TestSPEProcess(unittest.TestCase):
 
         with open(self.persisted_dir + '/' + self.file_name, 'w') as f:
             f.write('anything but time')
-        # date_holder = AssignmentLatestSubmittedDate(self.persisted_dir, self.file_name)
         date = self.date_holder.get_assign_submitted_date()
         self.assertEqual('anything but time', date)
 
     def test_strip_end_space_in_date(self):
         with open(self.persisted_dir + '/' + self.file_name, 'w') as f:
             f.write('space_in_end ')
-        # date_holder = AssignmentLatestSubmittedDate(self.persisted_dir, self.file_name)
         date = self.date_holder.get_assign_submitted_date()
         self.assertEqual('space_in_end', date)
 
     def test_strip_begin_space_in_date(self):
         with open(self.persisted_dir + '/' + self.file_name, 'w') as f:
             f.write(' space_in_front')
-        # date_holder = AssignmentLatestSubmittedDate(self.persisted_dir, self.file_name)
         date = self.date_holder.get_assign_submitted_date()
         self.assertEqual('space_in_front', date)
 

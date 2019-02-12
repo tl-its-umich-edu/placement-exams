@@ -24,7 +24,7 @@ class SpanishScoresOrchestration:
         self.url: str = os.getenv(constants.API_DIR_URL)
         self.api_json: str = pkg_resources.resource_filename(__name__, 'apis.json')
         self.api_handler: ApiUtil = ApiUtil(self.url, self.client_id, self.secret, self.api_json)
-        self._next_persisted_query_date = None
+        self._next_persisted_query_date: str = None
         self._scores_sent_list: List[Dict[str, str]] = []
         self._scores_future_sent_list: List[Dict[str, str]] = []
 

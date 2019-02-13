@@ -28,4 +28,4 @@ is used in both cases for getting and sending the grades.
 ### Sending email
 Running a local SMTP debugging server. Rather than sending emails to the specified address, 
 it discards them and prints their content to the console.
-1. python -m smtpd -c DebuggingServer -n localhost:1025
+1. python -m smtpd -d -n -c DebuggingServer localhost:1025 & 

@@ -3,6 +3,7 @@ import os
 from smtplib import SMTP, SMTPException
 from email.mime.text import MIMEText
 from autologging import logged, traced
+from datetime import datetime
 
 from spe_utils.constants import SMPT_DEBUG, SMPT_FROM, SMPT_TO, SMPT_HOST, SMPT_PORT
 
@@ -20,6 +21,10 @@ class SPESummaryReport:
     sent_score_list: List[Dict[str, str]] = []
     not_sent_scores_list: List[Dict[str, str]] = []
     course_id: str = None
+
+    def get_subject(self):
+        return f"({len(self.sent_score_list)}/{len(self.full_score_list)}) Spanish Placement Exam Processing Summary {datetime.now().replace(microsecond=0)}"
+
 
     def email_report(self):
         msg = f"""
@@ -44,7 +49,7 @@ class SPESummaryReport:
     def email_msg(self):
         msg: List[str] = [self.email_report()]
         if self.sent_score_list:
-            msg.append("Success users List")
+            msg.append("Success users List:")
             for item in self.sent_score_list:
                 msg.append(f"user: {item['user']}  score: {item['score']}  finished_at: {item['local_submitted_date']}")
             msg.append("\n")

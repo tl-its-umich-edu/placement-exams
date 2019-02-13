@@ -14,6 +14,8 @@ import json
 import random
 from dateutil import tz
 
+from spe_utils.constants import DATE_IN_LOCAL_TZ_FORMAT
+
 
 @logged
 @traced
@@ -204,10 +206,10 @@ class SpanishScoresOrchestration:
 
     @staticmethod
     def utc_local_timezone(utc_date):
-        from_zone = tz.gettz('UTC')
-        to_zone = tz.gettz('America/New_York')
+        from_zone = tz.gettz(constants.UTC)
+        to_zone = tz.gettz(constants.EASTERN_TZ)
         utc: datetime = datetime.datetime.strptime(utc_date, constants.ISO8601_FORMAT).replace(tzinfo=from_zone)
-        local_datetime: str = utc.astimezone(to_zone).strftime('%Y-%m-%d %H:%M:%S%z')
+        local_datetime: str = utc.astimezone(to_zone).strftime(DATE_IN_LOCAL_TZ_FORMAT)
         return local_datetime
 
     def sending_scores_manager(self, scores: List[Dict[str, str]], env: str = None,

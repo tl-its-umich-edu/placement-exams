@@ -50,6 +50,9 @@ def main():
             logging.error(f"""error storing the latest assignment submitted date due to {e} 
                         stored date in persisted storage is {stored_submission_date}""")
             spe_report.next_stored_persisted_date = stored_submission_date
+    else:
+        logging.info(f"No next Query date to update either no new scores or error in sending first score")
+        spe_report.next_stored_persisted_date = stored_submission_date
 
     end_time: datetime = datetime.now()
     elapsed_time: datetime = end_time - start_time

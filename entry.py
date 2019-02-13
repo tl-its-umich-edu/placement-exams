@@ -9,6 +9,7 @@ from datetime import datetime
 from exam_date.stored_date import AssignmentLatestSubmittedDate
 from scores_orchestration.orchestration import SpanishScoresOrchestration
 from spe_utils import constants
+from spe_report.summary import SPESummaryReport
 
 load_dotenv(dotenv_path=os.path.dirname(os.path.abspath(__file__)) + "/.env")
 
@@ -38,18 +39,30 @@ def main():
         logging.error(f"error retrieving the latest assignment submitted date due to {e}")
         return
 
-    score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(stored_submission_date)
+    spe_report: SPESummaryReport = SPESummaryReport()
+    score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(stored_submission_date, spe_report)
     next_query_date: str = score_handler.orchestrator()
     if next_query_date:
         try:
             query_date_holder.store_next_query_date(next_query_date)
+            spe_report.next_stored_persisted_date = next_query_date
         except (OSError, IOError, Exception) as e:
             logging.error(f"""error storing the latest assignment submitted date due to {e} 
                         stored date in persisted storage is {stored_submission_date}""")
+            spe_report.next_stored_persisted_date = stored_submission_date
 
     end_time: datetime = datetime.now()
+    elapsed_time: datetime = end_time - start_time
+
+    spe_report.start_time = start_time
+    spe_report.end_time = end_time
+    spe_report.elapsed_time = elapsed_time
+
+    spe_report.send_email()
+
     logging.info(f"ending of the cron run at {end_time} ")
-    logging.info(f"This cron run took about {end_time - start_time}")
+    logging.info(f"This cron run took about {elapsed_time}")
+
 
 
 if __name__ == '__main__':

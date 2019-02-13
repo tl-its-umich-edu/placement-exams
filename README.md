@@ -25,3 +25,7 @@ is used in both cases for getting and sending the grades.
    and mount the volumn on bash pod
 4. creating a new app from a git branch `oc new-app https://github.com/pushyamig/spanish-placement-exam-python#i3_dockerizing_spe`
     a. link the persisted.txt to this pod
+### Sending email
+Running a local SMTP debugging server. Rather than sending emails to the specified address, 
+it discards them and prints their content to the console.
+1. python -m smtpd -c DebuggingServer -n localhost:1025

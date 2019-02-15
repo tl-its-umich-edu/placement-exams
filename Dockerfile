@@ -22,4 +22,4 @@ COPY . /spe/
 ENV TZ=America/Detroit
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-CMD["python", "cron_test.py"]
+CMD ["python", "cron_test.py"]

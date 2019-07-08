@@ -15,13 +15,24 @@ is used in both cases for getting and sending the grades.
 
 
 ### Docker run
+when running the docker locally you might not see any grades fetched as the persisted.txt file has current date generally 
+you don't see need grades on current date in test env. getting into the container and manually changing the data is the option for testing
 1. Build the app `docker build -t <build-name> .` 
 2. Run the app and providing the .env file from command line. `docker run --env-file .env -it --rm --name <run-name> <build-name>`
+3. get into the docker machine `docker exec -t -i <spe-run-name> /bin/bash`
 
 ### Openshift setup
 1. login to openshift from command line
 2. `oc new-project <name-you-like>`
-3. creating a new bash app for storing `persisted.txt` file `oc new-app --docker-image=bash` and add a persistent storage
+3. creating a new bash app for storing `persisted.txt` file `oc new-app --docker-image=bash` and configure it to run 
+    unconditionally add a persistent storage
    and mount the volumn on bash pod
-4. creating a new app from a git branch `oc new-app https://github.com/pushyamig/spanish-placement-exam-python#i3_dockerizing_spe`
+4. creating a new app from a git branch `oc new-app https://github.com/<user>/spanish-placement-exam-python#i3_dockerizing_spe`
     a. link the persisted.txt to this pod
+5. Using Openshift [cronJob](https://docs.openshift.com/container-platform/3.10/dev_guide/cron_jobs.html) feature to run the SPE process.
+6. starting the cron run as `oc create -f cron_spe_test.yml`. You can download the file from the [Box Folder](https://umich.app.box.com/folder/67252746472) for respective env
+    
+### Sending email
+Running a local SMTP debugging server. Rather than sending emails to the specified address, 
+it discards them and prints their content to the console.
+1. 'python -m smtpd -d -n -c DebuggingServer localhost:1025 &'

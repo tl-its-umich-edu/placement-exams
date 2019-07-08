@@ -7,6 +7,7 @@ import datetime
 from dotenv import load_dotenv
 from exam_date.stored_date import AssignmentLatestSubmittedDate
 from scores_orchestration.orchestration import SpanishScoresOrchestration
+from spe_report.summary import SPESummaryReport
 import json
 
 logging.basicConfig(level=os.getenv("log_level", "DEBUG"))
@@ -22,7 +23,7 @@ class TestSPEProcess(unittest.TestCase):
         self.file_name: str = 'test_persisted.txt'
         self.submitted_date: str = '2019-01-01T22:11:41Z'
         self.date_holder = AssignmentLatestSubmittedDate(self.persisted_dir, self.file_name)
-        self.score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(self.submitted_date)
+        self.score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(self.submitted_date, SPESummaryReport)
 
     def _check_date_format(self, utc_date: str):
         try:
@@ -126,7 +127,7 @@ class TestSPEProcess(unittest.TestCase):
 
     def test_happy_path_case_getting_next_query_date(self):
         submitted_date: str = '2019-01-01T22:11:41Z'
-        score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(submitted_date)
+        score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(submitted_date, SPESummaryReport)
         scores = self.get_sorted_scores()
         score_handler.sending_scores_manager(scores)
         actual = score_handler.next_persisted_query_date
@@ -152,7 +153,7 @@ class TestSPEProcess(unittest.TestCase):
 
     def test_unhappy_path_few_scores_not_sent(self):
         submitted_date: str = '2019-01-01T22:11:41Z'
-        score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(submitted_date)
+        score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(submitted_date, SPESummaryReport)
         scores = self.get_sorted_scores()
         self.__log.info(f"sorted_list: {scores}")
         score_handler.sending_scores_manager(scores, 'test', True)
@@ -181,3 +182,9 @@ class TestSPEProcess(unittest.TestCase):
             actual = score_handler.next_persisted_query_date
             expected = actual_list[scores_sent_list_len - 1]
             self.assertEqual(expected, actual)
+
+    def test_utc_local(self):
+        actual = SpanishScoresOrchestration.utc_local_timezone('2011-01-21T02:37:21Z')
+        expected = '2011-01-20 21:37:21-0500'
+        self.assertEqual(expected, actual)
+

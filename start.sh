@@ -1,12 +1,13 @@
 #!/bin/bash
 env
 if [ -z "${CRONTAB_SCHEDULE}" ]; then
-    echo "CRONTAB_SCHEDULE environment variable not set, crontab cannot be started. Please set this to a crontab acceptable format. Just running command."
+    echo "CRONTAB_SCHEDULE environment variable not set, crontab cannot be started for local cron testing. Or this is Openshift instance run"
     python /spe/entry.py
 else
         # in cron pod
         echo Running cron job pod
         echo "CRONTAB_SCHEDULE is ${CRONTAB_SCHEDULE}"
+        python -m smtpd -d -n -c DebuggingServer localhost:1025 &
 
         # Make the log file available
         touch /var/log/cron.log

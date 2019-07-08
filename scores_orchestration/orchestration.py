@@ -6,18 +6,22 @@ from spe_utils import constants
 
 from typing import Dict, Union, Optional, List, Any
 from umich_api.api_utils import ApiUtil
+from spe_report.summary import SPESummaryReport
 from autologging import logged, traced
 from requests import Response
 import datetime
 import json
 import random
+from dateutil import tz
+
+from spe_utils.constants import DATE_IN_LOCAL_TZ_FORMAT
 
 
 @logged
 @traced
 class SpanishScoresOrchestration:
 
-    def __init__(self, persisted_submitted_date: str) -> None:
+    def __init__(self, persisted_submitted_date: str, spe_report: SPESummaryReport) -> None:
         self.persisted_submitted_date: str = persisted_submitted_date
         self.client_id: str = os.getenv(constants.API_DIR_CLIENT_ID)
         self.secret: str = os.getenv(constants.API_DIR_SECRET)
@@ -27,6 +31,7 @@ class SpanishScoresOrchestration:
         self._next_persisted_query_date: str = None
         self._scores_sent_list: List[Dict[str, str]] = []
         self._scores_future_sent_list: List[Dict[str, str]] = []
+        self.spe_report = spe_report
 
     @property
     def next_persisted_query_date(self) -> str:
@@ -89,6 +94,7 @@ class SpanishScoresOrchestration:
         assignment_id: str = os.getenv(constants.ASSIGNMENT_ID)
         canvas_query_date: str = SpanishScoresOrchestration. \
             get_query_date_increment_decrement_by_sec(self.persisted_submitted_date, '+')
+
         self.__log.info(f"{self.persisted_submitted_date} Persisted date incremented to 1sec as {canvas_query_date}")
         get_scores_url: str = f"aa/CanvasReadOnly/courses/{course_id}/students/submissions"
         payload: Dict[str, str] = {
@@ -98,6 +104,11 @@ class SpanishScoresOrchestration:
             'include[]': 'user',
             'submitted_since': canvas_query_date
         }
+        # adding email report details as data get available
+        self.spe_report.used_query_date = canvas_query_date
+        self.spe_report.stored_persisted_date = self.persisted_submitted_date
+        self.spe_report.course_id = course_id
+
         self.__log.info(
             f"Getting grades for course/{course_id}/assignment/{assignment_id}/query_date/{canvas_query_date}")
         try:
@@ -184,11 +195,22 @@ class SpanishScoresOrchestration:
         """
         extracted_scores_list: List[Dict[str, str]] = []
         for score in scores:
+            utc_submitted_date = score['submitted_at']
+            local_submitted_date = SpanishScoresOrchestration.utc_local_timezone(utc_submitted_date)
             extracted_score_dict: Dict[str, str] = {'score': score['score'], 'user': score['user']['login_id'],
-                                                    'submitted_date': score['submitted_at']}
+                                                    'submitted_date': utc_submitted_date,
+                                                    'local_submitted_date': local_submitted_date}
             extracted_scores_list.append(extracted_score_dict)
         extracted_scores_list.sort(key=lambda r: r['submitted_date'])
         return extracted_scores_list
+
+    @staticmethod
+    def utc_local_timezone(utc_date):
+        from_zone = tz.gettz(constants.UTC)
+        to_zone = tz.gettz(constants.EASTERN_TZ)
+        utc: datetime = datetime.datetime.strptime(utc_date, constants.ISO8601_FORMAT).replace(tzinfo=from_zone)
+        local_datetime: str = utc.astimezone(to_zone).strftime(DATE_IN_LOCAL_TZ_FORMAT)
+        return local_datetime
 
     def sending_scores_manager(self, scores: List[Dict[str, str]], env: str = None,
                                enable_randomizer: str = False) -> None:
@@ -221,6 +243,10 @@ class SpanishScoresOrchestration:
                 # should start from the first user score error earlier. Duplicate record sent from our process will
                 # end as duplicates in Mpathways system and needs a manual correction
                 break
+
+        self.spe_report.full_score_list = scores
+        self.spe_report.sent_score_list = self.scores_sent_list
+        self.spe_report.not_sent_scores_list = self.scores_future_sent_list
 
         self.__log.debug(f"scores_sent_list: {self.scores_sent_list}")
         self.__log.debug(f"future_sent_list: {self.scores_future_sent_list}")

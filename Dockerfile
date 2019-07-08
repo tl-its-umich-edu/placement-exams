@@ -4,7 +4,7 @@ FROM python:3.7
 COPY requirements.txt /requirements.txt
 
 ENV API_UTILS_VERSION v1.3
-RUN git clone https://github.com/tl-its-umich-edu/api-utils-python && cd api-utils-python && git checkout tags/${API_UTILS_VERSION} && pip install .
+RUN pip install git+https://github.com/tl-its-umich-edu/api-utils-python@${API_UTILS_VERSION}
 RUN pip install -r /requirements.txt
 
 # apt-utils needs to be installed separately

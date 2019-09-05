@@ -78,6 +78,14 @@ class TestSPEProcess(unittest.TestCase):
         response = self.score_handler.send_spanish_score(5.0, 'studenttest')
         self.assertEqual(response.status_code, 200)
 
+    def test_send_spanish_score_without_encoding(self):
+        response = self.score_handler.send_spanish_score(5.0, 'friendemail+aaps.k12.mi.us')
+        self.assertEqual(response.status_code, 200)
+
+    def test_send_spanish_score_with_accented_name(self):
+        response = self.score_handler.send_spanish_score(5.0, 'HellöWörld')
+        self.assertEqual(response.status_code, 200)
+
     def test_increment_persisted_time_by_sec(self):
         increment_date = '2019-01-01T22:11:00Z'
         actual = SpanishScoresOrchestration.get_query_date_increment_decrement_by_sec(increment_date, '+')

@@ -78,7 +78,7 @@ class TestSPEProcess(unittest.TestCase):
         response = self.score_handler.send_spanish_score(5.0, 'studenttest')
         self.assertEqual(response.status_code, 200)
 
-    def test_send_spanish_score_without_encoding(self):
+    def test_send_spanish_score_with_friend_account(self):
         response = self.score_handler.send_spanish_score(5.0, 'friendemail+aaps.k12.mi.us')
         self.assertEqual(response.status_code, 200)
 

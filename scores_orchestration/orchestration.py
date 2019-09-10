@@ -12,6 +12,7 @@ from requests import Response
 import datetime
 import json
 import random
+from urllib.parse import quote
 from dateutil import tz
 
 from spe_utils.constants import DATE_IN_LOCAL_TZ_FORMAT
@@ -179,7 +180,7 @@ class SpanishScoresOrchestration:
         :param student_id:
         :return: Response object or None in case of exception
         """
-        send_scores_url: str = f"aa/SpanishPlacementScores/UniqName/{student_id}/Score/{score}"
+        send_scores_url: str = f"aa/SpanishPlacementScores/UniqName/{quote(student_id)}/Score/{score}"
         try:
             response: Response = self.api_handler.api_call(send_scores_url, 'spanishplacementscores', 'PUT')
         except(AttributeError, Exception) as e:

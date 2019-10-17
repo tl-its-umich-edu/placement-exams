@@ -1,6 +1,7 @@
 from autologging import logged, traced
 from pathlib import Path
 from datetime import datetime
+import json
 
 
 @logged
@@ -23,13 +24,12 @@ class AssignmentLatestSubmittedDate():
         except (OSError, Exception) as e:
             raise e
 
-
     def get_assign_submitted_date(self) -> str:
         """
         creating a directory/file if not available that holds the latest score date. It writes the current UTC date
         if not provided so that initial run will end up happening. Raises exception when creating a directory and
         reading the content of the persisted.txt
-        :return: latest_score_timestamp
+        :return: latest_score_json
         """
         try:
             self._create_directory_if_not_exit()
@@ -41,8 +41,8 @@ class AssignmentLatestSubmittedDate():
 
             if not Path(self.path_to_persisted_file).exists():
                 self.__log.info(f"The file {self.file_name} doesn't exist this happen during the very first run")
-                latest_score_timestamp = self._create_write_persisted_file()
-                return latest_score_timestamp
+                latest_score_json = self._create_write_persisted_file()
+                return latest_score_json
             return self.read_persisted_file()
 
         except (OSError, IOError, Exception) as e:
@@ -55,8 +55,11 @@ class AssignmentLatestSubmittedDate():
                 latest_score_timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
                 self.__log.info(f"""writing to file {self.file_name} the latest test taken date in
                                 UTC with current timestamp {latest_score_timestamp}""")
-                f.write(latest_score_timestamp)
-                return latest_score_timestamp
+                json_str: dict = dict()
+                json_str['sp_place']=latest_score_timestamp
+                dumps = json.dumps(json_str)
+                f.write(dumps)
+                return dumps
         except (OSError, IOError, Exception) as e:
             self.__log.error(f"failed do read the file {self.path_to_persisted_file} due to {e}")
             raise e

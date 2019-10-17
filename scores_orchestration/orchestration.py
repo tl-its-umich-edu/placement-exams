@@ -91,10 +91,12 @@ class SpanishScoresOrchestration:
         getting the spanish scores in a course for an assignment
         :return: Response object or None in case of exception
         """
-        course_id: str = os.getenv(constants.COURSE_ID)
-        assignment_id: str = os.getenv(constants.ASSIGNMENT_ID)
+        course_id: str = os.getenv(constants.SP_PLACE_COURSE_ID)
+        assignment_id: str = os.getenv(constants.SP_PLACE_ASSIGNMENT_ID)
+        sp_place_date=json.loads(self.persisted_submitted_date)['sp_place']
+        self.__log.info(f"for Persisted Date: {self.persisted_submitted_date} spanish_placement_date: {sp_place_date}")
         canvas_query_date: str = SpanishScoresOrchestration. \
-            get_query_date_increment_decrement_by_sec(self.persisted_submitted_date, '+')
+            get_query_date_increment_decrement_by_sec(sp_place_date, '+')
 
         self.__log.info(f"{self.persisted_submitted_date} Persisted date incremented to 1sec as {canvas_query_date}")
         get_scores_url: str = f"aa/CanvasReadOnly/courses/{course_id}/students/submissions"
@@ -180,7 +182,7 @@ class SpanishScoresOrchestration:
         :param student_id:
         :return: Response object or None in case of exception
         """
-        send_scores_url: str = f"aa/SpanishPlacementScores/UniqName/{quote(student_id)}/Score/{score}"
+        send_scores_url: str = f"aa/SpanishPlacementScores/UniqName/{quote(student_id)}/Score/{score}/FormType/7"
         try:
             response: Response = self.api_handler.api_call(send_scores_url, 'spanishplacementscores', 'PUT')
         except(AttributeError, Exception) as e:
@@ -233,7 +235,9 @@ class SpanishScoresOrchestration:
             res: Response = self.send_spanish_score(user_score, user)
 
             if self._is_sending_score_success(res, user_score, user, env, enable_randomizer):
-                self.next_persisted_query_date: str = score['submitted_date']
+                json_next_date: dict = {}
+                json_next_date['sp_place'] = score['submitted_date']
+                self.next_persisted_query_date: str = json.dumps(json_next_date)
                 self.__log.info(
                     f"sending user: {user} score: {user_score} submitted at {score['submitted_date']} is success! ")
                 self.scores_sent_list: List[Dict[str, str]] = score

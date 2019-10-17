@@ -21,7 +21,7 @@ class TestSPEProcess(unittest.TestCase):
         self.__log.info("you got into the testing zone")
         self.persisted_dir: str = '/tmp/PERSIST'
         self.file_name: str = 'test_persisted.txt'
-        self.submitted_date: str = '2019-01-01T22:11:41Z'
+        self.submitted_date: str = '{"sp_place":"2019-01-01T22:11:41Z"}'
         self.date_holder = AssignmentLatestSubmittedDate(self.persisted_dir, self.file_name)
         self.score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(self.submitted_date, SPESummaryReport)
 
@@ -42,7 +42,7 @@ class TestSPEProcess(unittest.TestCase):
         if os.path.exists(self.persisted_dir):
             shutil.rmtree(self.persisted_dir)
         self.assertEqual(False, os.path.exists(self.persisted_dir))
-        latest_test_taken_date = self.date_holder.get_assign_submitted_date()
+        latest_test_taken_date = json.loads(self.date_holder.get_assign_submitted_date())['sp_place']
         self.assertEqual("Date is in correct format", self._check_date_format(latest_test_taken_date))
 
     def test_write_to_file(self):
@@ -138,7 +138,7 @@ class TestSPEProcess(unittest.TestCase):
         score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(submitted_date, SPESummaryReport)
         scores = self.get_sorted_scores()
         score_handler.sending_scores_manager(scores)
-        actual = score_handler.next_persisted_query_date
+        actual = json.loads(score_handler.next_persisted_query_date)['sp_place']
         self.assertEqual('2019-01-15T23:54:26Z', actual)
 
     def test_writing_next_query_date(self):
@@ -155,9 +155,9 @@ class TestSPEProcess(unittest.TestCase):
         """
         scores = self.get_sorted_scores()
         self.score_handler.sending_scores_manager(scores, 'test')
-        actual = self.score_handler.persisted_submitted_date
+        actual = json.loads(self.score_handler.persisted_submitted_date)['sp_place']
         self.__log.debug(f"test_unhappy_path_first_sent_item_failure:=> actual {actual}")
-        self.assertEqual(self.submitted_date, actual)
+        self.assertEqual(json.loads(self.submitted_date)['sp_place'], actual)
 
     def test_unhappy_path_few_scores_not_sent(self):
         submitted_date: str = '2019-01-01T22:11:41Z'
@@ -174,13 +174,14 @@ class TestSPEProcess(unittest.TestCase):
 
         if scores_future_sent_list_len == 0:
             self.__log.info("TestCase: all the scores sent")
-            self.assertEqual('2019-01-15T23:54:26Z', score_handler.next_persisted_query_date)
+            self.assertEqual('2019-01-15T23:54:26Z', json.loads(score_handler.next_persisted_query_date)['sp_place'])
             return
         if scores_future_sent_list_len == actual_list_len:
             self.__log.info(
                 "TestCase: none of the scores sent, matches the test cases \"test_unhappy_path_few_scores_not_sent\"")
-            actual = score_handler.persisted_submitted_date
-            self.assertEqual(submitted_date, actual)
+            actual = json.loads(score_handler.persisted_submitted_date)
+            print(json.loads(actual))
+            self.assertEqual(json.loads(submitted_date)['sp_place'], actual)
             return
 
         if scores_future_sent_list_len > 0:

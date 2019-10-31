@@ -5,6 +5,7 @@ import sys
 from autologging import logged
 from dotenv import load_dotenv
 from datetime import datetime
+from typing import Dict
 
 from exam_date.stored_date import AssignmentLatestSubmittedDate
 from scores_orchestration.orchestration import SpanishScoresOrchestration
@@ -34,18 +35,20 @@ def main():
     query_date_holder: AssignmentLatestSubmittedDate = AssignmentLatestSubmittedDate(path, file_name)
 
     try:
-        stored_submission_date: str = query_date_holder.get_assign_submitted_date()
+        stored_submission_date: Dict[str, str] = query_date_holder.get_assign_submitted_date()
     except (OSError, IOError, Exception) as e:
         logging.error(f"error retrieving the latest assignment submitted date due to {e}")
         return
 
     spe_report: SPESummaryReport = SPESummaryReport()
     score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(stored_submission_date, spe_report)
-    next_query_date: str = score_handler.orchestrator()
+    next_query_date: Dict[str, str] = score_handler.orchestrator()
     if next_query_date:
         try:
-            query_date_holder.store_next_query_date(next_query_date)
-            spe_report.next_stored_persisted_date = next_query_date
+            # sorting the dict so that it always be in format {'place':2019-09-12T14:04:42Z, 'val':2019-09-15T14:04:42Z}
+            sorted_next_query_date = dict(sorted(next_query_date.items()))
+            query_date_holder.store_next_query_date(sorted_next_query_date)
+            spe_report.next_stored_persisted_date = sorted_next_query_date
         except (OSError, IOError, Exception) as e:
             logging.error(f"""error storing the latest assignment submitted date due to {e} 
                         stored date in persisted storage is {stored_submission_date}""")
@@ -61,7 +64,11 @@ def main():
     spe_report.end_time = end_time
     spe_report.elapsed_time = elapsed_time
 
-    spe_report.send_email()
+    if spe_report.is_any_scores_received():
+        logging.info('Sending Email....')
+        spe_report.send_email()
+    else:
+        logging.info('Not Sending Email since no scores received')
 
     logging.info(f"ending of the cron run at {end_time} ")
     logging.info(f"This cron run took about {elapsed_time}")

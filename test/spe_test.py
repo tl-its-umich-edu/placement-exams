@@ -24,6 +24,7 @@ class TestSPEProcess(unittest.TestCase):
         self.__log.info("you got into the testing zone")
         self.persisted_dir: str = '/tmp/PERSIST'
         self.file_name: str = 'test_persisted.json'
+        self.exam_type_map: Dict[str, str]= {PLACEMENT:'7',VALIDATION:'S'}
         self.submitted_date: Dict[str, str] = {PLACEMENT: '2019-01-01T22:11:41Z', VALIDATION: '2019-01-01T22:11:41Z'}
         self.date_holder = AssignmentLatestSubmittedDate(self.persisted_dir, self.file_name)
         self.score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(self.submitted_date,
@@ -134,18 +135,13 @@ class TestSPEProcess(unittest.TestCase):
         :return:
         """
         submitted_date: Dict[str, str] = {PLACEMENT: '2019-01-01T22:11:41Z', VALIDATION: '2019-01-05T22:11:41Z'}
+        expected_map: Dict[str, str]={PLACEMENT:'2019-01-15T23:54:26Z',VALIDATION: '2019-02-15T23:54:26Z'}
         score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(submitted_date, SPESummaryReport())
-        # Placement
-        scores = self.get_sorted_scores(PLACEMENT)
-        score_handler.sending_scores_manager(scores, PLACEMENT, '7')
-        actual = score_handler.next_persisted_query_date[PLACEMENT] if score_handler.next_persisted_query_date else None
-        self.assertEqual('2019-01-15T23:54:26Z', actual)
-        # Validation
-        scores = self.get_sorted_scores(VALIDATION)
-        score_handler.sending_scores_manager(scores, VALIDATION, 'S')
-        actual = score_handler.next_persisted_query_date[
-            VALIDATION] if score_handler.next_persisted_query_date else None
-        self.assertEqual('2019-02-15T23:54:26Z', actual)
+        for exam_type, form_code in self.exam_type_map.items():
+            scores = self.get_sorted_scores(exam_type)
+            score_handler.sending_scores_manager(scores, exam_type, form_code)
+            actual = score_handler.next_persisted_query_date[exam_type] if score_handler.next_persisted_query_date else None
+            self.assertEqual(expected_map[exam_type], actual)
 
     def test_writing_next_query_date(self):
         date_to_be_stored: Dict[str, str] = {PLACEMENT: '2019-01-15T23:54:26Z', VALIDATION: '2019-01-15T23:54:26Z'}
@@ -159,17 +155,12 @@ class TestSPEProcess(unittest.TestCase):
         but just keep what is there
         :return:
         """
-        scores = self.get_sorted_scores(PLACEMENT)
-        self.score_handler.sending_scores_manager(scores, PLACEMENT, '7', 'test')
-        actual = self.score_handler.persisted_submitted_date[PLACEMENT]
-        self.__log.debug(f"test_unhappy_path_first_sent_item_Placement_failure:=> actual {actual}")
-        self.assertEqual(self.submitted_date[PLACEMENT], actual)
-
-        scores = self.get_sorted_scores(VALIDATION)
-        self.score_handler.sending_scores_manager(scores, VALIDATION, 'S', 'test')
-        actual = self.score_handler.persisted_submitted_date[VALIDATION]
-        self.__log.debug(f"test_unhappy_path_first_sent_item_Validation_failure:=> actual {actual}")
-        self.assertEqual(self.submitted_date[VALIDATION], actual)
+        for exam_type, form_code in self.exam_type_map.items():
+            scores = self.get_sorted_scores(exam_type)
+            self.score_handler.sending_scores_manager(scores, exam_type, form_code, 'test')
+            actual = self.score_handler.persisted_submitted_date[exam_type]
+            self.__log.debug(f"test_unhappy_path_first_sent_item_{exam_type}_failure:=> actual {actual}")
+            self.assertEqual(self.submitted_date[exam_type], actual)
 
         self.score_handler.next_date_decider()
         self.assertEqual({PLACEMENT: '2019-01-01T22:11:41Z', VALIDATION: '2019-01-01T22:11:41Z'},
@@ -218,11 +209,9 @@ class TestSPEProcess(unittest.TestCase):
     def test_next_persisted_date_has_both_exam_types_no_scores_sent(self):
         submitted_date: Dict[str, str] = {PLACEMENT: '2019-01-01T22:11:41Z', VALIDATION: '2019-01-05T22:11:41Z'}
         score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(submitted_date, SPESummaryReport())
-
-        scores = self.get_sorted_scores(PLACEMENT)
-        score_handler.sending_scores_manager(scores, PLACEMENT, '7', 'test')
-        scores = self.get_sorted_scores(VALIDATION)
-        score_handler.sending_scores_manager(scores, VALIDATION, 'S', 'test')
+        for exam_type, form_code in self.exam_type_map.items():
+            scores = self.get_sorted_scores(exam_type)
+            score_handler.sending_scores_manager(scores, exam_type, form_code, 'test')
         self.assertEqual({}, score_handler.next_persisted_query_date)
         score_handler.next_date_decider()
         self.assertEqual(submitted_date, score_handler.next_persisted_query_date)
@@ -231,10 +220,10 @@ class TestSPEProcess(unittest.TestCase):
         submitted_date: Dict[str, str] = {PLACEMENT: '2019-01-01T22:11:41Z', VALIDATION: '2019-01-05T22:11:41Z'}
         score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(submitted_date, SPESummaryReport())
 
-        place_scores = self.get_sorted_scores(PLACEMENT)
-        score_handler.sending_scores_manager(place_scores, PLACEMENT, '7')
-        val_scores = self.get_sorted_scores(VALIDATION)
-        score_handler.sending_scores_manager(val_scores, VALIDATION, 'S', 'test')
+        for exam_type, form_code in self.exam_type_map.items():
+            place_scores = self.get_sorted_scores(exam_type)
+            score_handler.sending_scores_manager(place_scores, exam_type, form_code,
+                                                 'test' if exam_type == VALIDATION else None)
         score_handler.next_date_decider()
         expected: Dict[str, str] = {PLACEMENT: '2019-01-15T23:54:26Z', VALIDATION: '2019-01-05T22:11:41Z'}
         self.assertEqual(expected, score_handler.next_persisted_query_date)
@@ -243,10 +232,10 @@ class TestSPEProcess(unittest.TestCase):
         submitted_date: Dict[str, str] = {PLACEMENT: '2019-01-01T22:11:41Z', VALIDATION: '2019-01-05T22:11:41Z'}
         score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(submitted_date, SPESummaryReport())
 
-        place_scores = self.get_sorted_scores(PLACEMENT)
-        score_handler.sending_scores_manager(place_scores, PLACEMENT, '7', 'test')
-        val_scores = self.get_sorted_scores(VALIDATION)
-        score_handler.sending_scores_manager(val_scores, VALIDATION, 'S')
+        for exam_type, form_code in self.exam_type_map.items():
+            place_scores = self.get_sorted_scores(exam_type)
+            score_handler.sending_scores_manager(place_scores, exam_type, form_code,
+                                                 'test' if exam_type == PLACEMENT else None)
         score_handler.next_date_decider()
         expected: Dict[str, str] = {PLACEMENT: '2019-01-01T22:11:41Z', VALIDATION: '2019-02-15T23:54:26Z'}
         self.assertEqual(expected, score_handler.next_persisted_query_date)

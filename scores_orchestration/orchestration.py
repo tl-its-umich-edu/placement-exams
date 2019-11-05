@@ -253,13 +253,15 @@ class SpanishScoresOrchestration:
             self.__log.info("Cron run resulted in fetching both exam scores")
             return
         if PLACEMENT not in stored_exam_types:
-            self.__log.info("Cron run resulted in fetching validation exam scores only")
-            self.next_persisted_query_date = Exam(exam_type=PLACEMENT, exam_date=self.persisted_submitted_date[PLACEMENT])
+            self.set_next_persisted_query_date(PLACEMENT)
             return
         if VALIDATION not in stored_exam_types:
-            self.__log.info("Cron run resulted in fetching placement exam scores only")
-            self.next_persisted_query_date = Exam(exam_type=VALIDATION, exam_date=self.persisted_submitted_date[VALIDATION])
+            self.set_next_persisted_query_date(VALIDATION)
             return
+
+    def set_next_persisted_query_date(self, exam_type):
+        self.__log.info(f"Cron run resulted in fetching no '{exam_type}' exam scores")
+        self.next_persisted_query_date = Exam(exam_type=exam_type, exam_date=self.persisted_submitted_date[exam_type])
 
     def orchestrator(self) -> Dict[str, str]:
         """

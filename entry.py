@@ -14,7 +14,7 @@ from configure import FIXTURES
 # from exam_date.stored_date import AssignmentLatestSubmittedDate
 # from scores_orchestration.orchestration import SpanishScoresOrchestration
 # from spe_utils import constants
-# from spe_report.summary import SummaryReport
+# from spe_report.summary import SPESummaryReport
 
 # settings.py has to be loaded prior to using db/models.py
 application = get_wsgi_application()

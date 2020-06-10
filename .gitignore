@@ -1,7 +1,8 @@
 # Our project specific
 saml
-.idea/
+.data
 .DS_Store
+.idea/
 
 # From https://github.com/github/gitignore/blob/master/Python.gitignore
 

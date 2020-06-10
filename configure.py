@@ -1,6 +1,7 @@
 # standard libraries
 import json, logging, os, sys
 from json.decoder import JSONDecodeError
+from logging import Logger
 from typing import Dict, Union
 
 # third-party libraries
@@ -9,13 +10,13 @@ from jsonschema import validate
 from umich_api.api_utils import ApiUtil
 
 
-LOGGER = logging.getLogger(__name__)
+LOGGER: Logger = logging.getLogger(__name__)
 
 # Set up path variables
 ROOT_DIR: str = os.path.dirname(os.path.abspath(__file__))
 CONFIG_DIR: str = os.path.join(ROOT_DIR, os.getenv('ENV_DIR', os.path.join('config', 'secrets')))
 CONFIG_PATH: str = os.path.join(CONFIG_DIR, os.getenv('ENV_FILE', 'env.json'))
-API_CONFIG_PATH = os.path.join(ROOT_DIR, 'config', 'apis.json')
+API_CONFIG_PATH: str = os.path.join(ROOT_DIR, 'config', 'apis.json')
 
 load_dotenv(dotenv_path=os.path.join(CONFIG_DIR, os.getenv('ENV_FILE', '.env')))
 ENV: Dict = dict(os.environ)
@@ -31,7 +32,7 @@ logging.basicConfig(
 with open(os.path.join(ROOT_DIR, 'config', 'fixture_schema.json')) as fixture_schema_file:
     FIXTURES_SCHEMA: Dict = json.loads(fixture_schema_file.read())
 
-config_problem = False
+config_problem: bool = False
 
 # Load fixture file
 FIXTURES: Union[Dict, None] = None
@@ -63,7 +64,7 @@ if FIXTURES is not None:
 
 # Set up ApiUtil
 try:
-    API_UTIL = ApiUtil(
+    API_UTIL: ApiUtil = ApiUtil(
         os.getenv('API_DIR_URL', ''),
         os.getenv('API_DIR_CLIENT_ID', ''),
         os.getenv('API_DIR_SECRET', ''),

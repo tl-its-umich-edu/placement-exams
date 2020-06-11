@@ -20,13 +20,13 @@
         "exam_object": {
             "type": "object",
             "properties": {
+                "sa_code": {"type": "string"},
                 "name": {"type": "string"},
                 "report_id": {"type": "integer"},
-                "sa_code": {"type": "string"},
                 "course_id": {"$ref": "#/definitions/canvas_id"},
                 "assignment_id": {"$ref": "#/definitions/canvas_id"}
             },
-            "required": ["name", "report_id", "sa_code", "course_id", "assignment_id"]
+            "required": ["sa_code", "name", "report_id", "course_id", "assignment_id"]
         }             
     },
     "properties": {

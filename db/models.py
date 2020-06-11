@@ -12,9 +12,9 @@ class Report(models.Model):
 
 class Exam(models.Model):
     id = models.AutoField(primary_key=True, verbose_name='Exam ID')
+    sa_code = models.CharField(max_length=5, verbose_name='Exam SA Code', unique=True)
     name = models.CharField(max_length=255, verbose_name='Exam Name', unique=True)
     report = models.ForeignKey(to='Report', related_name='exams', null=True, on_delete=models.SET_NULL)
-    sa_code = models.CharField(max_length=5, verbose_name='Exam SA Code', unique=True)
     course_id = models.IntegerField(verbose_name='Canvas Course ID for Exam')
     assignment_id = models.IntegerField(verbose_name='Canvas Assignment ID for Exam', unique=True)
 

@@ -16,11 +16,12 @@ services:
       - "5555:3306"
     volumes:
       - ./.data/mysql:/var/lib/mysql:delegated
+      - ./mysql:/docker-entrypoint-initdb.d:ro
     container_name: placement_exams_mysql
   job:
     build:
-        context: .
-        dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile
     depends_on:
       - mysql
     volumes:

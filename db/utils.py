@@ -1,6 +1,11 @@
+# standard libraries
 import logging
 from typing import Any, Dict, List
 
+# third-party libraries
+from django.core.exceptions import ObjectDoesNotExist
+
+# local libraries
 from db.models import Exam, Report
 
 LOGGER = logging.getLogger(__name__)
@@ -13,26 +18,38 @@ def load_fixtures(fixtures: Dict[str, List[Dict[str, Any]]]) -> None:
 
     for report_dict in fixtures['reports']:
         LOGGER.debug(report_dict)
-        try:
-            report, report_created = Report.objects.update_or_create(**report_dict)
-            if report_created:
-                LOGGER.info(f'A new Report object was created: {report}')
-        except Exception as e:
-            LOGGER.error(e)
+
+        report_queryset = Report.objects.filter(id=report_dict['id'])
+        if report_queryset.exists():
+            report_queryset.update(**report_dict)  # automatically saves
+            LOGGER.info(f'Report object with id {report_dict["id"]} was updated: {report_queryset[0]}')
+        else:
+            report = Report.objects.create(**report_dict)
+            report.save()
+            LOGGER.info(f'A new Report object was created: {report}')
 
     for exam_dict in fixtures['exams']:
         LOGGER.debug(exam_dict)
+
         try:
-            exam, exam_created = Exam.objects.update_or_create(
-                name=exam_dict['name'],
-                report=Report.objects.get(id=exam_dict['report_id']),
-                sa_code=exam_dict['sa_code'],
-                course_id=exam_dict['course_id'],
-                assignment_id=exam_dict['assignment_id']
+            rel_report = Report.objects.get(id=exam_dict['report_id'])
+        except ObjectDoesNotExist:
+            rel_report = None
+            LOGGER.error(
+                'Related Report object was not found. ' +
+                'Verify Exam fixtures use IDs of preexisting or to-be-created Reports.'
             )
-            if exam_created:
-                LOGGER.info(f'A new Exam object was created: {exam}')
-        except Exception as e:
-            LOGGER.error(e)
+
+        exam_dict['report'] = rel_report
+        exam_dict.pop('report_id')
+        LOGGER.debug(exam_dict)
+
+        exam_queryset = Exam.objects.filter(sa_code=exam_dict['sa_code'])
+        if exam_queryset.exists():
+            exam_queryset.update(**exam_dict)  # automatically saves
+            LOGGER.info(f'Exam object with sa_code {exam_dict["sa_code"]} was updated: {exam_queryset[0]}')
+        else:
+            exam = Exam.objects.create(**exam_dict)
+            LOGGER.info(f'A new Exam object was created: {exam}')
 
     return None

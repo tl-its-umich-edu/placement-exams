@@ -4,7 +4,7 @@ FROM python:3.8-slim
 # apt-utils needs to be installed separately
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    build-essential cron git default-libmysqlclient-dev netcat && \
+    build-essential cron default-libmysqlclient-dev git netcat && \
     apt-get clean -y
 
 COPY requirements.txt /requirements.txt

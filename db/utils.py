@@ -24,8 +24,7 @@ def load_fixtures(fixtures: Dict[str, List[Dict[str, Any]]]) -> None:
             report_queryset.update(**report_dict)  # automatically saves
             LOGGER.info(f'Report object with id {report_dict["id"]} was updated: {report_queryset[0]}')
         else:
-            report = Report.objects.create(**report_dict)
-            report.save()
+            report = Report.objects.create(**report_dict)  # automatically saves
             LOGGER.info(f'A new Report object was created: {report}')
 
     for exam_dict in fixtures['exams']:
@@ -49,7 +48,7 @@ def load_fixtures(fixtures: Dict[str, List[Dict[str, Any]]]) -> None:
             exam_queryset.update(**exam_dict)  # automatically saves
             LOGGER.info(f'Exam object with sa_code {exam_dict["sa_code"]} was updated: {exam_queryset[0]}')
         else:
-            exam = Exam.objects.create(**exam_dict)
+            exam = Exam.objects.create(**exam_dict)  # automatically saves
             LOGGER.info(f'A new Exam object was created: {exam}')
 
     return None

@@ -1,24 +1,53 @@
 # standard libraries
-import logging
-# import os
+import logging, os, sys
 from datetime import datetime
-# from typing import Dict
 from typing import List
 
 # third-party libraries
 from autologging import logged
 from django.core.wsgi import get_wsgi_application
+from dotenv import load_dotenv
+from umich_api.api_utils import ApiUtil
 
 # local libraries
-import configure
 # from exam_date.stored_date import AssignmentLatestSubmittedDate
 # from scores_orchestration.orchestration import SpanishScoresOrchestration
 # from spe_utils import constants
 # from spe_report.summary import SPESummaryReport
 
-# settings.py has to be loaded prior to using pe/models.py
-application = get_wsgi_application()
-from pe.models import Exam, Report
+
+# Initialize globals and environment
+
+# Logging will be configured in config/settings.py
+LOGGER = logging.getLogger(__name__)
+
+ROOT_DIR: str = os.path.dirname(os.path.abspath(__file__))
+CONFIG_DIR: str = os.getenv('ENV_DIR', os.path.join('config', 'secrets'))
+ENV_PATH = os.path.join(ROOT_DIR, CONFIG_DIR, os.getenv('ENV_FILE', '.env'))
+
+load_dotenv(dotenv_path=ENV_PATH, verbose=True)
+
+# settings.py has to be run before using pe/models.py (which get_wsgi_application uses), and
+# load_dotenv has to be run before settings.py
+try:
+    application = get_wsgi_application()
+    from pe.models import Exam, Report
+except Exception as e:
+    LOGGER.error(e)
+    LOGGER.error('Failed to load Django application; the program will exit')
+    sys.exit(1)
+
+try:
+    API_UTIL: ApiUtil = ApiUtil(
+        os.getenv('API_DIR_URL', ''),
+        os.getenv('API_DIR_CLIENT_ID', ''),
+        os.getenv('API_DIR_SECRET', ''),
+        os.path.join(ROOT_DIR, 'config', 'apis.json')
+    )
+except Exception as e:
+    LOGGER.error(e)
+    LOGGER.error('Failed to connect to Canvas UM API Directory; the program will exit.')
+    sys.exit(1)
 
 
 @logged

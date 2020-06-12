@@ -28,6 +28,7 @@ services:
       - ${HOME}/secrets/placement-exams:/app/config/secrets
       - .:/app
     environment:
+      - ENV_DIR=config/secrets
       - ENV_FILE=.env
       - MYSQL_HOST=placement_exams_mysql
       - MYSQL_PORT=3306

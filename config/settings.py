@@ -1,20 +1,13 @@
 # standard libraries
 import os
-from typing import Dict, List
+from typing import Any, Dict, List
 
-# third-party libraries
-from dotenv import load_dotenv
-
-
-# This is loaded separately from configure so that code doesn't run multiple times
-# when manage.py is used in start.sh.
-ROOT_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CONFIG_DIR: str = os.path.join(ROOT_DIR, 'config', 'secrets')
-load_dotenv(dotenv_path=os.path.join(CONFIG_DIR, os.getenv('ENV_FILE', '.env')))
 
 # Django settings
 
-BASE_DIR: str = ROOT_DIR
+BASE_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+CONFIG_DIR = os.path.join(BASE_DIR, os.getenv('ENV_DIR', os.path.join('config', 'secrets')))
 
 DATABASES: Dict[str, Dict[str, str]] = {
     'default': {
@@ -29,8 +22,35 @@ DATABASES: Dict[str, Dict[str, str]] = {
 
 FIXTURE_DIRS = [
     CONFIG_DIR,
-    os.path.join(ROOT_DIR, 'test', 'fixtures')
+    os.path.join(BASE_DIR, 'test', 'fixtures')
 ]
+
+LOGGING: Dict[str, Any] = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s - %(name)s - %(funcName)s - %(levelname)s - %(message)s'
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard'
+        }
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': os.getenv('LOG_LEVEL', 'INFO')
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.getenv('LOG_LEVEL', 'INFO'),
+            'propagate': False
+        },
+    }
+}
 
 INSTALLED_APPS: List[str] = [
     'pe'

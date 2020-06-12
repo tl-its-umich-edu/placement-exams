@@ -1,18 +1,21 @@
-{
-    "reports": [
-        {
-            "id": 2,
+[
+    {
+        "model": "pe.report",
+        "pk": 3,
+        "fields": {
             "name": "Defense Against the Dark Arts",
             "contact": "rlupin@hogwarts.edu"
         }
-    ],
-    "exams": [
-        {
+    },
+    {
+        "model": "pe.exam",
+        "pk": 3,
+        "fields": {
             "sa_code": "DDP",
             "name": "DADA Placement",
-            "report_id": 2,
+            "report_id": 3,
             "course_id": 999999,
             "assignment_id": 222222
         }
-    ]
-}
+    }
+]

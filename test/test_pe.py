@@ -1,38 +1,17 @@
 # standard libraries
-import json, logging, os
-from typing import Any, Dict
+import logging
 
 # third-party libraries
+from django.core.management import call_command
 from django.test import TestCase
-from jsonschema import validate
 
 # Local libraries
-from configure import FIXTURES_SCHEMA
-from db.models import Report, Exam
-from db.utils import load_fixtures
+from pe.models import Report, Exam
 
 
 LOGGER = logging.getLogger(__name__)
 
-TEST_FIXTURES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fixtures')
-
 EXAM_FIELDS = ('name', 'report_id', 'sa_code', 'course_id', 'assignment_id')
-
-
-def prepare_fixture_data(file_name: str) -> Dict[str, Any]:
-    '''Opens, parses, and validates a JSON fixture file for testng purposes'''
-
-    with open(os.path.join(TEST_FIXTURES_PATH, file_name)) as fixture_file:
-        fixtures = json.loads(fixture_file.read())
-    
-    try:
-        validate(instance=fixtures, schema=FIXTURES_SCHEMA)
-        LOGGER.debug(f'Test fixture JSON in {file_name} is valid')
-    except Exception as e:
-        LOGGER.error(e)
-        LOGGER.error(f'Test fixture JSON in {file_name} is invalid')
-
-    return fixtures
 
 
 class LoadFixturesTestCase(TestCase):
@@ -40,11 +19,10 @@ class LoadFixturesTestCase(TestCase):
     def test_fixtures_load_when_db_is_empty(self):
         '''
         Loading fixtures results in new model instances when the database is empty.
-        This tests the creation of Report and Exam models using load_fixtures.
+        This tests the creation of Report and Exam models using the loaddata command.
         '''
 
-        fake_fixtures = prepare_fixture_data('fake_fixtures.json')
-        load_fixtures(fake_fixtures)
+        call_command('loaddata', 'test_01.json', verbosity=3)
 
         # Test Potions report loaded
         report_queryset = Report.objects.filter(id=1)
@@ -96,17 +74,15 @@ class LoadFixturesTestCase(TestCase):
     def test_fixtures_load_updates_when_data_in_db(self):
         '''
         Loading fixtures results in updated model instances.
-        The assertions test whether all change-able properties of Report (everything but id) and Exam (everything but sa_code)
-        are properly updated. This test assumes the prior test case succeeded.
+        The assertions test whether all change-able properties of Report (everything but id) and
+        Exam (everything but sa_code) are properly updated. This test assumes the prior test case succeeded.
         '''
 
         # Load previous test's fixtures
-        fake_fixtures = prepare_fixture_data('fake_fixtures.json')
-        load_fixtures(fake_fixtures)
+        call_command('loaddata', 'test_01.json', verbosity=3)
 
         # Load current test's fixtures
-        fake_fixtures_updated = prepare_fixture_data('fake_fixtures_updated.json')
-        load_fixtures(fake_fixtures_updated)
+        call_command('loaddata', 'test_02.json', verbosity=3)
 
         # Test Potions report name and contact changed
         potions_report = Report.objects.get(id=1)
@@ -134,25 +110,22 @@ class LoadFixturesTestCase(TestCase):
         '''
 
         # Load previous test's fixtures
-        fake_fixtures = prepare_fixture_data('fake_fixtures_updated.json')
-        load_fixtures(fake_fixtures)
+        call_command('loaddata', 'test_02.json', verbosity=3)
 
-        fake_new_fixtures = prepare_fixture_data('fake_new_fixtures.json')
-
-        load_fixtures(fake_new_fixtures)
+        call_command('loaddata', 'test_03.json', verbosity=3)
 
         # Test previous Potions report remains and new DADA report was added
         report_queryset = Report.objects.all()
         self.assertTrue(len(report_queryset), 2)
         self.assertTrue(report_queryset.filter(id=1).exists())
 
-        dada_queryset = report_queryset.filter(id=2)
+        dada_queryset = report_queryset.filter(id=3)
         self.assertTrue(dada_queryset.exists())
         if dada_queryset.exists():
             self.assertEqual(
                 dada_queryset.values()[0],
                 {
-                    "id": 2,
+                    "id": 3,
                     "name": "Defense Against the Dark Arts",
                     "contact": "rlupin@hogwarts.edu"
                 }
@@ -172,7 +145,7 @@ class LoadFixturesTestCase(TestCase):
                 {
                     "sa_code": "DDP",
                     "name": "DADA Placement",
-                    "report_id": 2,
+                    "report_id": 3,
                     "course_id": 999999,
                     "assignment_id": 222222
                 }

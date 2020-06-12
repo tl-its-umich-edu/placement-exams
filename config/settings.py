@@ -27,8 +27,13 @@ DATABASES: Dict[str, Dict[str, str]] = {
     }
 }
 
+FIXTURE_DIRS = [
+    CONFIG_DIR,
+    os.path.join(ROOT_DIR, 'test', 'fixtures')
+]
+
 INSTALLED_APPS: List[str] = [
-    'db'
+    'pe'
 ]
 
 SECRET_KEY: str = os.getenv('SECRET_KEY', '-- A SECRET KEY --')

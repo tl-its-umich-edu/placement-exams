@@ -10,25 +10,21 @@ from autologging import logged
 from django.core.wsgi import get_wsgi_application
 
 # local libraries
-from configure import FIXTURES
+import configure
 # from exam_date.stored_date import AssignmentLatestSubmittedDate
 # from scores_orchestration.orchestration import SpanishScoresOrchestration
 # from spe_utils import constants
 # from spe_report.summary import SPESummaryReport
 
-# settings.py has to be loaded prior to using db/models.py
+# settings.py has to be loaded prior to using pe/models.py
 application = get_wsgi_application()
-from db.utils import load_fixtures
-from db.models import Exam, Report
+from pe.models import Exam, Report
 
 
 @logged
 def main():
     start_time: datetime = datetime.now()
     logging.info(f'Starting new run at {start_time}')
-
-    # New stuff
-    load_fixtures(FIXTURES)
 
     reports: List[Report] = list(Report.objects.all())
     logging.info(reports)

@@ -158,10 +158,10 @@ class LoadFixturesTestCase(TestCase):
         '''
 
         # Load first test's fixtures
-        call_command('loaddata', 'test_01.json', verbosity=2)
+        call_command('loaddata', 'test_01.json')
 
         # Load submission fixture
-        call_command('loaddata', 'test_04.json', verbosity=2)
+        call_command('loaddata', 'test_04.json')
 
         # Test submission loaded correctly
         submission_queryset = Submission.objects.all()
@@ -185,7 +185,7 @@ class LoadFixturesTestCase(TestCase):
             )
 
         # Load second test's fixtures updating reports and exams
-        call_command('loaddata', 'test_02.json', verbosity=3)
+        call_command('loaddata', 'test_02.json')
 
         submission_queryset = Submission.objects.all()
         self.assertTrue(submission_queryset.exists())

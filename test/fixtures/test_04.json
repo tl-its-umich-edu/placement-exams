@@ -1,0 +1,15 @@
+[
+    {
+        "model": "pe.submission",
+        "pk": 1,
+        "fields": {
+            "submission_id": 123456,
+            "exam_id": 1,
+            "student_uniqname": "hpotter",
+            "submitted_timestamp": "2020-06-12 08:15:30",
+            "score": 100.0,
+            "transmitted": true,
+            "transmitted_timestamp": "2020-06-12 12:00:30"
+        }
+    }
+]

@@ -1,12 +1,13 @@
 # standard libraries
 import logging
+from datetime import datetime
 
 # third-party libraries
 from django.core.management import call_command
 from django.test import TestCase
 
 # Local libraries
-from pe.models import Report, Exam
+from pe.models import Report, Exam, Submission
 
 
 LOGGER = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ class LoadFixturesTestCase(TestCase):
         This tests the creation of Report and Exam models using the loaddata command.
         '''
 
-        call_command('loaddata', 'test_01.json', verbosity=3)
+        call_command('loaddata', 'test_01.json')
 
         # Test Potions report loaded
         report_queryset = Report.objects.filter(id=1)
@@ -79,10 +80,9 @@ class LoadFixturesTestCase(TestCase):
         '''
 
         # Load previous test's fixtures
-        call_command('loaddata', 'test_01.json', verbosity=3)
+        call_command('loaddata', 'test_01.json')
 
-        # Load current test's fixtures
-        call_command('loaddata', 'test_02.json', verbosity=3)
+        call_command('loaddata', 'test_02.json')
 
         # Test Potions report name and contact changed
         potions_report = Report.objects.get(id=1)
@@ -110,9 +110,9 @@ class LoadFixturesTestCase(TestCase):
         '''
 
         # Load previous test's fixtures
-        call_command('loaddata', 'test_02.json', verbosity=3)
+        call_command('loaddata', 'test_02.json')
 
-        call_command('loaddata', 'test_03.json', verbosity=3)
+        call_command('loaddata', 'test_03.json')
 
         # Test previous Potions report remains and new DADA report was added
         report_queryset = Report.objects.all()
@@ -150,3 +150,79 @@ class LoadFixturesTestCase(TestCase):
                     "assignment_id": 222222
                 }
             )
+
+    def test_fixtures_load_maintains_submission_link(self):
+        '''
+        Loading submission and updating related exam results in maintained relationship.
+        This test assumes the first two test cases succeeded.
+        '''
+
+        # Load first test's fixtures
+        call_command('loaddata', 'test_01.json', verbosity=2)
+
+        # Load submission fixture
+        call_command('loaddata', 'test_04.json', verbosity=2)
+
+        # Test submission loaded correctly
+        submission_queryset = Submission.objects.all()
+        self.assertTrue(submission_queryset.exists())
+        if submission_queryset.exists():
+            submission_dict = submission_queryset.values(
+                'submission_id', 'exam_id', 'student_uniqname', 'submitted_timestamp', 'score',
+                'transmitted', 'transmitted_timestamp'
+            )[0]
+            self.assertEqual(
+                submission_dict,
+                {
+                    "submission_id": 123456,
+                    "exam_id": 1,
+                    "student_uniqname": "hpotter",
+                    "submitted_timestamp": datetime(2020, 6, 12, 8, 15, 30),
+                    "score": 100.0,
+                    "transmitted": True,
+                    "transmitted_timestamp": datetime(2020, 6, 12, 12, 0, 30)
+                }
+            )
+
+        # Load second test's fixtures updating reports and exams
+        call_command('loaddata', 'test_02.json', verbosity=3)
+
+        submission_queryset = Submission.objects.all()
+        self.assertTrue(submission_queryset.exists())
+        if submission_queryset.exists():
+            submission = submission_queryset.filter(submission_id=123456).first()
+            self.assertEqual(submission.exam.sa_code, 'PP')
+            self.assertEqual(submission.exam.name, 'Potions Placement Advanced')
+
+
+class StringMethodsTestCase(TestCase):
+    fixtures = ['test_01.json', 'test_04.json']
+
+    def test_report_string_method(self):
+        potions_report = Report.objects.get(id=1)
+        self.assertEqual(potions_report.__str__(), '(id=1, name=Potions, contact=halfbloodprince@hogwarts.edu)')
+
+    def test_exam_string_method(self):
+        potions_exam = Exam.objects.get(id=1)
+        self.assertEqual(
+            potions_exam.__str__(),
+            (
+                '(id=1, sa_code=PP, name=Potions Placement, ' +
+                'report=(id=1, name=Potions, contact=halfbloodprince@hogwarts.edu), ' +
+                'course_id=888888, assignment_id=111111)'
+            )
+        )
+
+    def test_submission_string_method(self):
+        potions_submission = Submission.objects.get(id=1)
+        self.assertEqual(
+            potions_submission.__str__(),
+            (
+                '(id=1, submission_id=123456, exam=' +
+                '(id=1, sa_code=PP, name=Potions Placement, ' +
+                'report=(id=1, name=Potions, contact=halfbloodprince@hogwarts.edu), ' +
+                'course_id=888888, assignment_id=111111), ' +
+                'student_uniqname=hpotter, submitted_timestamp=2020-06-12 08:15:30, score=100.0, ' +
+                'transmitted=True, transmitted_timestamp=2020-06-12 12:00:30)'
+            )
+        )

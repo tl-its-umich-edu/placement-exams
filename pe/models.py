@@ -20,7 +20,7 @@ class Exam(models.Model):
 
     def __str__(self):
         return (
-            f'(id={self.id}, name={self.name}, report={self.report}, sa_code={self.sa_code}, ' +
+            f'(id={self.id}, sa_code={self.sa_code}, name={self.name}, report={self.report}, ' +
             f'course_id={self.course_id}, assignment_id={self.assignment_id})'
         )
 
@@ -30,13 +30,15 @@ class Submission(models.Model):
     submission_id = models.IntegerField(verbose_name='Canvas Submission ID', unique=True)
     exam = models.ForeignKey(to='Exam', related_name='submissions', on_delete=models.CASCADE)
     student_uniqname = models.CharField(max_length=50, verbose_name='Student Uniqname')
-    submitted_timestamp = models.DateField(verbose_name='Submitted At Date & Time')
+    submitted_timestamp = models.DateTimeField(verbose_name='Submitted At Date & Time')
     score = models.FloatField(verbose_name='Submission Score')
     transmitted = models.BooleanField(verbose_name='Transmitted')
-    transmitted_timestamp = models.DateField(verbose_name='Transmitted At Date & Time')
+    transmitted_timestamp = models.DateTimeField(verbose_name='Transmitted At Date & Time')
 
     def __str__(self):
         return (
-            f'(id={self.id}, name={self.name}, code={self.sa_code}, course_id={self.course_id}, ' +
-            f'assignment_id={self.assignment_id}, contact={self.contact})'
+            f'(id={self.id}, submission_id={self.submission_id}, exam={self.exam}, ' +
+            f'student_uniqname={self.student_uniqname}, submitted_timestamp={self.submitted_timestamp}, ' +
+            f'score={self.score}, transmitted={self.transmitted}, ' +
+            f'transmitted_timestamp={self.transmitted_timestamp})'
         )

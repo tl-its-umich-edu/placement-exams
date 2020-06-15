@@ -26,13 +26,13 @@ a `fixtures.json` file containing report and exam records that will initialize d
 and determine for which exams submission data is collected and sent to M-Pathways.
 Both files are described in more detail below. See the **Installation & Usage** section below for details on where these files will need to be located.
 
-* .env file
+* `.env`
 
-  The `.env` file serves as the primary configuration file, loading credentials for accessing the application's database and the UM API Directory. A template called `.env.sample` has been provided in the `config` directory. The comments before the variables in the template should describe the purpose of each; some recommended values have been provided. If you use the `With Docker` approach described below, you can use the provided values to connect to the database managed by Docker.
+  The `.env` file serves as the primary configuration file, loading credentials for accessing the application's database and the UM API Directory. A template called `.env.sample` has been provided in the `config` directory. The comments before the variables in the template should describe the purpose of each; some recommended values have been provided. If you use the approach described below in **Installation & Usage - With Docker**, you can use the provided values to connect to the database managed by Docker.
 
-* fixtures.json
+* `fixtures.json`
 
-  The `fixtures.json` file allows users to pre-populate the database with records for exams and reports on submissions processed. The JSON file uses the [Django model instance serialization format](https://docs.djangoproject.com/en/3.0/topics/serialization/#serialization-formats-json), and records are loaded using Django's [`loaddata` management command](https://docs.djangoproject.com/en/3.0/ref/django-admin/#loaddata). For an example, take a look at the first testing fixture within the repository's `test` directory.
+  The `fixtures.json` file allows users to pre-populate the database with records for exams and reports on submissions processed. The JSON file uses the [Django model instance serialization format](https://docs.djangoproject.com/en/3.0/topics/serialization/#serialization-formats-json), and records are loaded using Django's [`loaddata` management command](https://docs.djangoproject.com/en/3.0/ref/django-admin/#loaddata). For an example, take a look at the first testing fixture within the repository's `test/fixtures` directory.
 
 Create your own versions of `.env` and `fixtures.json`, and be prepared to move them to specific directories.
 
@@ -131,19 +131,7 @@ To run the test suite, use the following commands:
   python -m unittest test/spe_test.py
   ```
 
-
-### With a virtual environment
-1. create venv as `python3 -m venv <directory-to-spe-venv>`
-  *activate as `source <path-to-venv>/bin/activate` 
-  *be at the directory where you can see the `venv` enabled and from commandline type `deactivate'
-2. In future will make use of the `api-util-package` install it by `git clone https://github.com/tl-its-umich-edu/api-utils-python`
- and do `pip install .`. this should get the api-utils in the site-packages 
-3. `pip install -r requirements.txt`
-4. run the script as `python entry.py`
-5. For running unittest `python -m unittest test/spe_test.py`
-
-
-(*I'm going to worry about updating these later.* - Sam)
+(*I'm going to worry about updating the below sections later.* - Sam)
 
 ### Openshift setup
 1. login to openshift from command line

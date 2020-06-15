@@ -1,6 +1,9 @@
 # placement-exams
 
-Designed to support University of Michigan placement exams administered through the Canvas LMS, the in-development placement-exams application will collect the students' scores from multiple exams and send them to M-Pathways so the registrar can grant course enrollment privileges. The UM API Directory will be used both to access the Canvas API and send scores to M-Pathways.
+Designed to support University of Michigan placement exams administered through the Canvas LMS,
+the in-development placement-exams application will collect the students' scores from multiple exams
+and send them to M-Pathways so the registrar can grant course enrollment privileges. The UM API Directory
+will be used both to access the Canvas API and send scores to M-Pathways.
 
 ## Development
 
@@ -24,15 +27,30 @@ Before running the application, you will need to prepare two configuration-relat
 a `.env` file containing key-value pairs that will be added to the environment, and
 a `fixtures.json` file containing report and exam records that will initialize data in the database
 and determine for which exams submission data is collected and sent to M-Pathways.
-Both files are described in more detail below. See the **Installation & Usage** section below for details on where these files will need to be located.
+Both files are described in more detail below. See the **Installation & Usage** section below for details
+on where these files will need to be located.
 
 * `.env`
 
-  The `.env` file serves as the primary configuration file, loading credentials for accessing the application's database and the UM API Directory. A template called `.env.sample` has been provided in the `config` directory. The comments before the variables in the template should describe the purpose of each; some recommended values have been provided. If you use the approach described below in **Installation & Usage - With Docker**, you can use the provided values to connect to the database managed by Docker.
+  The `.env` file serves as the primary configuration file, loading credentials for accessing
+  the application's database and the UM API Directory. A template called `.env.sample` has been provided in
+  the `config` directory. The comments before the variables in the template should describe the purpose of
+  each; some recommended values have been provided. If you use the approach described below
+  in **Installation & Usage - With Docker**, you can use the provided values to connect to the database
+  managed by Docker.
 
 * `fixtures.json`
 
-  The `fixtures.json` file allows users to pre-populate the database with records for exams and reports on submissions processed. The JSON file uses the [Django model instance serialization format](https://docs.djangoproject.com/en/3.0/topics/serialization/#serialization-formats-json), and records are loaded using Django's [`loaddata` management command](https://docs.djangoproject.com/en/3.0/ref/django-admin/#loaddata). For an example, take a look at the first testing fixture within the repository's `test/fixtures` directory.
+  The `fixtures.json` file allows users to pre-populate the database with records for exams and reports
+  on submissions processed. The JSON file uses the Django model instance
+  [serialization format](https://docs.djangoproject.com/en/3.0/topics/serialization/#serialization-formats-json),
+  and records are loaded using Django's
+  [`loaddata` management command](https://docs.djangoproject.com/en/3.0/ref/django-admin/#loaddata).
+  
+  The file should contain data for one or many `Report` records and one or many `Exam` records
+  connected to a previously defined `Report` by ID number. For an example, take a look `sample_fixtures.json`
+  in the `config` directory. While `Submission` records can also be imported using fixtures, the application
+  will handle creation of all these records.
 
 Create your own versions of `.env` and `fixtures.json`, and be prepared to move them to specific directories.
 

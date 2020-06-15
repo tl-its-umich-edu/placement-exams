@@ -1,0 +1,21 @@
+[
+    {
+        "model": "pe.report",
+        "pk": 1,
+        "fields": {
+            "name": "Language Exams Report",
+            "contact": "test@something.edu"
+        }
+    },
+    {
+        "model": "pe.exam",
+        "pk": 1,
+        "fields": {
+            "sa_code": "LPE",
+            "name": "Some Language Placement Exam",
+            "report": 1,
+            "course_id": 100000,
+            "assignment_id": 200000
+        }
+    }
+]

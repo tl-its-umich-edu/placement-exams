@@ -32,6 +32,6 @@ services:
       - ENV_FILE=.env
       - MYSQL_HOST=placement_exams_mysql
       - MYSQL_PORT=3306
-      - DJANGO_SETTINGS_MODULE=config.settings
+      - DJANGO_SETTINGS_MODULE=pe.settings
       - HOW_STARTED=DOCKER_COMPOSE
     container_name: placement_exams

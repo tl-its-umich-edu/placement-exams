@@ -97,7 +97,7 @@ docker-compose run -e TEST_MODE=True job
 
 You can also set up the application using `virtualenv` by doing the following:
 
-1. Set up a MySQL database for the appliaction using your local MySQL installation.
+1. Set up a MySQL database for the application using a MySQL installation on your local machine.
    
    Ensure that you have placed the database credentials in your `.env` file
 

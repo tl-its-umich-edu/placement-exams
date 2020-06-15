@@ -7,7 +7,7 @@ from typing import Any, Dict, List
 
 BASE_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-CONFIG_DIR = os.path.join(BASE_DIR, os.getenv('ENV_DIR', os.path.join('config', 'secrets')))
+CONFIG_DIR: str = os.path.join(BASE_DIR, os.getenv('ENV_DIR', os.path.join('config', 'secrets')))
 
 DATABASES: Dict[str, Dict[str, str]] = {
     'default': {
@@ -20,7 +20,7 @@ DATABASES: Dict[str, Dict[str, str]] = {
     }
 }
 
-FIXTURE_DIRS = [
+FIXTURE_DIRS: List[str] = [
     CONFIG_DIR,
     os.path.join(BASE_DIR, 'test', 'fixtures')
 ]

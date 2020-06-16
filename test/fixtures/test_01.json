@@ -1,0 +1,32 @@
+[
+    {
+        "model": "pe.report",
+        "pk": 1,
+        "fields": {
+            "name": "Potions",
+            "contact": "halfbloodprince@hogwarts.edu"
+        }
+    },
+    {
+        "model": "pe.exam",
+        "pk": 1,
+        "fields": {
+            "sa_code": "PP",
+            "name": "Potions Placement",
+            "report_id": 1,
+            "course_id": 888888,
+            "assignment_id": 111111
+        }
+    },
+    {
+        "model": "pe.exam",
+        "pk": 2,
+        "fields": {
+            "sa_code": "PV",
+            "name": "Potions Validation",
+            "report_id": 1,
+            "course_id": 888888,
+            "assignment_id": 111112
+        }
+    }
+]

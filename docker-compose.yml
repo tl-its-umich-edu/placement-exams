@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql:5.7
+    restart: on-failure
+    environment:
+      - MYSQL_ROOT_PASSWORD=pe_root_pw
+      - MYSQL_HOST=placement_exams_mysql
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=placement_exams_local
+      - MYSQL_USER=pe_user
+      - MYSQL_PASSWORD=pe_pw
+    entrypoint: ['docker-entrypoint.sh', '--default-authentication-plugin=mysql_native_password']
+    ports:
+      - "5555:3306"
+    volumes:
+      - ./.data/mysql:/var/lib/mysql:delegated
+      - ./mysql:/docker-entrypoint-initdb.d:ro
+    container_name: placement_exams_mysql
+  job:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - mysql
+    volumes:
+      - ${HOME}/secrets/placement-exams:/app/config/secrets
+      - .:/app
+    environment:
+      - DJANGO_SETTINGS_MODULE=pe.settings
+      - ENV_DIR=config/secrets
+      - ENV_FILE=.env
+      - FIXTURES_FILE=fixtures.json
+      - HOW_STARTED=DOCKER_COMPOSE
+      - MYSQL_HOST=placement_exams_mysql
+      - MYSQL_PORT=3306
+    container_name: placement_exams

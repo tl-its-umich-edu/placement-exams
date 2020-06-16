@@ -1,4 +1,5 @@
 # Our project specific
+fixtures.json
 saml
 .data
 .DS_Store

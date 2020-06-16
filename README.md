@@ -119,7 +119,7 @@ You can also set up the application using `virtualenv` by doing the following:
    
    Ensure that you have placed the database credentials in your `.env` file
 
-2. Place your `.env` file in `config/secrets`.
+2. Place your `.env` and `fixtures.json` files in `config/secrets`.
 
 3. Create a virtual environment using `virtualenv`.
 

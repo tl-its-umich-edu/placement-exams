@@ -28,11 +28,11 @@ services:
       - ${HOME}/secrets/placement-exams:/app/config/secrets
       - .:/app
     environment:
+      - DJANGO_SETTINGS_MODULE=pe.settings
       - ENV_DIR=config/secrets
       - ENV_FILE=.env
       - FIXTURES_FILE=fixtures.json
+      - HOW_STARTED=DOCKER_COMPOSE
       - MYSQL_HOST=placement_exams_mysql
       - MYSQL_PORT=3306
-      - DJANGO_SETTINGS_MODULE=pe.settings
-      - HOW_STARTED=DOCKER_COMPOSE
     container_name: placement_exams

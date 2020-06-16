@@ -27,6 +27,8 @@ ENV_PATH: str = os.path.join(ROOT_DIR, CONFIG_DIR, os.getenv('ENV_FILE', '.env')
 
 load_dotenv(dotenv_path=ENV_PATH, verbose=True)
 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pe.settings')
+
 # settings.py has to be run before using pe/models.py (which get_wsgi_application uses), and
 # load_dotenv has to be run before settings.py
 try:

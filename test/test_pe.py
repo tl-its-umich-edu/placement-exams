@@ -28,49 +28,56 @@ class LoadFixturesTestCase(TestCase):
         # Test Potions report loaded
         report_queryset = Report.objects.filter(id=1)
         self.assertTrue(report_queryset.exists())
-        if report_queryset.exists():
-            self.assertEqual(
-                report_queryset.values()[0],
-                {
-                    "id": 1,
-                    "name": "Potions", 
-                    "contact": "halfbloodprince@hogwarts.edu"
-                }
-            )
+        if not report_queryset.exists():
+            return None
+
+        self.assertEqual(
+            report_queryset.values()[0],
+            {
+                "id": 1,
+                "name": "Potions",
+                "contact": "halfbloodprince@hogwarts.edu"
+            }
+        )
 
         # Test exams loaded
         exams_queryset = Exam.objects.all()
         self.assertTrue(exams_queryset.exists())
         self.assertTrue(len(exams_queryset), 2)
-        if exams_queryset.exists() and len(exams_queryset) == 2:
+        if not exams_queryset.exists() and len(exams_queryset) != 2:
+            return None
 
-            placement_queryset = exams_queryset.filter(name='Potions Placement')
-            self.assertTrue(placement_queryset.exists())
-            if placement_queryset.exists():
-                self.assertEqual(
-                    placement_queryset.values(*EXAM_FIELDS)[0],
-                    {
-                        "name": "Potions Placement",
-                        "report_id": 1,
-                        "sa_code": "PP",
-                        "course_id": 888888,
-                        "assignment_id": 111111
-                    }
-                )
+        placement_queryset = exams_queryset.filter(name='Potions Placement')
+        self.assertTrue(placement_queryset.exists())
+        if not placement_queryset.exists():
+            return None
 
-            validation_queryset = exams_queryset.filter(name='Potions Validation')
-            self.assertTrue(validation_queryset.exists())
-            if validation_queryset.exists():
-                self.assertEqual(
-                    validation_queryset.values(*EXAM_FIELDS)[0],
-                    {
-                        "name": "Potions Validation",
-                        "report_id": 1,
-                        "sa_code": "PV",
-                        "course_id": 888888,
-                        "assignment_id": 111112
-                    }
-                )
+        self.assertEqual(
+            placement_queryset.values(*EXAM_FIELDS)[0],
+            {
+                "name": "Potions Placement",
+                "report_id": 1,
+                "sa_code": "PP",
+                "course_id": 888888,
+                "assignment_id": 111111
+            }
+        )
+
+        validation_queryset = exams_queryset.filter(name='Potions Validation')
+        self.assertTrue(validation_queryset.exists())
+        if not validation_queryset.exists():
+            return None
+
+        self.assertEqual(
+            validation_queryset.values(*EXAM_FIELDS)[0],
+            {
+                "name": "Potions Validation",
+                "report_id": 1,
+                "sa_code": "PV",
+                "course_id": 888888,
+                "assignment_id": 111112
+            }
+        )
 
     def test_fixtures_load_updates_when_data_in_db(self):
         """
@@ -100,8 +107,10 @@ class LoadFixturesTestCase(TestCase):
 
         new_report_queryset = Report.objects.filter(id=2)
         self.assertTrue(new_report_queryset.exists())
-        if new_report_queryset.exists():
-            self.assertEqual(validation_exam.report, new_report_queryset[0])
+        if not new_report_queryset.exists():
+            return None
+
+        self.assertEqual(validation_exam.report, new_report_queryset[0])
 
     def test_fixtures_load_adds_data_when_data_in_db(self):
         """
@@ -121,15 +130,17 @@ class LoadFixturesTestCase(TestCase):
 
         dada_queryset = report_queryset.filter(id=3)
         self.assertTrue(dada_queryset.exists())
-        if dada_queryset.exists():
-            self.assertEqual(
-                dada_queryset.values()[0],
-                {
-                    "id": 3,
-                    "name": "Defense Against the Dark Arts",
-                    "contact": "rlupin@hogwarts.edu"
-                }
-            )
+        if not dada_queryset.exists():
+            return None
+
+        self.assertEqual(
+            dada_queryset.values()[0],
+            {
+                "id": 3,
+                "name": "Defense Against the Dark Arts",
+                "contact": "rlupin@hogwarts.edu"
+            }
+        )
 
         # Test previous exams remain and new DADA Placement exam added
         exams_queryset = Exam.objects.all()
@@ -139,17 +150,19 @@ class LoadFixturesTestCase(TestCase):
 
         data_exam_queryset = exams_queryset.filter(name='DADA Placement')
         self.assertTrue(data_exam_queryset.exists())
-        if data_exam_queryset.exists():
-            self.assertEqual(
-                data_exam_queryset.values(*EXAM_FIELDS)[0],
-                {
-                    "sa_code": "DDP",
-                    "name": "DADA Placement",
-                    "report_id": 3,
-                    "course_id": 999999,
-                    "assignment_id": 222222
-                }
-            )
+        if not data_exam_queryset.exists():
+            return None
+
+        self.assertEqual(
+            data_exam_queryset.values(*EXAM_FIELDS)[0],
+            {
+                "sa_code": "DDP",
+                "name": "DADA Placement",
+                "report_id": 3,
+                "course_id": 999999,
+                "assignment_id": 222222
+            }
+        )
 
     def test_fixtures_load_maintains_submission_link(self):
         """
@@ -166,33 +179,37 @@ class LoadFixturesTestCase(TestCase):
         # Test submission loaded correctly
         submission_queryset = Submission.objects.all()
         self.assertTrue(submission_queryset.exists())
-        if submission_queryset.exists():
-            submission_dict = submission_queryset.values(
-                'submission_id', 'exam_id', 'student_uniqname', 'submitted_timestamp', 'score',
-                'transmitted', 'transmitted_timestamp'
-            )[0]
-            self.assertEqual(
-                submission_dict,
-                {
-                    "submission_id": 123456,
-                    "exam_id": 1,
-                    "student_uniqname": "hpotter",
-                    "submitted_timestamp": datetime(2020, 6, 12, 8, 15, 30),
-                    "score": 100.0,
-                    "transmitted": True,
-                    "transmitted_timestamp": datetime(2020, 6, 12, 12, 0, 30)
-                }
-            )
+        if not submission_queryset.exists():
+            return None
+
+        submission_dict = submission_queryset.values(
+            'submission_id', 'exam_id', 'student_uniqname', 'submitted_timestamp', 'score',
+            'transmitted', 'transmitted_timestamp'
+        )[0]
+        self.assertEqual(
+            submission_dict,
+            {
+                "submission_id": 123456,
+                "exam_id": 1,
+                "student_uniqname": "hpotter",
+                "submitted_timestamp": datetime(2020, 6, 12, 8, 15, 30),
+                "score": 100.0,
+                "transmitted": True,
+                "transmitted_timestamp": datetime(2020, 6, 12, 12, 0, 30)
+            }
+        )
 
         # Load second test's fixtures updating reports and exams
         call_command('loaddata', 'test_02.json')
 
         submission_queryset = Submission.objects.all()
         self.assertTrue(submission_queryset.exists())
-        if submission_queryset.exists():
-            submission = submission_queryset.filter(submission_id=123456).first()
-            self.assertEqual(submission.exam.sa_code, 'PP')
-            self.assertEqual(submission.exam.name, 'Potions Placement Advanced')
+        if not submission_queryset.exists():
+            return None
+
+        submission = submission_queryset.filter(submission_id=123456).first()
+        self.assertEqual(submission.exam.sa_code, 'PP')
+        self.assertEqual(submission.exam.name, 'Potions Placement Advanced')
 
 
 class StringMethodsTestCase(TestCase):

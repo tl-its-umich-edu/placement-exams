@@ -18,10 +18,10 @@ EXAM_FIELDS = ('name', 'report_id', 'sa_code', 'course_id', 'assignment_id')
 class LoadFixturesTestCase(TestCase):
 
     def test_fixtures_load_when_db_is_empty(self):
-        '''
+        """
         Loading fixtures results in new model instances when the database is empty.
         This tests the creation of Report and Exam models using the loaddata command.
-        '''
+        """
 
         call_command('loaddata', 'test_01.json')
 
@@ -73,11 +73,11 @@ class LoadFixturesTestCase(TestCase):
                 )
 
     def test_fixtures_load_updates_when_data_in_db(self):
-        '''
+        """
         Loading fixtures results in updated model instances.
         The assertions test whether all change-able properties of Report (everything but id) and
         Exam (everything but sa_code) are properly updated. This test assumes the prior test case succeeded.
-        '''
+        """
 
         # Load previous test's fixtures
         call_command('loaddata', 'test_01.json')
@@ -104,10 +104,10 @@ class LoadFixturesTestCase(TestCase):
             self.assertEqual(validation_exam.report, new_report_queryset[0])
 
     def test_fixtures_load_adds_data_when_data_in_db(self):
-        '''
+        """
         Loading brand new fixtures results in new objects while previous ones remain in the database.
         This test assumes the previous test case succeeded.
-        '''
+        """
 
         # Load previous test's fixtures
         call_command('loaddata', 'test_02.json')
@@ -152,10 +152,10 @@ class LoadFixturesTestCase(TestCase):
             )
 
     def test_fixtures_load_maintains_submission_link(self):
-        '''
+        """
         Loading submission and updating related exam results in maintained relationship.
         This test assumes the first two test cases succeeded.
-        '''
+        """
 
         # Load first test's fixtures
         call_command('loaddata', 'test_01.json')
@@ -199,10 +199,16 @@ class StringMethodsTestCase(TestCase):
     fixtures = ['test_01.json', 'test_04.json']
 
     def test_report_string_method(self):
+        """Report string method should present all variables in the correct format"""
+
         potions_report = Report.objects.get(id=1)
         self.assertEqual(potions_report.__str__(), '(id=1, name=Potions, contact=halfbloodprince@hogwarts.edu)')
 
     def test_exam_string_method(self):
+        """
+        Exam string method should present all variables, and nested Report object, in the correct format.
+        """
+
         potions_exam = Exam.objects.get(id=1)
         self.assertEqual(
             potions_exam.__str__(),
@@ -214,6 +220,11 @@ class StringMethodsTestCase(TestCase):
         )
 
     def test_submission_string_method(self):
+        """
+        Submission string method should present all variables, and nested Exam and Report objects, in the
+        correct format.
+        """
+
         potions_submission = Submission.objects.get(id=1)
         self.assertEqual(
             potions_submission.__str__(),

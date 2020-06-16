@@ -30,6 +30,7 @@ services:
     environment:
       - ENV_DIR=config/secrets
       - ENV_FILE=.env
+      - FIXTURES_FILE=fixtures.json
       - MYSQL_HOST=placement_exams_mysql
       - MYSQL_PORT=3306
       - DJANGO_SETTINGS_MODULE=pe.settings

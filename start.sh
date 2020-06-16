@@ -14,7 +14,7 @@ fi
 echo 'Applying any outstanding migrations'
 python manage.py migrate
 
-python manage.py loaddata fixtures.json
+python manage.py loaddata "$FIXTURES_FILE"
 
 if [ "${TEST_MODE}" == "True" ]; then
     echo "Running tests"

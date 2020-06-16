@@ -12,11 +12,11 @@ CONFIG_DIR: str = os.path.join(BASE_DIR, os.getenv('ENV_DIR', os.path.join('conf
 DATABASES: Dict[str, Dict[str, str]] = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('NAME', 'placement_exams_local'),
-        'USER': os.getenv('USER', 'pe_user'),
-        'PASSWORD': os.getenv('PASSWORD', 'pe_pw'),
-        'HOST': os.getenv('HOST', 'placement_exams_mysql'),
-        'PORT': os.getenv('PORT', '3306')
+        'NAME': os.getenv('DB_NAME', 'placement_exams_local'),
+        'USER': os.getenv('DB_USER', 'pe_user'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'pe_pw'),
+        'HOST': os.getenv('DB_HOST', 'placement_exams_mysql'),
+        'PORT': os.getenv('DB_PORT', '3306')
     }
 }
 

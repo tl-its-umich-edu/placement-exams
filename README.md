@@ -134,7 +134,14 @@ You can also set up the application using `virtualenv` by doing the following:
     pip install -r requirements.txt
     ```
 
-5. Run the application.
+5. Prepare the database by running migrations and loading your fixtures.
+
+    ```sh
+    python manage.py migrate
+    python manage.py loaddata fixtures.json
+    ```
+
+6. Run the application.
 
     ```sh
     python entry.py

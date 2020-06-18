@@ -57,3 +57,6 @@ INSTALLED_APPS: List[str] = [
 ]
 
 SECRET_KEY: str = os.getenv('SECRET_KEY', '-- A SECRET KEY --')
+
+TIME_ZONE: str = os.getenv('TIME_ZONE', 'America/Detroit')
+USE_TZ: bool = True

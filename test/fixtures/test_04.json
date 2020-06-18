@@ -6,10 +6,25 @@
             "submission_id": 123456,
             "exam_id": 1,
             "student_uniqname": "hpotter",
-            "submitted_timestamp": "2020-06-12 08:15:30",
+            "submitted_timestamp": "2020-06-12T08:15:30Z",
+            "graded_timestamp": "2020-06-12T09:30:15Z",
             "score": 100.0,
             "transmitted": true,
-            "transmitted_timestamp": "2020-06-12 12:00:30"
+            "transmitted_timestamp": "2020-06-12T12:00:30Z"
+        }
+    },
+    {
+        "model": "pe.submission",
+        "pk": 2,
+        "fields": {
+            "submission_id": 123457,
+            "exam_id": 1,
+            "student_uniqname": "hgranger",
+            "submitted_timestamp": "2020-06-12T06:07:45Z",
+            "graded_timestamp": "2020-06-12T09:35:00Z",
+            "score": 300.0,
+            "transmitted": true,
+            "transmitted_timestamp": "2020-06-12T12:00:30Z"
         }
     }
 ]

@@ -15,7 +15,8 @@
             "name": "DADA Placement",
             "report_id": 3,
             "course_id": 999999,
-            "assignment_id": 222222
+            "assignment_id": 222222,
+            "default_time_filter": "2020-07-01T00:00:00Z"
         }
     }
 ]

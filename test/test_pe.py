@@ -5,6 +5,8 @@ from datetime import datetime
 # third-party libraries
 from django.core.management import call_command
 from django.test import TestCase
+from django.utils.timezone import utc
+
 
 # Local libraries
 from pe.models import Report, Exam, Submission
@@ -12,7 +14,7 @@ from pe.models import Report, Exam, Submission
 
 LOGGER = logging.getLogger(__name__)
 
-EXAM_FIELDS = ('name', 'report_id', 'sa_code', 'course_id', 'assignment_id')
+EXAM_FIELDS = ('name', 'report_id', 'sa_code', 'course_id', 'assignment_id', 'default_time_filter')
 
 
 class LoadFixturesTestCase(TestCase):
@@ -59,7 +61,8 @@ class LoadFixturesTestCase(TestCase):
                 "report_id": 1,
                 "sa_code": "PP",
                 "course_id": 888888,
-                "assignment_id": 111111
+                "assignment_id": 111111,
+                "default_time_filter": datetime(2020, 6, 1, 0, 0, 0, tzinfo=utc)
             }
         )
 
@@ -75,7 +78,8 @@ class LoadFixturesTestCase(TestCase):
                 "report_id": 1,
                 "sa_code": "PV",
                 "course_id": 888888,
-                "assignment_id": 111112
+                "assignment_id": 111112,
+                "default_time_filter": datetime(2020, 5, 1, 0, 0, 0, tzinfo=utc)
             }
         )
 
@@ -96,10 +100,11 @@ class LoadFixturesTestCase(TestCase):
         self.assertEqual(potions_report.name, 'Placement Potions')
         self.assertEqual(potions_report.contact, 'hslughorn@hogwarts.edu')
 
-        # Test Placement Potions exam name and course_id changed
+        # Test Placement Potions exam name, course_id, and default_time_filter changed
         placement_exam = Exam.objects.get(sa_code='PP')
         self.assertEqual(placement_exam.name, 'Potions Placement Advanced')
         self.assertEqual(placement_exam.course_id, 888889)
+        self.assertEqual(placement_exam.default_time_filter, datetime(2020, 6, 2, 12, 0, 0, tzinfo=utc))
 
         # Test Potions Validation report and assignment_id changed
         validation_exam = Exam.objects.get(name='Potions Validation')
@@ -160,7 +165,8 @@ class LoadFixturesTestCase(TestCase):
                 "name": "DADA Placement",
                 "report_id": 3,
                 "course_id": 999999,
-                "assignment_id": 222222
+                "assignment_id": 222222,
+                "default_time_filter": datetime(2020, 7, 1, 0, 0, 0, tzinfo=utc)
             }
         )
 
@@ -182,7 +188,7 @@ class LoadFixturesTestCase(TestCase):
         if not submission_queryset.exists():
             return None
 
-        submission_dict = submission_queryset.values(
+        submission_dict = submission_queryset.filter(submission_id=123456).values(
             'submission_id', 'exam_id', 'student_uniqname', 'submitted_timestamp', 'score',
             'transmitted', 'transmitted_timestamp'
         )[0]
@@ -192,10 +198,10 @@ class LoadFixturesTestCase(TestCase):
                 "submission_id": 123456,
                 "exam_id": 1,
                 "student_uniqname": "hpotter",
-                "submitted_timestamp": datetime(2020, 6, 12, 8, 15, 30),
+                "submitted_timestamp": datetime(2020, 6, 12, 8, 15, 30, tzinfo=utc),
                 "score": 100.0,
                 "transmitted": True,
-                "transmitted_timestamp": datetime(2020, 6, 12, 12, 0, 30)
+                "transmitted_timestamp": datetime(2020, 6, 12, 12, 0, 30, tzinfo=utc)
             }
         )
 
@@ -232,7 +238,7 @@ class StringMethodsTestCase(TestCase):
             (
                 '(id=1, sa_code=PP, name=Potions Placement, ' +
                 'report=(id=1, name=Potions, contact=halfbloodprince@hogwarts.edu), ' +
-                'course_id=888888, assignment_id=111111)'
+                'course_id=888888, assignment_id=111111, default_time_filter=2020-06-01 00:00:00+00:00)'
             )
         )
 
@@ -249,8 +255,18 @@ class StringMethodsTestCase(TestCase):
                 '(id=1, submission_id=123456, exam=' +
                 '(id=1, sa_code=PP, name=Potions Placement, ' +
                 'report=(id=1, name=Potions, contact=halfbloodprince@hogwarts.edu), ' +
-                'course_id=888888, assignment_id=111111), ' +
-                'student_uniqname=hpotter, submitted_timestamp=2020-06-12 08:15:30, score=100.0, ' +
-                'transmitted=True, transmitted_timestamp=2020-06-12 12:00:30)'
+                'course_id=888888, assignment_id=111111, default_time_filter=2020-06-01 00:00:00+00:00), ' +
+                'student_uniqname=hpotter, submitted_timestamp=2020-06-12 08:15:30+00:00, ' +
+                'graded_timestamp=2020-06-12 09:30:15+00:00, score=100.0, ' +
+                'transmitted=True, transmitted_timestamp=2020-06-12 12:00:30+00:00)'
             )
         )
+
+
+class LastSubmissionDatetimeTestCase(TestCase):
+    fixtures = ['test_01.json', 'test_04.json']
+
+    def test_get_last_sub_graded_datetime_with_submissions(self):
+        potions_exam = Exam.objects.get(id=1)
+        last_sub_graded_dt: datetime = potions_exam.get_last_sub_graded_datetime()
+        self.assertTrue(last_sub_graded_dt, datetime(2020, 6, 12, 12, 0, 30, tzinfo=utc))

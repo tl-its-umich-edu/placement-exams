@@ -1,7 +1,7 @@
 # standard libaries
 import logging
 from datetime import datetime
-from typing import Union
+from typing import Dict, Union
 
 # third-party libraries
 from django.db import models
@@ -13,7 +13,7 @@ LOGGER = logging.getLogger(__name__)
 class Report(models.Model):
     id = models.IntegerField(primary_key=True, verbose_name='Report ID')
     name = models.CharField(max_length=255, verbose_name='Report Name', unique=True)
-    contact = models.CharField(max_length=100, verbose_name='Report Contact Email')
+    contact = models.CharField(max_length=255, verbose_name='Report Contact Email')
 
     def __str__(self):
         return (f'(id={self.id}, name={self.name}, contact={self.contact})')
@@ -36,6 +36,10 @@ class Exam(models.Model):
         )
 
     def get_last_sub_graded_datetime(self) -> Union[datetime, None]:
+        """
+        Return latest graded_timestamp value for an exam's submissions, or None.
+        """
+
         last_graded_dt = None
         sub_ordered_queryset = self.submissions.order_by('-graded_timestamp')
         if sub_ordered_queryset.exists():
@@ -48,7 +52,7 @@ class Submission(models.Model):
     id = models.AutoField(primary_key=True, verbose_name='Submission ID')
     submission_id = models.IntegerField(verbose_name='Canvas Submission ID', unique=True)
     exam = models.ForeignKey(to='Exam', related_name='submissions', on_delete=models.CASCADE)
-    student_uniqname = models.CharField(max_length=50, verbose_name='Student Uniqname')
+    student_uniqname = models.CharField(max_length=255, verbose_name='Student Uniqname')
     submitted_timestamp = models.DateTimeField(verbose_name='Submitted At Date & Time')
     graded_timestamp = models.DateTimeField(verbose_name='Graded At Date & Time')
     score = models.FloatField(verbose_name='Submission Score')
@@ -62,3 +66,15 @@ class Submission(models.Model):
             f'graded_timestamp={self.graded_timestamp}, score={self.score}, transmitted={self.transmitted}, ' +
             f'transmitted_timestamp={self.transmitted_timestamp})'
         )
+
+    def prepare_score(self) -> Dict[str, str]:
+        """
+        Return condensed version of the submission needed by M-Pathways
+        """
+
+        score_dict: Dict[str, str] = {
+            'ID': self.student_uniqname,
+            'Form': self.exam.sa_code,
+            'GradePoints': str(self.score)
+        }
+        return score_dict

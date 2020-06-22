@@ -1,6 +1,7 @@
 # standard libraries
 import logging
 from datetime import datetime
+from typing import List, Tuple
 
 # third-party libraries
 from django.core.management import call_command
@@ -14,7 +15,7 @@ from pe.models import Report, Exam, Submission
 
 LOGGER = logging.getLogger(__name__)
 
-EXAM_FIELDS = ('name', 'report_id', 'sa_code', 'course_id', 'assignment_id', 'default_time_filter')
+EXAM_FIELDS: Tuple[str, ...] = ('name', 'report_id', 'sa_code', 'course_id', 'assignment_id', 'default_time_filter')
 
 
 class LoadFixturesTestCase(TestCase):
@@ -219,7 +220,7 @@ class LoadFixturesTestCase(TestCase):
 
 
 class StringMethodsTestCase(TestCase):
-    fixtures = ['test_01.json', 'test_04.json']
+    fixtures: List[str] = ['test_01.json', 'test_04.json']
 
     def test_report_string_method(self):
         """Report string method should present all variables in the correct format"""
@@ -263,10 +264,22 @@ class StringMethodsTestCase(TestCase):
         )
 
 
-class LastSubmissionDatetimeTestCase(TestCase):
-    fixtures = ['test_01.json', 'test_04.json']
+class CustomMethodsTestCase(TestCase):
+    fixtures: List[str] = ['test_01.json', 'test_04.json']
 
     def test_get_last_sub_graded_datetime_with_submissions(self):
         potions_exam = Exam.objects.get(id=1)
         last_sub_graded_dt: datetime = potions_exam.get_last_sub_graded_datetime()
         self.assertTrue(last_sub_graded_dt, datetime(2020, 6, 12, 12, 0, 30, tzinfo=utc))
+
+    def test_submission_prepare_score(self):
+        sub_two: Submission = Submission.objects.get(submission_id=123457)
+
+        self.assertEqual(
+            sub_two.prepare_score(),
+            {
+                'ID': 'hgranger',
+                'Form': 'PP',
+                'GradePoints': '300.0'
+            }
+        )

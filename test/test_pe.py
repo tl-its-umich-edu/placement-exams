@@ -1,13 +1,12 @@
 # standard libraries
 import logging
 from datetime import datetime
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 # third-party libraries
 from django.core.management import call_command
 from django.test import TestCase
 from django.utils.timezone import utc
-
 
 # Local libraries
 from pe.models import Report, Exam, Submission
@@ -261,15 +260,23 @@ class StringMethodsTestCase(TestCase):
 
 
 class CustomMethodsTestCase(TestCase):
-    fixtures: List[str] = ['test_01.json', 'test_04.json']
+    fixtures: List[str] = ['test_01.json', 'test_03.json', 'test_04.json']
 
     def test_get_last_sub_graded_datetime_with_submissions(self):
         """
         Exam.get_last_sub_graded_datetime returns the latest graded_timestamp when submissions are present.
         """
         potions_exam = Exam.objects.get(id=1)
-        last_sub_graded_dt: datetime = potions_exam.get_last_sub_graded_datetime()
+        last_sub_graded_dt: Union[datetime, None] = potions_exam.get_last_sub_graded_datetime()
         self.assertTrue(last_sub_graded_dt, datetime(2020, 6, 12, 12, 0, 30, tzinfo=utc))
+
+    def test_get_last_sub_graded_datetime_without_submissions(self):
+        """
+        Exam.get_last_sub_graded_datetime returns None when no submissions are present.
+        """
+        dada_place_exam = Exam.objects.get(id=3)
+        last_sub_graded_dt: Union[datetime, None] = dada_place_exam.get_last_sub_graded_datetime()
+        self.assertIsNone(last_sub_graded_dt)
 
     def test_submission_prepare_score(self):
         """

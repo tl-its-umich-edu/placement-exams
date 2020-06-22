@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Union
 
 # third-party libraries
+from django.db.models import QuerySet
 from django.utils.timezone import utc
 from requests import Response
 from umich_api.api_utils import ApiUtil
@@ -71,7 +72,7 @@ class ScoresOrchestration:
         LOGGER.debug(f'params for request: {next_params}')
         while more_pages:
             LOGGER.debug(f'Page number {page_num}')
-            response = api_call_with_retries(
+            response: Union[Response, None] = api_call_with_retries(
                 self.api_handler,
                 get_subs_url,
                 CANVAS_SCOPE,
@@ -81,7 +82,7 @@ class ScoresOrchestration:
             if response is not None:
                 sub_dicts += json.loads(response.text)
 
-            page_info = self.api_handler.get_next_page(response)
+            page_info: Dict[str, Any] = self.api_handler.get_next_page(response)
             LOGGER.debug(page_info)
             if not page_info:
                 more_pages = False
@@ -124,11 +125,10 @@ class ScoresOrchestration:
         """
         send_scores_url: str = 'aa/SpanishPlacementScores/Scores'
 
-        payload = {'putPlcExamScore': {'Student': scores_to_send}}
+        payload: Dict[str, Any] = {'putPlcExamScore': {'Student': scores_to_send}}
 
-        json_payload = json.dumps(payload)
+        json_payload: str = json.dumps(payload)
         LOGGER.debug(json_payload)
-        LOGGER.debug(MPATHWAYS_SCOPE)
 
         extra_headers = [{'Content-Type': 'application/json'}]
 
@@ -144,7 +144,7 @@ class ScoresOrchestration:
             LOGGER.error(e)
             LOGGER.error(f'The bulk upload with the following payload failed: {payload}')
 
-        resp_data = json.loads(response.text)
+        resp_data: Dict[str, Any] = json.loads(response.text)
         LOGGER.debug(resp_data)
         return resp_data
 
@@ -161,17 +161,28 @@ class ScoresOrchestration:
         results: Dict[str, Any] = resp_data[schema_name][schema_name]
 
         if results['BadCount'] > 0:
-            LOGGER.warning(f"{results['BadCount']} record errors were found: {results['Errors']}")
+            LOGGER.warning(f"Discovered {results['BadCount']} record error(s): {results['Errors']}")
 
-        success_uniqnames = [success_dict['uniqname'] for success_dict in results['Success']]
-        num_success = len(success_uniqnames)
+        # Hope this can be simplified in the future if API response data can be made to use consistent types
+        if results['GoodCount'] > 1:
+            success_uniqnames: List[str] = [success_dict['uniqname'] for success_dict in results['Success']]
+        elif results['GoodCount'] == 1:
+            success_uniqnames = [results['Success']['uniqname']]
+        else:
+            success_uniqnames = []
+        num_success: int = len(success_uniqnames)
+
         if len(success_uniqnames) == 0:
             LOGGER.warning('No scores were transmitted successfully.')
         else:
-            timestamp = datetime.now(tz=utc)
-            subs_to_update_qs = Submission.object.filter(transmitted=False, student_uniqname__in=success_uniqnames)
+            timestamp: datetime = datetime.now(tz=utc)
+            subs_to_update_qs: QuerySet = Submission.objects.filter(
+                exam=self.exam,
+                transmitted=False,
+                student_uniqname__in=success_uniqnames
+            )
             subs_to_update_qs.update(transmitted=True, transmitted_timestamp=timestamp)
-            LOGGER.info(f'Transmitted {num_success} scores successfully; Submission records have been updated')
+            LOGGER.info(f'Transmitted {num_success} score(s) and updated submission record(s)')
         return None
 
     def main(self) -> None:
@@ -184,9 +195,9 @@ class ScoresOrchestration:
         LOGGER.info(f'Processing Exam: {self.exam.name}')
         self.get_subs_for_exam()
 
-        sub_to_transmit_qs = Submission.objects.filter(transmitted=False)
+        sub_to_transmit_qs: QuerySet = Submission.objects.filter(transmitted=False)
 
-        redo_subs = list(sub_to_transmit_qs.filter(graded_timestamp__lt=self.sub_time_filter))
+        redo_subs: List[Submission] = list(sub_to_transmit_qs.filter(graded_timestamp__lt=self.sub_time_filter))
         if len(redo_subs) > 0:
             LOGGER.info(f'Will try to re-send {len(redo_subs)} previously un-transmitted submissions')
             LOGGER.info(redo_subs)

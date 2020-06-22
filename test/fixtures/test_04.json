@@ -26,5 +26,47 @@
             "transmitted": true,
             "transmitted_timestamp": "2020-06-12T12:00:30Z"
         }
+    },
+    {
+        "model": "pe.submission",
+        "pk": 3,
+        "fields": {
+            "submission_id": 123458,
+            "exam_id": 1,
+            "student_uniqname": "rweasley",
+            "submitted_timestamp": "2020-06-12T12:50:07Z",
+            "graded_timestamp": "2020-06-12T16:00:00Z",
+            "score": 150.0,
+            "transmitted": false,
+            "transmitted_timestamp": null
+        }
+    },
+    {
+        "model": "pe.submission",
+        "pk": 4,
+        "fields": {
+            "submission_id": 123460,
+            "exam_id": 1,
+            "student_uniqname": "nlongbottom",
+            "submitted_timestamp": "2020-06-12T13:05:01Z",
+            "graded_timestamp": "2020-06-12T16:03:00Z",
+            "score": 300.0,
+            "transmitted": false,
+            "transmitted_timestamp": null
+        }
+    },
+    {
+        "model": "pe.submission",
+        "pk": 5,
+        "fields": {
+            "submission_id": 210000,
+            "exam_id": 2,
+            "student_uniqname": "rweasley",
+            "submitted_timestamp": "2020-06-13T10:05:00Z",
+            "graded_timestamp": "2020-06-13T20:05:17Z",
+            "score": 150.0,
+            "transmitted": false,
+            "transmitted_timestamp": null
+        }
     }
 ]

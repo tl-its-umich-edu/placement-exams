@@ -38,8 +38,10 @@ class Exam(models.Model):
     def get_last_sub_graded_datetime(self) -> Union[datetime, None]:
         """
         Return latest graded_timestamp value for an exam's submissions, or None.
-        """
 
+        :return: Either a datetime object or null.
+        :rtype: datetime.datetime or None
+        """
         last_graded_dt = None
         sub_ordered_queryset = self.submissions.order_by('-graded_timestamp')
         if sub_ordered_queryset.exists():
@@ -69,9 +71,11 @@ class Submission(models.Model):
 
     def prepare_score(self) -> Dict[str, str]:
         """
-        Return condensed version of the submission needed by M-Pathways
-        """
+        Return condensed version of the submission needed by M-Pathways.
 
+        :return: Dictionary with strings for keys and values.
+        :rtype: dictionary
+        """
         score_dict: Dict[str, str] = {
             'ID': self.student_uniqname,
             'Form': self.exam.sa_code,

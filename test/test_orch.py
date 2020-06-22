@@ -34,7 +34,6 @@ class OrchestrationTestCase(TestCase):
         Correctly assigns datetime of last graded submission to Orchestration.filter when
         an exam has more than one previous submission
         """
-
         place_exam = Exam.objects.filter(name='Potions Placement').first()
 
         some_orca = ScoresOrchestration(self.api_handler, place_exam)
@@ -47,7 +46,6 @@ class OrchestrationTestCase(TestCase):
         Correctly assigns the exam's default_time_filter value to Orchestration.filter when the
         exam has no previous submissions
         """
-
         val_exam = Exam.objects.filter(name='Potions Validation').first()
 
         some_orca = ScoresOrchestration(self.api_handler, val_exam)

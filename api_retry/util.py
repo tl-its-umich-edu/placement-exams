@@ -38,7 +38,6 @@ def api_call_with_retries(
     :return: Either a Response object or None
     :rtype: Response or None
     """
-
     if payload is None:
         request_payload = dict()
     else:

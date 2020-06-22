@@ -54,7 +54,6 @@ class ScoresOrchestration:
         :return: None
         :rtype: None
         """
-
         get_subs_url: str = f'aa/CanvasReadOnly/courses/{self.exam.course_id}/students/submissions'
 
         canvas_params: Dict[str, Any] = {
@@ -159,7 +158,6 @@ class ScoresOrchestration:
         :return: None
         :rtype: None
         """
-
         schema_name: str = 'putPlcExamScoreResponse'
         results: Dict[str, Any] = resp_data[schema_name][schema_name]
 
@@ -184,7 +182,6 @@ class ScoresOrchestration:
         :return: None
         :rtype: None
         """
-
         LOGGER.info(f'Processing Exam: {self.exam.name}')
         self.get_subs_for_exam()
 

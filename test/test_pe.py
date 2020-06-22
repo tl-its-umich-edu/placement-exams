@@ -23,9 +23,9 @@ class LoadFixturesTestCase(TestCase):
     def test_fixtures_load_when_db_is_empty(self):
         """
         Loading fixtures results in new model instances when the database is empty.
+
         This tests the creation of Report and Exam models using the loaddata command.
         """
-
         call_command('loaddata', 'test_01.json')
 
         # Test Potions report loaded
@@ -87,10 +87,10 @@ class LoadFixturesTestCase(TestCase):
     def test_fixtures_load_updates_when_data_in_db(self):
         """
         Loading fixtures results in updated model instances.
+
         The assertions test whether all change-able properties of Report (everything but id) and
         Exam (everything but sa_code) are properly updated. This test assumes the prior test case succeeded.
         """
-
         # Load previous test's fixtures
         call_command('loaddata', 'test_01.json')
 
@@ -121,9 +121,9 @@ class LoadFixturesTestCase(TestCase):
     def test_fixtures_load_adds_data_when_data_in_db(self):
         """
         Loading brand new fixtures results in new objects while previous ones remain in the database.
+        
         This test assumes the previous test case succeeded.
         """
-
         # Load previous test's fixtures
         call_command('loaddata', 'test_02.json')
 
@@ -174,9 +174,9 @@ class LoadFixturesTestCase(TestCase):
     def test_fixtures_load_maintains_submission_link(self):
         """
         Loading submission and updating related exam results in maintained relationship.
+
         This test assumes the first two test cases succeeded.
         """
-
         # Load first test's fixtures
         call_command('loaddata', 'test_01.json')
 
@@ -223,16 +223,14 @@ class StringMethodsTestCase(TestCase):
     fixtures: List[str] = ['test_01.json', 'test_04.json']
 
     def test_report_string_method(self):
-        """Report string method should present all variables in the correct format"""
-
+        """Report string method presents all variables in the correct format."""
         potions_report = Report.objects.get(id=1)
         self.assertEqual(potions_report.__str__(), '(id=1, name=Potions, contact=halfbloodprince@hogwarts.edu)')
 
     def test_exam_string_method(self):
         """
-        Exam string method should present all variables, and nested Report object, in the correct format.
+        Exam string method presents all variables, and nested Report object, in the correct format.
         """
-
         potions_exam = Exam.objects.get(id=1)
         self.assertEqual(
             potions_exam.__str__(),
@@ -245,10 +243,8 @@ class StringMethodsTestCase(TestCase):
 
     def test_submission_string_method(self):
         """
-        Submission string method should present all variables, and nested Exam and Report objects, in the
-        correct format.
+        Submission string method presents all variables (and Exam and Report objects), in the correct format.
         """
-
         potions_submission = Submission.objects.get(id=1)
         self.assertEqual(
             potions_submission.__str__(),
@@ -268,11 +264,17 @@ class CustomMethodsTestCase(TestCase):
     fixtures: List[str] = ['test_01.json', 'test_04.json']
 
     def test_get_last_sub_graded_datetime_with_submissions(self):
+        """
+        Exam.get_last_sub_graded_datetime returns the latest graded_timestamp when submissions are present.
+        """
         potions_exam = Exam.objects.get(id=1)
         last_sub_graded_dt: datetime = potions_exam.get_last_sub_graded_datetime()
         self.assertTrue(last_sub_graded_dt, datetime(2020, 6, 12, 12, 0, 30, tzinfo=utc))
 
     def test_submission_prepare_score(self):
+        """
+        Submission.prepare_score returns proper score dictionary for submission.
+        """
         sub_two: Submission = Submission.objects.get(submission_id=123457)
 
         self.assertEqual(

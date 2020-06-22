@@ -21,8 +21,7 @@ class ScoresOrchestration:
 
     def __init__(self, api_handler: ApiUtil, exam: Exam) -> None:
         """
-        Assign the ApiUtil instance and the exam as instance variables, and then determine the filter value
-        based on exam.default_time_filter and preexisting submissions, if any.
+        Set the ApiUtil instance and exam as instance variables, then determine the sub_time_filter value.
         
         :param api_handler: Instance of ApiUtil for making API calls
         :type api_handler: ApiUtil
@@ -49,7 +48,7 @@ class ScoresOrchestration:
 
     def get_subs_for_exam(self) -> None:
         """
-        Get the graded submissions for self.exam using paging, and then store the results in the database
+        Get the graded submissions for self.exam using paging, and then store the results in the database.
 
         :return: None
         :rtype: None
@@ -116,7 +115,7 @@ class ScoresOrchestration:
 
     def send_scores(self, scores_to_send: List[Dict[str, str]]) -> Dict[str, Any]:
         """
-        Send student scores in bulk for exam to M-Pathways
+        Send student scores in bulk for exam to M-Pathways.
 
         :param scores_to_send: list of dictionaries with key-value pairs for ID, Form, and GradePoints
         :type scores_to_send: list of dictionaries

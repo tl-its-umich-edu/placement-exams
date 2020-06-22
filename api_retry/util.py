@@ -21,8 +21,8 @@ def api_call_with_retries(
 ) -> Union[Response, None]:
     """
     Pulls data from the UM API Directory, handling errors and retrying if necessary.
-    When a maximum number of request attempts is reached, the function logs an error and returns None.
 
+    When the maximum number of request attempts is reached, the function logs an error and returns None.
     :param api_handler: Instance of ApiUtil
     :type api_handler: ApiUtil
     :param url: URL ending for request

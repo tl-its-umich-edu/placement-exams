@@ -16,11 +16,11 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOGGER = logging.getLogger(__name__)
 
 
-class OrchestrationTestCase(TestCase):
+class ScoresOrchestrationTestCase(TestCase):
     fixtures: List[str] = ['test_01.json', 'test_04.json']
 
     def setUp(self):
-
+        """Set up ApiUtil instance to be used by all ScoresOrchestration tests."""
         # Does this kind of thing need to be wrapped in a try/execpt?
         self.api_handler: ApiUtil = ApiUtil(
             os.getenv('API_DIR_URL', ''),
@@ -31,8 +31,7 @@ class OrchestrationTestCase(TestCase):
 
     def test_constructor_uses_latest_graded_dt_when_multiple_subs(self):
         """
-        Correctly assigns datetime of last graded submission to Orchestration.filter when
-        an exam has more than one previous submission
+        Assigns datetime of last graded submission to sub_time_filter when exam has more than one previous submission.
         """
         place_exam = Exam.objects.filter(name='Potions Placement').first()
 
@@ -43,8 +42,7 @@ class OrchestrationTestCase(TestCase):
 
     def test_constructor_uses_default_filter_when_no_subs(self):
         """
-        Correctly assigns the exam's default_time_filter value to Orchestration.filter when the
-        exam has no previous submissions
+        Assigns the exam's default_time_filter value to sub_time_filter when the exam has no previous submissions.
         """
         val_exam = Exam.objects.filter(name='Potions Validation').first()
 

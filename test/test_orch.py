@@ -1,7 +1,9 @@
 # standard libraries
-import logging, os
+import json, logging, os
 from datetime import datetime
 from typing import Any, Dict, List, Tuple
+from unittest.mock import Mock, patch
+from urllib.parse import quote_plus
 
 # third-party libraries
 from django.db.models import QuerySet
@@ -10,6 +12,7 @@ from django.utils.timezone import utc
 from umich_api.api_utils import ApiUtil
 
 # local libraries
+from constants import ISO8601_FORMAT
 from pe.models import Exam, Submission
 from pe.orchestration import ScoresOrchestration
 
@@ -30,13 +33,16 @@ class ScoresOrchestrationTestCase(TestCase):
             os.path.join(ROOT_DIR, 'config', 'apis.json')
         )
 
+        with open(os.path.join(ROOT_DIR, 'test', 'test_canvas_subs.json'), 'r') as test_canvas_subs_file:
+            self.canvas_submissions = json.loads(test_canvas_subs_file.read())
+
     def test_constructor_uses_latest_graded_dt_when_multiple_subs(self):
         """
         Assigns datetime of last graded submission to sub_time_filter when exam has more than one previous submission.
         """
-        potions_place_exam = Exam.objects.filter(name='Potions Placement').first()
+        potions_place_exam: Exam = Exam.objects.filter(name='Potions Placement').first()
 
-        some_orca = ScoresOrchestration(self.api_handler, potions_place_exam)
+        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_place_exam)
 
         # Extra second for standard one-second increment
         self.assertEqual(some_orca.sub_time_filter, datetime(2020, 6, 12, 16, 3, 1, tzinfo=utc))
@@ -45,7 +51,7 @@ class ScoresOrchestrationTestCase(TestCase):
         """
         Assigns the exam's default_time_filter value to sub_time_filter when the exam has no previous submissions.
         """
-        dada_place_exam = Exam.objects.filter(name='DADA Placement').first()
+        dada_place_exam: Exam = Exam.objects.filter(name='DADA Placement').first()
 
         some_orca = ScoresOrchestration(self.api_handler, dada_place_exam)
         self.assertEqual(some_orca.sub_time_filter, datetime(2020, 7, 1, 0, 0, 0, tzinfo=utc))
@@ -78,9 +84,9 @@ class ScoresOrchestrationTestCase(TestCase):
                 }
             }
         }
-        place_exam = Exam.objects.filter(name='Potions Placement').first()
+        place_exam: Exam = Exam.objects.filter(name='Potions Placement').first()
 
-        some_orca = ScoresOrchestration(self.api_handler, place_exam)
+        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, place_exam)
         some_orca.update_sub_records(resp_data)
 
         self.assertEqual(len(Submission.objects.filter(exam=place_exam, transmitted=True)), 4)
@@ -119,9 +125,9 @@ class ScoresOrchestrationTestCase(TestCase):
             }
         }
 
-        place_exam = Exam.objects.filter(name='Potions Placement').first()
+        place_exam: Exam = Exam.objects.filter(name='Potions Placement').first()
 
-        some_orca = ScoresOrchestration(self.api_handler, place_exam)
+        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, place_exam)
         some_orca.update_sub_records(resp_data)
 
         self.assertEqual(len(Submission.objects.filter(exam=place_exam, transmitted=True)), 3)
@@ -135,8 +141,72 @@ class ScoresOrchestrationTestCase(TestCase):
         # Ensure un-transmitted submission for another exam with the same uniqname (rweasley) was not updated.
         self.assertFalse(Submission.objects.get(submission_id=210000).transmitted)
 
-    # Mocks needed?
-    # def test_get_subs_for_exam(self):
+    def test_get_sub_dicts_for_exam_with_null_response(self):
+        """
+        get_sub_dicts_for_exam stops collecting data and paginating if api_call_with_retries returns None.
+        """
+        potions_val_exam: Exam = Exam.objects.get(id=2)
+        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_val_exam)
+
+        with patch('pe.orchestration.api_call_with_retries') as mock_retry_func:
+            mock_retry_func.return_value = None
+            sub_dicts = some_orca.get_sub_dicts_for_exam()
+
+        self.assertEqual(mock_retry_func.call_count, 1)
+        self.assertEqual(len(sub_dicts), 0)
+
+    def test_get_sub_dicts_for_exam_with_one_page(self):
+        """
+        get_sub_dicts_for_exam collects one page of submission data and then stops.
+        """
+        potions_val_exam: Exam = Exam.objects.get(id=2)
+        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_val_exam)
+
+        canvas_submissions: List[Dict[str, Any]] = [self.canvas_submissions[0]]
+
+        with patch('pe.orchestration.api_call_with_retries') as mock_retry_func:
+            mock_retry_func.return_value = Mock(
+                ok=True, links={}, text=json.dumps(canvas_submissions)
+            )
+            sub_dicts = some_orca.get_sub_dicts_for_exam()
+
+        self.assertEqual(mock_retry_func.call_count, 1)
+        self.assertTrue(len(sub_dicts), 1)
+        self.assertEqual(sub_dicts[0], canvas_submissions[0])
+
+    def test_get_sub_dicts_for_exam_with_multiple_pages(self):
+        """
+        get_sub_dicts_for_exam collects submission data across two pages.
+        """
+        potions_val_exam = Exam.objects.get(id=2)
+        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_val_exam)
+
+        first_links: Dict[str, Any] = {
+            # This is probably more elaborate than it needs to be, but this way the DEBUG log message of
+            # page_info will show parameters that make sense in this context.
+            'next': {
+                'url': (
+                    f'https://apigw-tst.it.umich.edu/um/aa/CanvasReadOnly/courses/{some_orca.exam.course_id}' +
+                    f'/students/submissions?assignment_ids={some_orca.exam.assignment_id}' +
+                    f'&graded_since={quote_plus(some_orca.sub_time_filter.strftime(ISO8601_FORMAT))}&include=user' +
+                    '&student_ids=all&page=bookmark:SomeBookmark&per_page=1'
+                ),
+                'rel': 'next'
+            }
+        }
+
+        mocks: List[Mock] = [
+            Mock(ok=True, links=first_links, text=json.dumps(self.canvas_submissions[0:1])),
+            Mock(ok=True, links={}, text=json.dumps(self.canvas_submissions[1:]))
+        ]
+
+        with patch('pe.orchestration.api_call_with_retries') as mock_retry_func:
+            mock_retry_func.side_effect = mocks
+            sub_dicts = some_orca.get_sub_dicts_for_exam(1)
+
+        self.assertTrue(mock_retry_func.call_count, 2)
+        self.assertTrue(len(sub_dicts), 2)
+        self.assertEqual(sub_dicts, self.canvas_submissions)
 
     # Mocks needed?
     # def test_send_scores(self):

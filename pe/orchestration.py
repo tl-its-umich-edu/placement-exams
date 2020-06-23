@@ -47,19 +47,21 @@ class ScoresOrchestration:
 
         self.sub_time_filter: datetime = sub_time_filter
 
-    def get_subs_for_exam(self) -> None:
+    def get_sub_dicts_for_exam(self, page_size: int = 50) -> List[Dict[str, Any]]:
         """
         Get the graded submissions for self.exam using paging, and then store the results in the database.
 
-        :return: None
-        :rtype: None
+        :param page_size: How many results from Canvas to include per page
+        :type page_size: int, optional (default is 50)
+        :return: List of submission dictionaries from Canvas based on parameters in get_sub_dicts_for_exam
+        :rtype: List of dictionaries with string keys
         """
         get_subs_url: str = f'aa/CanvasReadOnly/courses/{self.exam.course_id}/students/submissions'
 
         canvas_params: Dict[str, Any] = {
             'student_ids': ['all'],
             'assignment_ids': [str(self.exam.assignment_id)],
-            'per_page': '50',  # This might be a more reasonable data quantity for a cycle?
+            'per_page': page_size,
             'include': ['user'],
             'graded_since': self.sub_time_filter.strftime(ISO8601_FORMAT)
         }
@@ -90,9 +92,19 @@ class ScoresOrchestration:
                 next_params = page_info
                 page_num += 1
     
-        # Write data to DB
+        LOGGER.info(f'Gathered {len(sub_dicts)} submissions from Canvas')
+        LOGGER.debug(sub_dicts)
+        return sub_dicts
+
+    def create_sub_records(self, sub_dicts: List[Dict[str, Any]]) -> None:
+        """
+        Parses Canvas submission records and write them to the database.
+
+        :return sub_dicts: Dictionary results of Canvas API search in get_sub_dicts_for_exam
+        :type sub_dicts: List of dictionaries with string keys
+        """
         if len(sub_dicts) == 0:
-            LOGGER.info(f'No new submissions found for exam {self.exam.name}')
+            LOGGER.info('No sub_dicts were provided')
         else:
             try:
                 Submission.objects.bulk_create(
@@ -109,7 +121,7 @@ class ScoresOrchestration:
                         for sub_dict in sub_dicts
                     ]
                 )
-                LOGGER.info(f'Inserted {len(sub_dicts)} new Submission records in the DB')
+                LOGGER.info(f'Inserted {len(sub_dicts)} new Submission records in the database')
             except Exception as e:
                 LOGGER.error(e)
                 LOGGER.error('Submissions bulk creation failed')
@@ -121,7 +133,7 @@ class ScoresOrchestration:
         :param scores_to_send: list of dictionaries with key-value pairs for ID, Form, and GradePoints
         :type scores_to_send: list of dictionaries
         :return: Dictionary of response data return from M-Pathways
-        :rtype: dictionary
+        :rtype: Dictionary with string keys
         """
         send_scores_url: str = 'aa/SpanishPlacementScores/Scores'
 
@@ -150,10 +162,10 @@ class ScoresOrchestration:
 
     def update_sub_records(self, resp_data: Dict[str, Any]) -> None:
         """
-        Interpret results of sending scores and update Submissions with successfully transmitted scores.
+        Interpret results of sending scores and update Submissions when scores were successfully transmitted.
         
         :param resp_data: Dictionary containing response data from the M-Pathways API endpoint
-        :type resp_data: list of dictionaries
+        :type resp_data: List of dictionaries
         :return: None
         :rtype: None
         """
@@ -176,8 +188,7 @@ class ScoresOrchestration:
             LOGGER.warning('No scores were transmitted successfully.')
         else:
             timestamp: datetime = datetime.now(tz=utc)
-            subs_to_update_qs: QuerySet = Submission.objects.filter(
-                exam=self.exam,
+            subs_to_update_qs: QuerySet = self.exam.submissions.filter(
                 transmitted=False,
                 student_uniqname__in=success_uniqnames
             )
@@ -187,23 +198,32 @@ class ScoresOrchestration:
 
     def main(self) -> None:
         """
-        High-level process function for class. Pulls Canvas data, sends data, and logs activity in the database.
+        High-level process method for class. Pulls Canvas data, sends data, and logs activity in the database.
         
         :return: None
         :rtype: None
         """
         LOGGER.info(f'Processing Exam: {self.exam.name}')
-        self.get_subs_for_exam()
 
-        sub_to_transmit_qs: QuerySet = Submission.objects.filter(transmitted=False)
+        # Fetch submission data from Canvas API and store it in the database
+        sub_dicts: List[Dict[str, Any]] = self.get_sub_dicts_for_exam()
+        self.create_sub_records(sub_dicts)
 
+        # Find old and new submissions for exam to send to M-Pathways.
+        sub_to_transmit_qs: QuerySet = self.exam.submissions.filter(transmitted=False)
+        subs_to_transmit: List[Submission] = list(sub_to_transmit_qs.all())
+
+        # Identify old submissions for debugging purposes
         redo_subs: List[Submission] = list(sub_to_transmit_qs.filter(graded_timestamp__lt=self.sub_time_filter))
         if len(redo_subs) > 0:
             LOGGER.info(f'Will try to re-send {len(redo_subs)} previously un-transmitted submissions')
-            LOGGER.info(redo_subs)
+            if len(redo_subs) > 10:
+                LOGGER.debug(f'First 10 previously un-transmitted submissions: {redo_subs}')
+            else:
+                LOGGER.debug(f'All previously un-transmitted submissions: {redo_subs}')
 
-        # subs_to_transmit: List[Submission] = list(sub_to_transmit_qs.all())
-        # score_dicts: List[Dict[str, str]] = [sub.prepare_score() for sub in subs_to_transmit]
-        # resp_data: Dict[str, Any] = self.send_scores(score_dicts)
-        # self.update_sub_records(resp_data)
+        # Send data to M-Pathways and update submission records in database
+        score_dicts: List[Dict[str, str]] = [sub.prepare_score() for sub in subs_to_transmit]
+        resp_data: Dict[str, Any] = self.send_scores(score_dicts)
+        self.update_sub_records(resp_data)
         return None

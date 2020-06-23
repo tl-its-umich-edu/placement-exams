@@ -81,16 +81,18 @@ class ScoresOrchestration:
                 'GET',
                 next_params
             )
-            if response is not None:
-                sub_dicts += json.loads(response.text)
-
-            page_info: Dict[str, Any] = self.api_handler.get_next_page(response)
-            LOGGER.debug(page_info)
-            if not page_info:
+            if response is None:
+                LOGGER.info('api_call_with_retries failed to get a response; no more data will be collected')
                 more_pages = False
             else:
-                next_params = page_info
-                page_num += 1
+                sub_dicts += json.loads(response.text)
+                page_info: Union[None, Dict[str, Any]] = self.api_handler.get_next_page(response)
+                LOGGER.debug(page_info)
+                if not page_info:
+                    more_pages = False
+                else:
+                    next_params = page_info
+                    page_num += 1
     
         LOGGER.info(f'Gathered {len(sub_dicts)} submissions from Canvas')
         LOGGER.debug(sub_dicts)
@@ -203,9 +205,10 @@ class ScoresOrchestration:
         :return: None
         :rtype: None
         """
-        # Fetch submission data from Canvas API and store it in the database
+        # Fetch data from Canvas API and store as submission records in the database
         sub_dicts: List[Dict[str, Any]] = self.get_sub_dicts_for_exam()
-        self.create_sub_records(sub_dicts)
+        if len(sub_dicts) > 0:
+            self.create_sub_records(sub_dicts)
 
         # Find old and new submissions for exam to send to M-Pathways.
         sub_to_transmit_qs: QuerySet = self.exam.submissions.filter(transmitted=False)

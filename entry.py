@@ -62,6 +62,7 @@ def main():
     logging.info(exams)
 
     for exam in exams:
+        LOGGER.info(f'Processing Exam: {exam.name}')
         exam_orca: ScoresOrchestration = ScoresOrchestration(API_UTIL, exam)
         exam_orca.main()
 

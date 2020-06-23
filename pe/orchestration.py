@@ -203,8 +203,6 @@ class ScoresOrchestration:
         :return: None
         :rtype: None
         """
-        LOGGER.info(f'Processing Exam: {self.exam.name}')
-
         # Fetch submission data from Canvas API and store it in the database
         sub_dicts: List[Dict[str, Any]] = self.get_sub_dicts_for_exam()
         self.create_sub_records(sub_dicts)
@@ -224,6 +222,10 @@ class ScoresOrchestration:
 
         # Send data to M-Pathways and update submission records in database
         score_dicts: List[Dict[str, str]] = [sub.prepare_score() for sub in subs_to_transmit]
-        resp_data: Dict[str, Any] = self.send_scores(score_dicts)
-        self.update_sub_records(resp_data)
+        if len(score_dicts) > 0:
+            resp_data: Dict[str, Any] = self.send_scores(score_dicts)
+            self.update_sub_records(resp_data)
+        else:
+            LOGGER.info(f'No scores for {self.exam.name} exam need to be transmitted')
+
         return None

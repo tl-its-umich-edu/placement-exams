@@ -10,7 +10,7 @@ from requests import Response
 from umich_api.api_utils import ApiUtil
 
 # local libraries
-from api_retry.util import api_call_with_retries
+from api_retry.util import api_call_with_retries, check_if_response_successful
 from constants import CANVAS_SCOPE, ISO8601_FORMAT, MPATHWAYS_SCOPE
 from pe.models import Exam, Submission
 
@@ -19,6 +19,10 @@ LOGGER = logging.getLogger(__name__)
 
 
 class ScoresOrchestration:
+    """
+    Utility class for orchestrating the gathering and sending of submission-related data for an exam.
+    Submission records are stored in the database and updated according to the results.
+    """
 
     def __init__(self, api_handler: ApiUtil, exam: Exam) -> None:
         """
@@ -34,7 +38,6 @@ class ScoresOrchestration:
         self.api_handler: ApiUtil = api_handler
         self.exam: Exam = exam
 
-        # Determine sub_time_filter
         last_sub_dt: Union[None, datetime] = self.exam.get_last_sub_graded_datetime()
         if last_sub_dt is None:
             LOGGER.info('No previous submissions found for exam.')
@@ -43,13 +46,14 @@ class ScoresOrchestration:
         else:
             # Increment datetime by one second for filter
             sub_time_filter = last_sub_dt + timedelta(seconds=1)
-            LOGGER.info(f'Setting submission time filter to last graded_at value plus one second: {sub_time_filter}')
-
+            LOGGER.info(
+                f'Setting submission time filter to last graded_timestamp value plus one second: {sub_time_filter}'
+            )
         self.sub_time_filter: datetime = sub_time_filter
 
     def get_sub_dicts_for_exam(self, page_size: int = 50) -> List[Dict[str, Any]]:
         """
-        Get the graded submissions for self.exam using paging, and then store the results in the database.
+        Get the graded submissions for the exam using paging, and then store the results in the database.
 
         :param page_size: How many results from Canvas to include per page
         :type page_size: int, optional (default is 50)
@@ -128,7 +132,7 @@ class ScoresOrchestration:
                 LOGGER.error(e)
                 LOGGER.error('Submissions bulk creation failed')
 
-    def send_scores(self, scores_to_send: List[Dict[str, str]]) -> Dict[str, Any]:
+    def send_scores(self, scores_to_send: List[Dict[str, str]]) -> Union[Dict[str, Any], None]:
         """
         Send student scores in bulk for exam to M-Pathways.
 
@@ -146,17 +150,18 @@ class ScoresOrchestration:
 
         extra_headers = [{'Content-Type': 'application/json'}]
 
-        try:
-            response: Response = self.api_handler.api_call(
-                send_scores_url,
-                MPATHWAYS_SCOPE,
-                'PUT',
-                payload=json_payload,
-                api_specific_headers=extra_headers
-            )
-        except Exception as e:
-            LOGGER.error(e)
-            LOGGER.error(f'The bulk upload with the following payload failed: {payload}')
+        response: Response = self.api_handler.api_call(
+            send_scores_url,
+            MPATHWAYS_SCOPE,
+            'PUT',
+            payload=json_payload,
+            api_specific_headers=extra_headers
+        )
+
+        if not check_if_response_successful(response):
+            LOGGER.error('There is a problem with the response; refer to the logs')
+            LOGGER.info('No records will be updated in the database')
+            return None
 
         resp_data: Dict[str, Any] = json.loads(response.text)
         LOGGER.debug(resp_data)
@@ -190,6 +195,7 @@ class ScoresOrchestration:
             LOGGER.warning('No scores were transmitted successfully.')
         else:
             timestamp: datetime = datetime.now(tz=utc)
+            # What happens if there are two submissions with the same uniqname for the same exam?
             subs_to_update_qs: QuerySet = self.exam.submissions.filter(
                 transmitted=False,
                 student_uniqname__in=success_uniqnames
@@ -219,15 +225,16 @@ class ScoresOrchestration:
         if len(redo_subs) > 0:
             LOGGER.info(f'Will try to re-send {len(redo_subs)} previously un-transmitted submissions')
             if len(redo_subs) > 10:
-                LOGGER.debug(f'First 10 previously un-transmitted submissions: {redo_subs}')
+                LOGGER.debug(f'First 10 previously un-transmitted submissions: {redo_subs[:10]}')
             else:
                 LOGGER.debug(f'All previously un-transmitted submissions: {redo_subs}')
 
         # Send data to M-Pathways and update submission records in database
         score_dicts: List[Dict[str, str]] = [sub.prepare_score() for sub in subs_to_transmit]
         if len(score_dicts) > 0:
-            resp_data: Dict[str, Any] = self.send_scores(score_dicts)
-            self.update_sub_records(resp_data)
+            resp_data: Union[Dict[str, Any], None] = self.send_scores(score_dicts)
+            if resp_data:
+                self.update_sub_records(resp_data)
         else:
             LOGGER.info(f'No scores for {self.exam.name} exam need to be transmitted')
 

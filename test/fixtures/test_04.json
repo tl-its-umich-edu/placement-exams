@@ -46,7 +46,7 @@
         "pk": 4,
         "fields": {
             "submission_id": 123460,
-            "exam_id": 1,
+            "exam_id": 2,
             "student_uniqname": "nlongbottom",
             "submitted_timestamp": "2020-06-12T13:05:01Z",
             "graded_timestamp": "2020-06-12T16:03:00Z",

@@ -7,11 +7,11 @@
                 "Success": [
                     {
                         "uniqname": "rweasley",
-                        "placementType": "PP"
+                        "placementType": "PV"
                     },
                     {
                         "uniqname": "nlongbottom",
-                        "placementType": "PP"
+                        "placementType": "PV"
                     }
                 ],
                 "BadCount": 0,
@@ -26,12 +26,12 @@
                 "GoodCount": 1,
                 "Success": {
                     "uniqname": "rweasley",
-                    "placementType": "PP"
+                    "placementType": "PV"
                 },
                 "BadCount": 1,
                 "Errors": {
                     "uniqname": "nlongbottom",
-                    "placementType": "PP",
+                    "placementType": "PV",
                     "reason": "Some error"
                 }
             }

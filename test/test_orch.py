@@ -12,7 +12,7 @@ from django.utils.timezone import utc
 from umich_api.api_utils import ApiUtil
 
 # local libraries
-from constants import ISO8601_FORMAT
+from constants import ISO8601_FORMAT, MPATHWAYS_SCOPE
 from pe.models import Exam, Submission
 from pe.orchestration import ScoresOrchestration
 
@@ -50,7 +50,7 @@ class ScoresOrchestrationTestCase(TestCase):
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_place_exam)
 
         # Extra second for standard one-second increment
-        self.assertEqual(some_orca.sub_time_filter, datetime(2020, 6, 12, 16, 3, 1, tzinfo=utc))
+        self.assertEqual(some_orca.sub_time_filter, datetime(2020, 6, 12, 16, 0, 1, tzinfo=utc))
 
     def test_constructor_uses_default_filter_when_no_subs(self):
         """
@@ -128,6 +128,7 @@ class ScoresOrchestrationTestCase(TestCase):
 
     def test_create_sub_records(self):
         """
+        create_sub_records parses Canvas submission dictionaries and creates records in the database.
         """
         potions_val_exam = Exam.objects.get(id=2)
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_val_exam)
@@ -162,6 +163,53 @@ class ScoresOrchestrationTestCase(TestCase):
             }
         )
 
+    def test_send_scores_when_successful(self):
+        """
+        send_scores generates proper request and returns resp_data when successful.
+        """
+        resp_data: Dict[str, Any] = self.mpathways_resp_data[0]
+        potions_val_exam: Exam = Exam.objects.get(id=2)
+        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_val_exam)
+
+        val_subs: List[Submission] = list(some_orca.exam.submissions.filter(transmitted=False))
+
+        self.api_handler.api_call = Mock(return_value=Mock(status_code=200, text=json.dumps(resp_data)))
+        scores_to_send: List[Dict[str, str]] = [sub.prepare_score() for sub in val_subs]
+        result = some_orca.send_scores(scores_to_send)
+
+        self.api_handler.api_call.assert_called_with(
+            'aa/SpanishPlacementScores/Scores',
+            MPATHWAYS_SCOPE,
+            'PUT',
+            payload=json.dumps({'putPlcExamScore': {'Student': scores_to_send}}),
+            api_specific_headers=[{'Content-Type': 'application/json'}]
+        )
+        self.assertTrue(self.api_handler.api_call.call_count, 1)
+        self.assertEqual(result, resp_data)
+
+    def test_send_scores_when_not_successful(self):
+        """
+        send_scores generates proper request and returns None when not successful.
+        """
+        potions_val_exam: Exam = Exam.objects.get(id=2)
+        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_val_exam)
+
+        val_subs: List[Submission] = list(some_orca.exam.submissions.filter(transmitted=False))
+
+        self.api_handler.api_call = Mock(return_value=Mock(status_code=404, text=json.dumps({})))
+        scores_to_send: List[Dict[str, str]] = [sub.prepare_score() for sub in val_subs]
+        result = some_orca.send_scores(scores_to_send)
+
+        self.api_handler.api_call.assert_called_with(
+            'aa/SpanishPlacementScores/Scores',
+            MPATHWAYS_SCOPE,
+            'PUT',
+            payload=json.dumps({'putPlcExamScore': {'Student': scores_to_send}}),
+            api_specific_headers=[{'Content-Type': 'application/json'}]
+        )
+        self.assertTrue(self.api_handler.api_call.call_count, 1)
+        self.assertEqual(result, None)
+
     def test_update_sub_records_when_all_successful(self):
         """
         update_sub_records updates exam-specific records with transmitted as True and timestamp when all successful.
@@ -169,19 +217,22 @@ class ScoresOrchestrationTestCase(TestCase):
         current_dt: datetime = datetime.now(tz=utc)
 
         resp_data: Dict[str, Any] = self.mpathways_resp_data[0]
-        place_exam: Exam = Exam.objects.filter(name='Potions Placement').first()
-        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, place_exam)
+        potions_val_exam: Exam = Exam.objects.get(id=2)
+        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_val_exam)
 
         some_orca.update_sub_records(resp_data)
 
-        self.assertEqual(len(Submission.objects.filter(exam=place_exam, transmitted=True)), 4)
-        updated_subs_qs: QuerySet = Submission.objects.filter(exam=place_exam, transmitted_timestamp__gt=current_dt)
+        self.assertEqual(len(Submission.objects.filter(exam=potions_val_exam, transmitted=True)), 2)
+        updated_subs_qs: QuerySet = Submission.objects.filter(
+            exam=potions_val_exam, transmitted_timestamp__gt=current_dt
+        )
         self.assertEqual(len(updated_subs_qs), 2)
         uniqnames: List[Tuple[str]] = list(updated_subs_qs.order_by('student_uniqname').values_list('student_uniqname'))
         self.assertEqual(uniqnames, [('nlongbottom',), ('rweasley',)])
 
-        # Ensure un-transmitted submission for another exam with the same uniqname (rweasley) was not updated.
-        self.assertFalse(Submission.objects.get(submission_id=210000).transmitted)
+        # Ensure un-transmitted submission for another exam (Potions Placement)
+        # with the same uniqname (rweasley) was not updated.
+        self.assertFalse(Submission.objects.get(submission_id=123458).transmitted)
 
     def test_update_sub_records_when_mix_of_success_and_error(self):
         """
@@ -190,23 +241,22 @@ class ScoresOrchestrationTestCase(TestCase):
         current_dt: datetime = datetime.now(tz=utc)
 
         resp_data: Dict[str, Any] = self.mpathways_resp_data[1]
-        place_exam: Exam = Exam.objects.filter(name='Potions Placement').first()
-        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, place_exam)
+        potions_val_exam: Exam = Exam.objects.get(id=2)
+        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_val_exam)
 
         some_orca.update_sub_records(resp_data)
 
-        self.assertEqual(len(Submission.objects.filter(exam=place_exam, transmitted=True)), 3)
-        updated_subs_qs: QuerySet = Submission.objects.filter(exam=place_exam, transmitted_timestamp__gt=current_dt)
+        self.assertEqual(len(Submission.objects.filter(exam=potions_val_exam, transmitted=True)), 1)
+        updated_subs_qs: QuerySet = Submission.objects.filter(
+            exam=potions_val_exam, transmitted_timestamp__gt=current_dt
+        )
         self.assertEqual(len(updated_subs_qs), 1)
         uniqname: str = updated_subs_qs.first().student_uniqname
         self.assertEqual(uniqname, 'rweasley')
 
-        # Ensure un-transmitted submission for another exam with the same uniqname (rweasley) was not updated.
-        self.assertFalse(Submission.objects.get(submission_id=210000).transmitted)
-
-    # def test_send_scores_when_successful(self):
-
-    # def test_send_scores_when_not_successful(self):
+        # Ensure un-transmitted submission for another exam (Potions Placement)
+        # with the same uniqname (rweasley) was not updated.
+        self.assertFalse(Submission.objects.get(submission_id=123458).transmitted)
 
     # Mocks needed?
     # def test_main(self):

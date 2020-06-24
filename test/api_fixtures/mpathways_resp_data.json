@@ -36,5 +36,33 @@
                 }
             }
         }
+    },
+    {
+        "putPlcExamScoreResponse": {
+            "@schemaLocation": "<The real schema string would go here>",
+            "putPlcExamScoreResponse": {
+                "GoodCount": 2,
+                "Success": [
+                    {
+                        "uniqname": "hpotter",
+                        "placementType": "PV"
+                    },
+                    {
+                        "uniqname": "cchang",
+                        "placementType": "PV"
+                    },
+                    {
+                        "uniqname": "rweasley",
+                        "placementType": "PV"
+                    },
+                    {
+                        "uniqname": "nlongbottom",
+                        "placementType": "PV"
+                    }
+                ],
+                "BadCount": 0,
+                "Errors": "No errors found"
+            }
+        }
     }
 ]

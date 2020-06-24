@@ -26,8 +26,7 @@ class ScoresOrchestrationTestCase(TestCase):
     fixtures: List[str] = ['test_01.json', 'test_03.json', 'test_04.json']
 
     def setUp(self):
-        """Set up ApiUtil instance to be used by all ScoresOrchestration tests."""
-        # Does this kind of thing need to be wrapped in a try/execpt?
+        """Set up ApiUtil instance and custom fixtures to be shared by ScoresOrchestration tests."""
         self.api_handler: ApiUtil = ApiUtil(
             os.getenv('API_DIR_URL', ''),
             os.getenv('API_DIR_CLIENT_ID', ''),
@@ -258,5 +257,48 @@ class ScoresOrchestrationTestCase(TestCase):
         # with the same uniqname (rweasley) was not updated.
         self.assertFalse(Submission.objects.get(submission_id=123458).transmitted)
 
-    # Mocks needed?
-    # def test_main(self):
+    def test_main(self):
+        """
+        Main process method handles both previously un-transmitted and new submissions.
+        """
+
+        potions_val_exam: Exam = Exam.objects.get(id=2)
+        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_val_exam)
+        
+        some_orca.get_sub_dicts_for_exam = Mock(return_value=self.canvas_potions_val_subs)
+        some_orca.send_scores = Mock(return_value=self.mpathways_resp_data[2])
+
+        # Expected scores from to-be-fetched Canvas submissions (really, canvas_subs.json)
+        scores: List[Dict[str, str]] = [
+            {
+                'ID': 'hpotter',
+                'Form': 'PV',
+                'GradePoints': '125.0'
+            },
+            {
+                'ID': 'cchang',
+                'Form': 'PV',
+                'GradePoints': '200.0'
+            }
+        ]
+        # Un-transmitted scores from previous runs (really, test_04.json)
+        scores = [sub.prepare_score() for sub in some_orca.exam.submissions.all()] + scores
+
+        some_orca.main()
+
+        self.assertEqual(some_orca.get_sub_dicts_for_exam.call_count, 1)
+        self.assertEqual(some_orca.send_scores.call_count, 1)
+        some_orca.send_scores.assert_called_with(scores)
+
+        potions_val_sub_qs: QuerySet = some_orca.exam.submissions.all()
+        potions_val_subs: List[Submission] = list(potions_val_sub_qs.order_by('student_uniqname').all())
+        self.assertEqual(len(potions_val_subs), 4)
+        self.assertEqual(
+            [sub.student_uniqname for sub in potions_val_subs],
+            ['cchang', 'hpotter', 'nlongbottom', 'rweasley']
+        )
+        brand_new_subs: List[Submission] = list(
+            potions_val_sub_qs.filter(graded_timestamp__gte=some_orca.sub_time_filter).order_by('student_uniqname')
+        )
+        self.assertEqual(len(brand_new_subs), 2)
+        self.assertEqual([sub.student_uniqname for sub in brand_new_subs], ['cchang', 'hpotter'])

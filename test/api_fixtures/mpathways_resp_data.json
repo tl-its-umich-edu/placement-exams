@@ -1,0 +1,40 @@
+[
+    {
+        "putPlcExamScoreResponse": {
+            "@schemaLocation": "<The real schema string would go here>",
+            "putPlcExamScoreResponse": {
+                "GoodCount": 2,
+                "Success": [
+                    {
+                        "uniqname": "rweasley",
+                        "placementType": "PP"
+                    },
+                    {
+                        "uniqname": "nlongbottom",
+                        "placementType": "PP"
+                    }
+                ],
+                "BadCount": 0,
+                "Errors": "No errors found"
+            }
+        }
+    },
+    {
+        "putPlcExamScoreResponse": {
+            "@schemaLocation": "<The real schema string would go here>",
+            "putPlcExamScoreResponse": {
+                "GoodCount": 1,
+                "Success": {
+                    "uniqname": "rweasley",
+                    "placementType": "PP"
+                },
+                "BadCount": 1,
+                "Errors": {
+                    "uniqname": "nlongbottom",
+                    "placementType": "PP",
+                    "reason": "Some error"
+                }
+            }
+        }
+    }
+]

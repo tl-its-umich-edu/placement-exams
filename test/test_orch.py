@@ -16,7 +16,9 @@ from constants import ISO8601_FORMAT
 from pe.models import Exam, Submission
 from pe.orchestration import ScoresOrchestration
 
+
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+API_FIXTURES_PATH = os.path.join(ROOT_DIR, 'test', 'api_fixtures')
 LOGGER = logging.getLogger(__name__)
 
 
@@ -33,9 +35,11 @@ class ScoresOrchestrationTestCase(TestCase):
             os.path.join(ROOT_DIR, 'config', 'apis.json')
         )
 
-        canvas_subs_path: str = os.path.join(ROOT_DIR, 'test', 'api_fixtures', 'canvas_subs.json')
-        with open(canvas_subs_path, 'r') as test_canvas_subs_file:
-            self.canvas_potions_val_subs = json.loads(test_canvas_subs_file.read())
+        with open(os.path.join(API_FIXTURES_PATH, 'canvas_subs.json'), 'r') as test_canvas_subs_file:
+            self.canvas_potions_val_subs: List[Dict[str, Any]] = json.loads(test_canvas_subs_file.read())
+
+        with open(os.path.join(API_FIXTURES_PATH, 'mpathways_resp_data.json'), 'r') as mpathways_resp_data_file:
+            self.mpathways_resp_data: List[Dict[str, Any]] = json.loads(mpathways_resp_data_file.read())
 
     def test_constructor_uses_latest_graded_dt_when_subs(self):
         """
@@ -164,36 +168,15 @@ class ScoresOrchestrationTestCase(TestCase):
         """
         current_dt: datetime = datetime.now(tz=utc)
 
-        resp_data: Dict[str, Any] = {
-            'putPlcExamScoreResponse': {
-                '@schemaLocation': '<The real schema string would go here>',
-                'putPlcExamScoreResponse': {
-                    'GoodCount': 2,
-                    'Success': [
-                        {
-                            'uniqname': 'rweasley',
-                            'placementType': 'PP'
-                        },
-                        {
-                            'uniqname': 'nlongbottom',
-                            'placementType': 'PP'
-                        }
-                    ],
-                    'BadCount': 0,
-                    'Errors': 'No errors found'
-                }
-            }
-        }
+        resp_data: Dict[str, Any] = self.mpathways_resp_data[0]
         place_exam: Exam = Exam.objects.filter(name='Potions Placement').first()
-
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, place_exam)
+
         some_orca.update_sub_records(resp_data)
 
         self.assertEqual(len(Submission.objects.filter(exam=place_exam, transmitted=True)), 4)
-
         updated_subs_qs: QuerySet = Submission.objects.filter(exam=place_exam, transmitted_timestamp__gt=current_dt)
         self.assertEqual(len(updated_subs_qs), 2)
-
         uniqnames: List[Tuple[str]] = list(updated_subs_qs.order_by('student_uniqname').values_list('student_uniqname'))
         self.assertEqual(uniqnames, [('nlongbottom',), ('rweasley',)])
 
@@ -206,35 +189,15 @@ class ScoresOrchestrationTestCase(TestCase):
         """
         current_dt: datetime = datetime.now(tz=utc)
 
-        resp_data: Dict[str, Any] = {
-            'putPlcExamScoreResponse': {
-                '@schemaLocation': '<The real schema string would go here>',
-                'putPlcExamScoreResponse': {
-                    'GoodCount': 1,
-                    'Success': {   # Hoping that we can change this format to always use an enclosing array
-                        'uniqname': 'rweasley',
-                        'placementType': 'PP'
-                    },
-                    'BadCount': 1,
-                    'Errors': {
-                        'uniqname': 'nlongbottom',
-                        'placementType': 'PP',
-                        'reason': 'Some error'
-                    }
-                }
-            }
-        }
-
+        resp_data: Dict[str, Any] = self.mpathways_resp_data[1]
         place_exam: Exam = Exam.objects.filter(name='Potions Placement').first()
-
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, place_exam)
+
         some_orca.update_sub_records(resp_data)
 
         self.assertEqual(len(Submission.objects.filter(exam=place_exam, transmitted=True)), 3)
-
         updated_subs_qs: QuerySet = Submission.objects.filter(exam=place_exam, transmitted_timestamp__gt=current_dt)
         self.assertEqual(len(updated_subs_qs), 1)
-
         uniqname: str = updated_subs_qs.first().student_uniqname
         self.assertEqual(uniqname, 'rweasley')
 

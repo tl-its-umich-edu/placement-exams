@@ -88,7 +88,7 @@ class ScoresOrchestrationTestCase(TestCase):
             sub_dicts = some_orca.get_sub_dicts_for_exam()
 
         self.assertEqual(mock_retry_func.call_count, 1)
-        self.assertTrue(len(sub_dicts), 1)
+        self.assertEqual(len(sub_dicts), 1)
         self.assertEqual(sub_dicts[0], self.canvas_potions_val_subs[0])
 
     def test_get_sub_dicts_for_exam_with_multiple_pages(self):
@@ -121,8 +121,8 @@ class ScoresOrchestrationTestCase(TestCase):
             mock_retry_func.side_effect = mocks
             sub_dicts = some_orca.get_sub_dicts_for_exam(1)
 
-        self.assertTrue(mock_retry_func.call_count, 2)
-        self.assertTrue(len(sub_dicts), 2)
+        self.assertEqual(mock_retry_func.call_count, 2)
+        self.assertEqual(len(sub_dicts), 2)
         self.assertEqual(sub_dicts, self.canvas_potions_val_subs)
 
     def test_create_sub_records(self):
@@ -183,7 +183,7 @@ class ScoresOrchestrationTestCase(TestCase):
             payload=json.dumps({'putPlcExamScore': {'Student': scores_to_send}}),
             api_specific_headers=[{'Content-Type': 'application/json'}]
         )
-        self.assertTrue(self.api_handler.api_call.call_count, 1)
+        self.assertEqual(self.api_handler.api_call.call_count, 1)
         self.assertEqual(result, resp_data)
 
     def test_send_scores_when_not_successful(self):
@@ -206,7 +206,7 @@ class ScoresOrchestrationTestCase(TestCase):
             payload=json.dumps({'putPlcExamScore': {'Student': scores_to_send}}),
             api_specific_headers=[{'Content-Type': 'application/json'}]
         )
-        self.assertTrue(self.api_handler.api_call.call_count, 1)
+        self.assertEqual(self.api_handler.api_call.call_count, 1)
         self.assertEqual(result, None)
 
     def test_update_sub_records_when_all_successful(self):

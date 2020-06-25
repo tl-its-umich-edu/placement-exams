@@ -18,7 +18,6 @@ python manage.py loaddata "$FIXTURES_FILE"
 
 if [ "${TEST_MODE}" == "True" ]; then
     echo "Running tests"
-    # python -m unittest test/spe_test.py
     python manage.py test -v 3
 elif [ -z "${CRONTAB_SCHEDULE}" ]; then
     echo "CRONTAB_SCHEDULE environment variable was not set; a one-time job will be triggered"

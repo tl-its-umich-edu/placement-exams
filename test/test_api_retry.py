@@ -2,7 +2,7 @@
 import json, logging, os
 from datetime import datetime
 from typing import Any, Dict, List, Union
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 # third-party libraries
 from django.test import TestCase
@@ -86,26 +86,25 @@ class TestApiRetry(TestCase):
 
     def test_api_call_with_retries_when_no_errors(self):
         """api_call_with_retries returns Response object when a valid Response is found."""
-        self.api_handler.api_call = MagicMock(
-            spec=ApiUtil.api_call,
-            return_value=MagicMock(
+
+        with patch.object(ApiUtil, 'api_call', autospec=True) as mock_api_call:
+            mock_api_call.return_value = MagicMock(
                 spec=Response,
                 status_code=200,
                 text=json.dumps(self.canvas_potions_val_subs),
                 url='/'.join([self.api_handler.base_url, self.get_scores_url])
             )
-        )
 
-        response = api_call_with_retries(
-            self.api_handler,
-            self.get_scores_url,
-            CANVAS_SCOPE,
-            'GET',
-            self.canvas_params
-        )
+            response = api_call_with_retries(
+                self.api_handler,
+                self.get_scores_url,
+                CANVAS_SCOPE,
+                'GET',
+                self.canvas_params
+            )
 
-        self.assertEqual(self.api_handler.api_call.call_count, 1)
-        self.api_handler.api_call.assert_called_with(self.get_scores_url, CANVAS_SCOPE, 'GET', self.canvas_params)
+        self.assertEqual(mock_api_call.call_count, 1)
+        mock_api_call.assert_called_with(self.api_handler, self.get_scores_url, CANVAS_SCOPE, 'GET', self.canvas_params)
         self.assertTrue(response.ok)
         self.assertEqual(json.loads(response.text), self.canvas_potions_val_subs)
 
@@ -120,17 +119,18 @@ class TestApiRetry(TestCase):
             for i in range(num_attempts + 1)
         ]
 
-        self.api_handler.api_call = MagicMock(spec=ApiUtil.api_call, side_effect=resp_mocks)
+        with patch.object(ApiUtil, 'api_call', autospec=True) as mock_api_call:
+            mock_api_call.side_effect = resp_mocks
 
-        response: Union[MagicMock, None] = api_call_with_retries(
-            self.api_handler,
-            self.get_scores_url,
-            CANVAS_SCOPE,
-            'GET',
-            self.canvas_params,
-            max_req_attempts=num_attempts
-        )
+            response: Union[MagicMock, None] = api_call_with_retries(
+                self.api_handler,
+                self.get_scores_url,
+                CANVAS_SCOPE,
+                'GET',
+                self.canvas_params,
+                max_req_attempts=num_attempts
+            )
 
-        self.assertEqual(self.api_handler.api_call.call_count, 4)
-        self.api_handler.api_call.assert_called_with(self.get_scores_url, CANVAS_SCOPE, 'GET', self.canvas_params)
+        self.assertEqual(mock_api_call.call_count, 4)
+        mock_api_call.assert_called_with(self.api_handler, self.get_scores_url, CANVAS_SCOPE, 'GET', self.canvas_params)
         self.assertEqual(response, None)

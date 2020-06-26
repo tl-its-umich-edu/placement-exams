@@ -170,7 +170,7 @@ class ScoresOrchestration:
     def update_sub_records(self, resp_data: Dict[str, Any]) -> None:
         """
         Interpret results of sending scores and update Submissions when scores were successfully transmitted.
-        
+
         :param resp_data: Dictionary containing response data from the M-Pathways API endpoint
         :type resp_data: List of dictionaries
         :return: None

@@ -288,7 +288,7 @@ class ScoresOrchestrationTestCase(TestCase):
         self.assertEqual(mock_send.call_count, 1)
         mock_send.assert_called_once_with(self=some_orca, scores_to_send=scores)
 
-        potions_val_sub_qs: QuerySet = some_orca.exam.submissions.all()
+        potions_val_sub_qs: QuerySet = some_orca.exam.submissions.filter(transmitted=True)
         potions_val_subs: List[Submission] = list(potions_val_sub_qs.order_by('student_uniqname').all())
         self.assertEqual(len(potions_val_subs), 4)
         self.assertEqual(

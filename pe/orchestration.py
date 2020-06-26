@@ -27,7 +27,7 @@ class ScoresOrchestration:
     def __init__(self, api_handler: ApiUtil, exam: Exam) -> None:
         """
         Set the ApiUtil instance and exam as instance variables, then determine the sub_time_filter value.
-        
+
         :param api_handler: Instance of ApiUtil for making API calls
         :type api_handler: ApiUtil
         :param exam: Exam model instance for the exam to be processed
@@ -104,7 +104,7 @@ class ScoresOrchestration:
 
     def create_sub_records(self, sub_dicts: List[Dict[str, Any]]) -> None:
         """
-        Parses Canvas submission records and write them to the database.
+        Parses Canvas submission records and writes them to the database.
 
         :return sub_dicts: Dictionary results of Canvas API search in get_sub_dicts_for_exam
         :type sub_dicts: List of dictionaries with string keys
@@ -136,8 +136,8 @@ class ScoresOrchestration:
         """
         Send student scores in bulk for exam to M-Pathways.
 
-        :param scores_to_send: list of dictionaries with key-value pairs for ID, Form, and GradePoints
-        :type scores_to_send: list of dictionaries
+        :param scores_to_send: List of dictionaries with key-value pairs for ID, Form, and GradePoints
+        :type scores_to_send: List of dictionaries
         :return: Dictionary of response data return from M-Pathways
         :rtype: Dictionary with string keys
         """

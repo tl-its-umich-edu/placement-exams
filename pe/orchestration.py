@@ -97,7 +97,7 @@ class ScoresOrchestration:
                 else:
                     next_params = page_info
                     page_num += 1
-    
+
         LOGGER.info(f'Gathered {len(sub_dicts)} submissions from Canvas')
         LOGGER.debug(sub_dicts)
         return sub_dicts

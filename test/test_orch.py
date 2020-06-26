@@ -27,7 +27,7 @@ class ScoresOrchestrationTestCase(TestCase):
     fixtures: List[str] = ['test_01.json', 'test_03.json', 'test_04.json']
 
     def setUp(self):
-        """Set up ApiUtil instance and custom fixtures to be used by ScoresOrchestration tests."""
+        """Sets up ApiUtil instance and custom fixtures to be used by ScoresOrchestration tests."""
         self.api_handler: ApiUtil = ApiUtil(
             os.getenv('API_DIR_URL', ''),
             os.getenv('API_DIR_CLIENT_ID', ''),
@@ -260,7 +260,7 @@ class ScoresOrchestrationTestCase(TestCase):
         """main process method handles both previously un-transmitted and new submissions."""
         potions_val_exam: Exam = Exam.objects.get(id=2)
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_val_exam)
-        
+
         # Expected scores from to-be-fetched Canvas submissions (really, canvas_subs.json)
         scores: List[Dict[str, str]] = [
             {

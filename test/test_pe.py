@@ -120,7 +120,7 @@ class LoadFixturesTestCase(TestCase):
     def test_fixtures_load_adds_data_when_data_in_db(self):
         """
         Loading brand new fixtures results in new objects while previous ones remain in the database.
-        
+
         This test assumes the previous test case succeeded.
         """
         # Load previous test's fixtures

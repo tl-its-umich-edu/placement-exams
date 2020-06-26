@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from umich_api.api_utils import ApiUtil
 
 # local libraries
+from constants import ROOT_DIR
 # from spe_report.summary import SPESummaryReport
 
 
@@ -18,7 +19,6 @@ from umich_api.api_utils import ApiUtil
 # Logging will be configured in config/settings.py
 LOGGER = logging.getLogger(__name__)
 
-ROOT_DIR: str = os.path.dirname(os.path.abspath(__file__))
 CONFIG_DIR: str = os.getenv('ENV_DIR', os.path.join('config', 'secrets'))
 ENV_PATH: str = os.path.join(ROOT_DIR, CONFIG_DIR, os.getenv('ENV_FILE', '.env'))
 

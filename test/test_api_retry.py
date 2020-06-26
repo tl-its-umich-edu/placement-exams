@@ -12,11 +12,9 @@ from umich_api.api_utils import ApiUtil
 
 # Local libraries
 from api_retry.util import api_call_with_retries, check_if_response_successful
-from constants import CANVAS_SCOPE, ISO8601_FORMAT
+from constants import API_FIXTURES_DIR, CANVAS_SCOPE, ISO8601_FORMAT, ROOT_DIR
 
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-API_FIXTURES_PATH = os.path.join(ROOT_DIR, 'test', 'api_fixtures')
 LOGGER = logging.getLogger(__name__)
 
 
@@ -31,7 +29,7 @@ class TestApiRetry(TestCase):
             os.path.join(ROOT_DIR, 'config', 'apis.json')
         )
 
-        with open(os.path.join(API_FIXTURES_PATH, 'canvas_subs.json'), 'r') as test_canvas_subs_file:
+        with open(os.path.join(API_FIXTURES_DIR, 'canvas_subs.json'), 'r') as test_canvas_subs_file:
             self.canvas_potions_val_subs: List[Dict[str, Any]] = json.loads(test_canvas_subs_file.read())
 
         # "Potions Validation" from test_04.json

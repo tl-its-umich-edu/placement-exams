@@ -2,10 +2,13 @@
 import os
 from typing import Any, Dict, List
 
+# local libraries
+from constants import ROOT_DIR
+
 
 # Django settings
 
-BASE_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR: str = ROOT_DIR
 
 CONFIG_DIR: str = os.path.join(BASE_DIR, os.getenv('ENV_DIR', os.path.join('config', 'secrets')))
 

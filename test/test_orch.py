@@ -13,13 +13,11 @@ from requests import Response
 from umich_api.api_utils import ApiUtil
 
 # local libraries
-from constants import ISO8601_FORMAT, MPATHWAYS_SCOPE
+from constants import API_FIXTURES_DIR, ISO8601_FORMAT, MPATHWAYS_SCOPE, ROOT_DIR
 from pe.models import Exam, Submission
 from pe.orchestration import ScoresOrchestration
 
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-API_FIXTURES_PATH = os.path.join(ROOT_DIR, 'test', 'api_fixtures')
 LOGGER = logging.getLogger(__name__)
 
 
@@ -35,10 +33,10 @@ class ScoresOrchestrationTestCase(TestCase):
             os.path.join(ROOT_DIR, 'config', 'apis.json')
         )
 
-        with open(os.path.join(API_FIXTURES_PATH, 'canvas_subs.json'), 'r') as test_canvas_subs_file:
+        with open(os.path.join(API_FIXTURES_DIR, 'canvas_subs.json'), 'r') as test_canvas_subs_file:
             self.canvas_potions_val_subs: List[Dict[str, Any]] = json.loads(test_canvas_subs_file.read())
 
-        with open(os.path.join(API_FIXTURES_PATH, 'mpathways_resp_data.json'), 'r') as mpathways_resp_data_file:
+        with open(os.path.join(API_FIXTURES_DIR, 'mpathways_resp_data.json'), 'r') as mpathways_resp_data_file:
             self.mpathways_resp_data: List[Dict[str, Any]] = json.loads(mpathways_resp_data_file.read())
 
     def test_constructor_uses_latest_graded_dt_when_subs(self):

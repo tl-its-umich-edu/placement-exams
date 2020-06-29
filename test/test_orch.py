@@ -305,7 +305,9 @@ class ScoresOrchestrationTestCase(TestCase):
                     spec=Response, status_code=200, text=json.dumps({})
                 )
 
-                send_mocks: List[MagicMock] = [MagicMock(spec=Response, status_code=200, text=json.dumps(self.mpathways_resp_data[3]))]
+                send_mocks: List[MagicMock] = [
+                    MagicMock(spec=Response, status_code=200, text=json.dumps(self.mpathways_resp_data[3]))
+                ]
                 # Though request may be different, the response will look exactly the same.
                 send_mocks += [
                     MagicMock(spec=Response, status_code=200, text=json.dumps(self.mpathways_resp_data[4]))

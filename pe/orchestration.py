@@ -57,7 +57,7 @@ class ScoresOrchestration:
 
         :param page_size: How many results from Canvas to include per page
         :type page_size: int, optional (default is 50)
-        :return: List of submission dictionaries from Canvas based on parameters in get_sub_dicts_for_exam
+        :return: List of submission dictionaries from Canvas returned based on the URL and parameters
         :rtype: List of dictionaries with string keys
         """
         get_subs_url: str = f'aa/CanvasReadOnly/courses/{self.exam.course_id}/students/submissions'
@@ -74,8 +74,8 @@ class ScoresOrchestration:
         page_num: int = 1
         sub_dicts: List[Dict[str, Any]] = []
         next_params: Union[Dict] = canvas_params
+        LOGGER.debug(f'Params for first request: {next_params}')
 
-        LOGGER.debug(f'params for request: {next_params}')
         while more_pages:
             LOGGER.debug(f'Page number {page_num}')
             response: Union[Response, None] = api_call_with_retries(
@@ -91,10 +91,10 @@ class ScoresOrchestration:
             else:
                 sub_dicts += json.loads(response.text)
                 page_info: Union[None, Dict[str, Any]] = self.api_handler.get_next_page(response)
-                LOGGER.debug(page_info)
                 if not page_info:
                     more_pages = False
                 else:
+                    LOGGER.debug(f'Params for next page: {page_info}')
                     next_params = page_info
                     page_num += 1
 
@@ -106,7 +106,7 @@ class ScoresOrchestration:
         """
         Parses Canvas submission records and writes them to the database.
 
-        :return sub_dicts: Dictionary results of Canvas API search in get_sub_dicts_for_exam
+        :param sub_dicts: Dictionary results of Canvas API search in get_sub_dicts_for_exam
         :type sub_dicts: List of dictionaries with string keys
         """
         if len(sub_dicts) == 0:

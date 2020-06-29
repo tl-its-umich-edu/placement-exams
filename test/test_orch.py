@@ -301,7 +301,7 @@ class ScoresOrchestrationTestCase(TestCase):
 
     def test_main_with_exam_scores_with_duplicate_uniqnames(self):
         """
-        Scores for the same exam with duplicate uniqnames are properly sent separately and individually. 
+        Scores for the same exam with duplicate uniqnames are properly sent separately and individually.
         """
         current_dt: datetime = datetime.now(tz=utc)
         potions_place_exam: Exam = Exam.objects.get(id=1)

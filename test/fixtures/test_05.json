@@ -1,0 +1,30 @@
+[
+    {
+        "model": "pe.submission",
+        "pk": 6,
+        "fields": {
+            "submission_id": 200000,
+            "exam_id": 1,
+            "student_uniqname": "hgranger",
+            "submitted_timestamp": "2020-06-17T18:00:30Z",
+            "graded_timestamp": "2020-06-18T19:27:59Z",
+            "score": 350.0,
+            "transmitted": false,
+            "transmitted_timestamp": null
+        }
+    },
+    {
+        "model": "pe.submission",
+        "pk": 7,
+        "fields": {
+            "submission_id": 200001,
+            "exam_id": 1,
+            "student_uniqname": "hgranger",
+            "submitted_timestamp": "2020-06-20T5:00:56Z",
+            "graded_timestamp": "2020-06-20T12:03:00Z",
+            "score": 400.0,
+            "transmitted": false,
+            "transmitted_timestamp": null
+        }
+    }
+]

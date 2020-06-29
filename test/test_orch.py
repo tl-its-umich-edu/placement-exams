@@ -22,7 +22,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class ScoresOrchestrationTestCase(TestCase):
-    fixtures: List[str] = ['test_01.json', 'test_03.json', 'test_04.json']
+    fixtures: List[str] = ['test_01.json', 'test_03.json', 'test_04.json', 'test_05.json']
 
     def setUp(self):
         """Sets up ApiUtil instance and custom fixtures to be used by ScoresOrchestration tests."""
@@ -48,7 +48,7 @@ class ScoresOrchestrationTestCase(TestCase):
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_place_exam)
 
         # Extra second for standard one-second increment
-        self.assertEqual(some_orca.sub_time_filter, datetime(2020, 6, 12, 16, 0, 1, tzinfo=utc))
+        self.assertEqual(some_orca.sub_time_filter, datetime(2020, 6, 20, 12, 3, 1, tzinfo=utc))
 
     def test_constructor_uses_default_filter_when_no_subs(self):
         """
@@ -158,8 +158,12 @@ class ScoresOrchestrationTestCase(TestCase):
         )
 
     def test_send_scores_when_successful(self):
-        """send_scores generates proper request and returns resp_data when successful."""
+        """
+        send_scores properly transmits data to M-Pathways API and updates all submission records.
+        """
         resp_data: Dict[str, Any] = self.mpathways_resp_data[0]
+        current_dt: datetime = datetime.now(tz=utc)
+
         potions_val_exam: Exam = Exam.objects.get(id=2)
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_val_exam)
 
@@ -169,7 +173,7 @@ class ScoresOrchestrationTestCase(TestCase):
         with patch.object(ApiUtil, 'api_call', autospec=True) as mock_api_call:
             mock_api_call.return_value = MagicMock(spec=Response, status_code=200, text=json.dumps(resp_data))
 
-            result = some_orca.send_scores(scores_to_send)
+            some_orca.send_scores(val_subs)
 
         self.assertEqual(mock_api_call.call_count, 1)
         mock_api_call.assert_called_with(
@@ -180,43 +184,6 @@ class ScoresOrchestrationTestCase(TestCase):
             payload=json.dumps({'putPlcExamScore': {'Student': scores_to_send}}),
             api_specific_headers=[{'Content-Type': 'application/json'}]
         )
-        self.assertEqual(result, resp_data)
-
-    def test_send_scores_when_not_successful(self):
-        """send_scores generates proper request and returns None when not successful."""
-        potions_val_exam: Exam = Exam.objects.get(id=2)
-        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_val_exam)
-
-        val_subs: List[Submission] = list(some_orca.exam.submissions.filter(transmitted=False))
-
-        self.api_handler.api_call = MagicMock(
-            spec=ApiUtil.api_call,
-            return_value=MagicMock(spec=Response, status_code=404, text=json.dumps({}))
-        )
-        scores_to_send: List[Dict[str, str]] = [sub.prepare_score() for sub in val_subs]
-        result = some_orca.send_scores(scores_to_send)
-
-        self.api_handler.api_call.assert_called_with(
-            'aa/SpanishPlacementScores/Scores',
-            MPATHWAYS_SCOPE,
-            'PUT',
-            payload=json.dumps({'putPlcExamScore': {'Student': scores_to_send}}),
-            api_specific_headers=[{'Content-Type': 'application/json'}]
-        )
-        self.assertEqual(self.api_handler.api_call.call_count, 1)
-        self.assertEqual(result, None)
-
-    def test_update_sub_records_when_all_successful(self):
-        """
-        update_sub_records updates exam-specific records with transmitted as True and timestamp when all successful.
-        """
-        current_dt: datetime = datetime.now(tz=utc)
-
-        resp_data: Dict[str, Any] = self.mpathways_resp_data[0]
-        potions_val_exam: Exam = Exam.objects.get(id=2)
-        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_val_exam)
-
-        some_orca.update_sub_records(resp_data)
 
         self.assertEqual(len(Submission.objects.filter(exam=potions_val_exam, transmitted=True)), 2)
         updated_subs_qs: QuerySet = Submission.objects.filter(
@@ -230,17 +197,20 @@ class ScoresOrchestrationTestCase(TestCase):
         # with the same uniqname (rweasley) was not updated.
         self.assertFalse(Submission.objects.get(submission_id=123458).transmitted)
 
-    def test_update_sub_records_when_mix_of_success_and_error(self):
+    def test_send_scores_when_mix_of_success_and_error(self):
         """
-        update_sub_records updates exam-specific records with transmitted as True and timestamp only when successful.
+        send_scores updates exam-specific records with transmitted as True and timestamp only when successful.
         """
+        resp_data: Dict[str, Any] = self.mpathways_resp_data[1]
         current_dt: datetime = datetime.now(tz=utc)
 
-        resp_data: Dict[str, Any] = self.mpathways_resp_data[1]
         potions_val_exam: Exam = Exam.objects.get(id=2)
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_val_exam)
+        val_subs: List[Submission] = some_orca.exam.submissions.filter(transmitted=False).all()
 
-        some_orca.update_sub_records(resp_data)
+        with patch.object(ApiUtil, 'api_call', autospec=True) as mock_send:
+            mock_send.return_value = MagicMock(spec=Response, status_code=200, text=json.dumps(resp_data))
+            some_orca.send_scores(val_subs)
 
         self.assertEqual(len(Submission.objects.filter(exam=potions_val_exam, transmitted=True)), 1)
         updated_subs_qs: QuerySet = Submission.objects.filter(
@@ -253,6 +223,34 @@ class ScoresOrchestrationTestCase(TestCase):
         # Ensure un-transmitted submission for another exam (Potions Placement)
         # with the same uniqname (rweasley) was not updated.
         self.assertFalse(Submission.objects.get(submission_id=123458).transmitted)
+
+    def test_send_scores_when_not_successful(self):
+        """send_scores generates proper request and does not update anything when not successful."""
+
+        potions_val_exam: Exam = Exam.objects.get(id=2)
+        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_val_exam)
+
+        val_subs: List[Submission] = list(some_orca.exam.submissions.filter(transmitted=False))
+        scores_to_send: List[Dict[str, str]] = [sub.prepare_score() for sub in val_subs]
+
+        with patch.object(ApiUtil, 'api_call', autospec=True) as mock_send:
+            mock_send.return_value = MagicMock(
+                return_value=MagicMock(spec=Response, status_code=404, text=json.dumps({}))
+            )
+            some_orca.send_scores(val_subs)
+
+        mock_send.assert_called_with(
+            self.api_handler,
+            'aa/SpanishPlacementScores/Scores',
+            MPATHWAYS_SCOPE,
+            'PUT',
+            payload=json.dumps({'putPlcExamScore': {'Student': scores_to_send}}),
+            api_specific_headers=[{'Content-Type': 'application/json'}]
+        )
+        self.assertEqual(mock_send.call_count, 1)
+
+        untransmitted_qs: QuerySet = some_orca.exam.submissions.filter(transmitted=False)
+        self.assertEqual(len(untransmitted_qs), 2)
 
     def test_main(self):
         """main process method handles both previously un-transmitted and new submissions."""
@@ -275,16 +273,18 @@ class ScoresOrchestrationTestCase(TestCase):
         # Un-transmitted scores from previous runs (really, test_04.json)
         scores = [sub.prepare_score() for sub in some_orca.exam.submissions.all()] + scores
 
-        with patch.object(ScoresOrchestration, 'get_sub_dicts_for_exam', autospec=True) as mock_get:
-            with patch.object(ScoresOrchestration, 'send_scores', autospec=True) as mock_send:
-                mock_get.return_value = self.canvas_potions_val_subs
-                mock_send.return_value = self.mpathways_resp_data[2]
-
+        with patch('pe.orchestration.api_call_with_retries', autospec=True) as mock_get:
+            with patch.object(ApiUtil, 'api_call', autospec=True) as mock_send:
+                mock_get.return_value = MagicMock(
+                    spec=Response, status_code=200, text=json.dumps(self.canvas_potions_val_subs)
+                )
+                mock_send.return_value = MagicMock(
+                    spec=Response, status_code=200, text=json.dumps(self.mpathways_resp_data[2])
+                )
                 some_orca.main()
 
         self.assertEqual(mock_get.call_count, 1)
         self.assertEqual(mock_send.call_count, 1)
-        mock_send.assert_called_once_with(self=some_orca, scores_to_send=scores)
 
         potions_val_sub_qs: QuerySet = some_orca.exam.submissions.filter(transmitted=True)
         potions_val_subs: List[Submission] = list(potions_val_sub_qs.order_by('student_uniqname').all())
@@ -298,3 +298,40 @@ class ScoresOrchestrationTestCase(TestCase):
         )
         self.assertEqual(len(brand_new_subs), 2)
         self.assertEqual([sub.student_uniqname for sub in brand_new_subs], ['cchang', 'hpotter'])
+
+    def test_main_with_exam_scores_with_duplicate_uniqnames(self):
+        """
+        Scores for the same exam with duplicate uniqnames are properly sent separately and individually. 
+        """
+        current_dt: datetime = datetime.now(tz=utc)
+        potions_place_exam: Exam = Exam.objects.get(id=1)
+        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_place_exam)
+
+        with patch('pe.orchestration.api_call_with_retries', autospec=True) as mock_get:
+            with patch.object(ApiUtil, 'api_call', autospec=True) as mock_send:
+                mock_get.return_value = MagicMock(
+                    spec=Response, status_code=200, text=json.dumps({})
+                )
+
+                send_mocks = [MagicMock(spec=Response, status_code=200, text=json.dumps(self.mpathways_resp_data[3]))]
+                # Though request may be different, the response will look exactly the same.
+                send_mocks += [
+                    MagicMock(spec=Response, status_code=200, text=json.dumps(self.mpathways_resp_data[4]))
+                    for i in range(2)
+                ]
+                mock_send.side_effect = send_mocks
+                some_orca.main()
+
+        self.assertEqual(mock_get.call_count, 1)
+        # Once for rweasley score, twice for hgranger scores
+        self.assertEqual(mock_send.call_count, 3)
+
+        transmitted_qs: QuerySet = some_orca.exam.submissions.filter(transmitted=True)
+        self.assertEqual(len(transmitted_qs), 5)
+        new_transmitted_qs: QuerySet = transmitted_qs.filter(transmitted_timestamp__gt=current_dt)
+        self.assertEqual(len(new_transmitted_qs), 3)
+
+        dup_subs: List[Submission] = new_transmitted_qs.filter(student_uniqname='hgranger')
+        self.assertEqual(len(dup_subs), 2)
+        self.assertEqual([dup_sub.student_uniqname for dup_sub in dup_subs], ['hgranger', 'hgranger'])
+        self.assertNotEqual(dup_subs[0].transmitted_timestamp, dup_subs[1].transmitted_timestamp)

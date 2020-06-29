@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Union
 
 # third-party libraries
-from django.db.models import QuerySet
+from django.db.models import Count, QuerySet
 from django.utils.timezone import utc
 from requests import Response
 from umich_api.api_utils import ApiUtil
@@ -132,9 +132,9 @@ class ScoresOrchestration:
                 LOGGER.error(e)
                 LOGGER.error('Submissions bulk creation failed')
 
-    def send_scores(self, scores_to_send: List[Dict[str, str]]) -> Union[Dict[str, Any], None]:
+    def send_scores(self, subs_to_send: List[Submission]) -> None:
         """
-        Send student scores in bulk for exam to M-Pathways.
+        Send scores for exam with unique student_uniqname values in bulk to M-Pathways.
 
         :param scores_to_send: List of dictionaries with key-value pairs for ID, Form, and GradePoints
         :type scores_to_send: List of dictionaries
@@ -143,8 +143,8 @@ class ScoresOrchestration:
         """
         send_scores_url: str = 'aa/SpanishPlacementScores/Scores'
 
+        scores_to_send: List[Dict[str, str]] = [sub.prepare_score() for sub in subs_to_send]
         payload: Dict[str, Any] = {'putPlcExamScore': {'Student': scores_to_send}}
-
         json_payload: str = json.dumps(payload)
         LOGGER.debug(json_payload)
 
@@ -165,17 +165,7 @@ class ScoresOrchestration:
 
         resp_data: Dict[str, Any] = json.loads(response.text)
         LOGGER.debug(resp_data)
-        return resp_data
 
-    def update_sub_records(self, resp_data: Dict[str, Any]) -> None:
-        """
-        Interpret results of sending scores and update Submissions when scores were successfully transmitted.
-
-        :param resp_data: Dictionary containing response data from the M-Pathways API endpoint
-        :type resp_data: List of dictionaries
-        :return: None
-        :rtype: None
-        """
         schema_name: str = 'putPlcExamScoreResponse'
         results: Dict[str, Any] = resp_data[schema_name][schema_name]
 
@@ -189,25 +179,26 @@ class ScoresOrchestration:
             success_uniqnames = [results['Success']['uniqname']]
         else:
             success_uniqnames = []
-        num_success: int = len(success_uniqnames)
 
         if len(success_uniqnames) == 0:
             LOGGER.warning('No scores were transmitted successfully.')
         else:
             timestamp: datetime = datetime.now(tz=utc)
-            # What happens if there are two submissions with the same uniqname for the same exam?
-            subs_to_update_qs: QuerySet = self.exam.submissions.filter(
-                transmitted=False,
-                student_uniqname__in=success_uniqnames
-            )
-            subs_to_update_qs.update(transmitted=True, transmitted_timestamp=timestamp)
-            LOGGER.info(f'Transmitted {num_success} score(s) and updated submission record(s)')
+
+            subs_to_update = []
+            for sub in subs_to_send:
+                if sub.student_uniqname in success_uniqnames:
+                    sub.transmitted = True
+                    sub.transmitted_timestamp = timestamp
+                    subs_to_update.append(sub)
+            Submission.objects.bulk_update(objs=subs_to_update, fields=['transmitted', 'transmitted_timestamp'])
+            LOGGER.info(f'Transmitted {len(subs_to_update)} score(s) successfully and updated submission record(s).')
         return None
 
     def main(self) -> None:
         """
         High-level process method for class. Pulls Canvas data, sends data, and logs activity in the database.
-        
+
         :return: None
         :rtype: None
         """
@@ -216,7 +207,7 @@ class ScoresOrchestration:
         if len(sub_dicts) > 0:
             self.create_sub_records(sub_dicts)
 
-        # Find old and new submissions for exam to send to M-Pathways.
+        # Find old and new submissions for exam to send to M-Pathways
         sub_to_transmit_qs: QuerySet = self.exam.submissions.filter(transmitted=False)
         subs_to_transmit: List[Submission] = list(sub_to_transmit_qs.all())
 
@@ -229,13 +220,27 @@ class ScoresOrchestration:
             else:
                 LOGGER.debug(f'All previously un-transmitted submissions: {redo_subs}')
 
-        # Send data to M-Pathways and update submission records in database
-        score_dicts: List[Dict[str, str]] = [sub.prepare_score() for sub in subs_to_transmit]
-        if len(score_dicts) > 0:
-            resp_data: Union[Dict[str, Any], None] = self.send_scores(score_dicts)
-            if resp_data:
-                self.update_sub_records(resp_data)
-        else:
-            LOGGER.info(f'No scores for {self.exam.name} exam need to be transmitted')
+        # Identify and separate submissions to send with duplicate uniqnames
+        freq_qs: QuerySet = sub_to_transmit_qs.values('student_uniqname').annotate(frequency=Count('student_uniqname'))
+        dup_uniqnames: List[str] = [
+            uniqname_dict['student_uniqname'] for uniqname_dict in list(freq_qs) if uniqname_dict['frequency'] > 1
+        ]
+        dup_uniqname_subs: List[Submission] = []
+        regular_subs: List[Submission] = []
+        for sub_to_transmit in subs_to_transmit:
+            if sub_to_transmit.student_uniqname in dup_uniqnames:
+                dup_uniqname_subs.append(sub_to_transmit)
+            else:
+                regular_subs.append(sub_to_transmit)
+
+        # Send scores and update the database
+        if len(regular_subs) > 0:
+            # Send all regular submissions at once
+            self.send_scores(regular_subs)
+        if len(dup_uniqname_subs) > 0:
+            LOGGER.info('Found submissions to send with duplicate uniqnames; they will be sent individually')
+            # Send each submission with a duplicate uniqname individually
+            for dup_uniqname_sub in dup_uniqname_subs:
+                self.send_scores([dup_uniqname_sub])
 
         return None

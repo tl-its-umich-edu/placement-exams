@@ -136,7 +136,7 @@ class ScoresOrchestration:
         """
         Send scores for exam with unique student_uniqname values in bulk to M-Pathways.
 
-        :param subs_to_send: List of un-transmitted Submission model instances 
+        :param subs_to_send: List of un-transmitted Submission model instances
         :type subs_to_send: List of Submission model instances
         :return: None
         :rtype: None

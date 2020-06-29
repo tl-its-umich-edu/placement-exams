@@ -136,10 +136,10 @@ class ScoresOrchestration:
         """
         Send scores for exam with unique student_uniqname values in bulk to M-Pathways.
 
-        :param scores_to_send: List of dictionaries with key-value pairs for ID, Form, and GradePoints
-        :type scores_to_send: List of dictionaries
-        :return: Dictionary of response data return from M-Pathways
-        :rtype: Dictionary with string keys
+        :param subs_to_send: List of un-transmitted Submission model instances 
+        :type subs_to_send: List of Submission model instances
+        :return: None
+        :rtype: None
         """
         send_scores_url: str = 'aa/SpanishPlacementScores/Scores'
 

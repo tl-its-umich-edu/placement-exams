@@ -11,7 +11,9 @@ from umich_api.api_utils import ApiUtil
 
 # local libraries
 from api_retry.util import api_call_with_retries, check_if_response_successful
-from constants import CANVAS_SCOPE, ISO8601_FORMAT, MPATHWAYS_SCOPE
+from constants import (
+    CANVAS_SCOPE, CANVAS_URL_BEGIN, ISO8601_FORMAT, MPATHWAYS_SCOPE, MPATHWAYS_URL
+)
 from pe.models import Exam, Submission
 
 
@@ -26,7 +28,7 @@ class ScoresOrchestration:
 
     def __init__(self, api_handler: ApiUtil, exam: Exam) -> None:
         """
-        Set the ApiUtil instance and exam as instance variables, then determine the sub_time_filter value.
+        Sets the ApiUtil instance and exam as instance variables, then determines the sub_time_filter value.
 
         :param api_handler: Instance of ApiUtil for making API calls
         :type api_handler: ApiUtil
@@ -53,14 +55,14 @@ class ScoresOrchestration:
 
     def get_sub_dicts_for_exam(self, page_size: int = 50) -> List[Dict[str, Any]]:
         """
-        Get the graded submissions for the exam using paging, and then store the results in the database.
+        Gets the graded submissions for the exam using paging.
 
         :param page_size: How many results from Canvas to include per page
         :type page_size: int, optional (default is 50)
         :return: List of submission dictionaries from Canvas returned based on the URL and parameters
         :rtype: List of dictionaries with string keys
         """
-        get_subs_url: str = f'aa/CanvasReadOnly/courses/{self.exam.course_id}/students/submissions'
+        get_subs_url: str = f'{CANVAS_URL_BEGIN}/courses/{self.exam.course_id}/students/submissions'
 
         canvas_params: Dict[str, Any] = {
             'student_ids': ['all'],
@@ -134,15 +136,13 @@ class ScoresOrchestration:
 
     def send_scores(self, subs_to_send: List[Submission]) -> None:
         """
-        Send scores for exam with unique student_uniqname values in bulk to M-Pathways.
+        Sends scores in bulk for submissions with unique student_uniqname values and updates database when successful.
 
-        :param subs_to_send: List of un-transmitted Submission model instances
+        :param subs_to_send: List of un-transmitted Submissions with non-repeating student_uniqname values.
         :type subs_to_send: List of Submission model instances
         :return: None
         :rtype: None
         """
-        send_scores_url: str = 'aa/SpanishPlacementScores/Scores'
-
         scores_to_send: List[Dict[str, str]] = [sub.prepare_score() for sub in subs_to_send]
         payload: Dict[str, Any] = {'putPlcExamScore': {'Student': scores_to_send}}
         json_payload: str = json.dumps(payload)
@@ -151,7 +151,7 @@ class ScoresOrchestration:
         extra_headers = [{'Content-Type': 'application/json'}]
 
         response: Response = self.api_handler.api_call(
-            send_scores_url,
+            MPATHWAYS_URL,
             MPATHWAYS_SCOPE,
             'PUT',
             payload=json_payload,
@@ -185,7 +185,7 @@ class ScoresOrchestration:
         else:
             timestamp: datetime = datetime.now(tz=utc)
 
-            subs_to_update = []
+            subs_to_update: List[Submission] = []
             for sub in subs_to_send:
                 if sub.student_uniqname in success_uniqnames:
                     sub.transmitted = True

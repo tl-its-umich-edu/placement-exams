@@ -12,7 +12,7 @@ from umich_api.api_utils import ApiUtil
 
 # Local libraries
 from api_retry.util import api_call_with_retries, check_if_response_successful
-from constants import API_FIXTURES_DIR, CANVAS_SCOPE, ISO8601_FORMAT, ROOT_DIR
+from constants import API_FIXTURES_DIR, CANVAS_SCOPE, CANVAS_URL_BEGIN, ISO8601_FORMAT, ROOT_DIR
 
 
 LOGGER = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ class TestApiRetry(TestCase):
         some_filter: datetime = datetime(2020, 6, 1, 0, 0, 0, tzinfo=utc)
 
         self.get_scores_url: str = (
-            f'aa/CanvasReadOnly/courses/{some_course_id}/students/submissions'
+            f'{CANVAS_URL_BEGIN}/courses/{some_course_id}/students/submissions'
         )
 
         self.canvas_params: Dict[str, Any] = {

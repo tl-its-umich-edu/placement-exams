@@ -13,7 +13,9 @@ from requests import Response
 from umich_api.api_utils import ApiUtil
 
 # local libraries
-from constants import API_FIXTURES_DIR, ISO8601_FORMAT, MPATHWAYS_SCOPE, ROOT_DIR
+from constants import (
+    API_FIXTURES_DIR, CANVAS_URL_BEGIN, ISO8601_FORMAT, MPATHWAYS_SCOPE, MPATHWAYS_URL, ROOT_DIR
+)
 from pe.models import Exam, Submission
 from pe.orchestration import ScoresOrchestration
 
@@ -97,8 +99,9 @@ class ScoresOrchestrationTestCase(TestCase):
             # page_info will show parameters that make sense in this context.
             'next': {
                 'url': (
-                    f'https://apigw-tst.it.umich.edu/um/aa/CanvasReadOnly/courses/{some_orca.exam.course_id}' +
-                    f'/students/submissions?assignment_ids={some_orca.exam.assignment_id}' +
+                    f'{os.getenv("API_DIR_URL", "https://some-api.umich.edu")}/{CANVAS_URL_BEGIN}' +
+                    f'/courses/{some_orca.exam.course_id}/students/submissions' +
+                    f'?assignment_ids={some_orca.exam.assignment_id}' +
                     f'&graded_since={quote_plus(some_orca.sub_time_filter.strftime(ISO8601_FORMAT))}&include=user' +
                     '&student_ids=all&page=bookmark:SomeBookmark&per_page=1'
                 ),
@@ -173,7 +176,7 @@ class ScoresOrchestrationTestCase(TestCase):
         self.assertEqual(mock_api_call.call_count, 1)
         mock_api_call.assert_called_with(
             self.api_handler,
-            'aa/SpanishPlacementScores/Scores',
+            MPATHWAYS_URL,
             MPATHWAYS_SCOPE,
             'PUT',
             payload=json.dumps({'putPlcExamScore': {'Student': scores_to_send}}),
@@ -232,7 +235,7 @@ class ScoresOrchestrationTestCase(TestCase):
 
         mock_send.assert_called_with(
             self.api_handler,
-            'aa/SpanishPlacementScores/Scores',
+            MPATHWAYS_URL,
             MPATHWAYS_SCOPE,
             'PUT',
             payload=json.dumps({'putPlcExamScore': {'Student': scores_to_send}}),

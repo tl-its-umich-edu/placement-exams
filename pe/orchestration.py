@@ -75,7 +75,7 @@ class ScoresOrchestration:
         more_pages: bool = True
         page_num: int = 1
         sub_dicts: List[Dict[str, Any]] = []
-        next_params: Union[Dict] = canvas_params
+        next_params: Dict[str, Any] = canvas_params
         LOGGER.debug(f'Params for first request: {next_params}')
 
         while more_pages:

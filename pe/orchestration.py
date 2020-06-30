@@ -215,10 +215,7 @@ class ScoresOrchestration:
         redo_subs: List[Submission] = list(sub_to_transmit_qs.filter(graded_timestamp__lt=self.sub_time_filter))
         if len(redo_subs) > 0:
             LOGGER.info(f'Will try to re-send {len(redo_subs)} previously un-transmitted submissions')
-            if len(redo_subs) > 10:
-                LOGGER.debug(f'First 10 previously un-transmitted submissions: {redo_subs[:10]}')
-            else:
-                LOGGER.debug(f'All previously un-transmitted submissions: {redo_subs}')
+            LOGGER.debug(f'Previously un-transmitted submissions: {redo_subs}')
 
         # Identify and separate submissions to send with duplicate uniqnames
         freq_qs: QuerySet = sub_to_transmit_qs.values('student_uniqname').annotate(frequency=Count('student_uniqname'))

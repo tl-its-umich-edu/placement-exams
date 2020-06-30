@@ -227,9 +227,7 @@ class ScoresOrchestrationTestCase(TestCase):
         scores_to_send: List[Dict[str, str]] = [sub.prepare_score() for sub in val_subs]
 
         with patch.object(ApiUtil, 'api_call', autospec=True) as mock_send:
-            mock_send.return_value = MagicMock(
-                return_value=MagicMock(spec=Response, status_code=404, text=json.dumps({}))
-            )
+            mock_send.return_value = MagicMock(spec=Response, status_code=404, text=json.dumps({}))
             some_orca.send_scores(val_subs)
 
         mock_send.assert_called_with(

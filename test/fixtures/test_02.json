@@ -23,7 +23,8 @@
             "name": "Potions Placement Advanced",
             "report_id": 1,
             "course_id": 888889,
-            "assignment_id": 111111
+            "assignment_id": 111111,
+            "default_time_filter": "2020-06-02T12:00:00Z"
         }
     },
     {
@@ -34,7 +35,8 @@
             "name": "Potions Validation",
             "report_id": 2,
             "course_id": 888888,
-            "assignment_id": 111113
+            "assignment_id": 111113,
+            "default_time_filter": "2020-05-01T00:00:00Z"
         }
     }
 ]

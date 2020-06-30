@@ -10,9 +10,7 @@ from dotenv import load_dotenv
 from umich_api.api_utils import ApiUtil
 
 # local libraries
-# from exam_date.stored_date import AssignmentLatestSubmittedDate
-# from scores_orchestration.orchestration import SpanishScoresOrchestration
-# from spe_utils import constants
+from constants import ROOT_DIR
 # from spe_report.summary import SPESummaryReport
 
 
@@ -21,7 +19,6 @@ from umich_api.api_utils import ApiUtil
 # Logging will be configured in config/settings.py
 LOGGER = logging.getLogger(__name__)
 
-ROOT_DIR: str = os.path.dirname(os.path.abspath(__file__))
 CONFIG_DIR: str = os.getenv('ENV_DIR', os.path.join('config', 'secrets'))
 ENV_PATH: str = os.path.join(ROOT_DIR, CONFIG_DIR, os.getenv('ENV_FILE', '.env'))
 
@@ -34,6 +31,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pe.settings')
 try:
     application = get_wsgi_application()
     from pe.models import Exam, Report
+    from pe.orchestration import ScoresOrchestration
 except Exception as e:
     LOGGER.error(e)
     LOGGER.error('Failed to load Django application; the program will exit')
@@ -63,18 +61,12 @@ def main():
     exams: List[Exam] = list(Exam.objects.all())
     logging.info(exams)
 
-    # path: str = os.getenv(constants.PERSISTENT_PATH)
-    # file_name: str = os.getenv(constants.FILE_NAME)
-    # query_date_holder: AssignmentLatestSubmittedDate = AssignmentLatestSubmittedDate(path, file_name)
-
-    # try:
-    #     stored_submission_date: Dict[str, str] = query_date_holder.get_assign_submitted_date()
-    # except (OSError, IOError, Exception) as e:
-    #     logging.error(f"error retrieving the latest assignment submitted date due to {e}")
-    #     return
+    for exam in exams:
+        LOGGER.info(f'Processing Exam: {exam.name}')
+        exam_orca: ScoresOrchestration = ScoresOrchestration(API_UTIL, exam)
+        exam_orca.main()
 
     # spe_report: SPESummaryReport = SPESummaryReport()
-    # score_handler: SpanishScoresOrchestration = SpanishScoresOrchestration(stored_submission_date, spe_report)
     # next_query_date: Dict[str, str] = score_handler.orchestrator()
     # if next_query_date:
     #     try:

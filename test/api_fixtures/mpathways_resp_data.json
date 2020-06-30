@@ -1,0 +1,96 @@
+[
+    {
+        "putPlcExamScoreResponse": {
+            "@schemaLocation": "<The real schema string would go here>",
+            "putPlcExamScoreResponse": {
+                "GoodCount": 2,
+                "Success": [
+                    {
+                        "uniqname": "rweasley",
+                        "placementType": "PV"
+                    },
+                    {
+                        "uniqname": "nlongbottom",
+                        "placementType": "PV"
+                    }
+                ],
+                "BadCount": 0,
+                "Errors": "No errors found"
+            }
+        }
+    },
+    {
+        "putPlcExamScoreResponse": {
+            "@schemaLocation": "<The real schema string would go here>",
+            "putPlcExamScoreResponse": {
+                "GoodCount": 1,
+                "Success": {
+                    "uniqname": "rweasley",
+                    "placementType": "PV"
+                },
+                "BadCount": 1,
+                "Errors": {
+                    "uniqname": "nlongbottom",
+                    "placementType": "PV",
+                    "reason": "Some error"
+                }
+            }
+        }
+    },
+    {
+        "putPlcExamScoreResponse": {
+            "@schemaLocation": "<The real schema string would go here>",
+            "putPlcExamScoreResponse": {
+                "GoodCount": 2,
+                "Success": [
+                    {
+                        "uniqname": "hpotter",
+                        "placementType": "PV"
+                    },
+                    {
+                        "uniqname": "cchang",
+                        "placementType": "PV"
+                    },
+                    {
+                        "uniqname": "rweasley",
+                        "placementType": "PV"
+                    },
+                    {
+                        "uniqname": "nlongbottom",
+                        "placementType": "PV"
+                    }
+                ],
+                "BadCount": 0,
+                "Errors": "No errors found"
+            }
+        }
+    },
+    {
+        "putPlcExamScoreResponse": {
+            "@schemaLocation": "<The real schema string would go here>",
+            "putPlcExamScoreResponse": {
+                "GoodCount": 1,
+                "Success": {
+                    "uniqname": "rweasley",
+                    "placementType": "PP"
+                },
+                "BadCount": 0,
+                "Errors": "No errors found"
+            }
+        }
+    },
+    {
+        "putPlcExamScoreResponse": {
+            "@schemaLocation": "<The real schema string would go here>",
+            "putPlcExamScoreResponse": {
+                "GoodCount": 1,
+                "Success": {
+                    "uniqname": "hgranger",
+                    "placementType": "PP"
+                },
+                "BadCount": 0,
+                "Errors": "No errors found"
+            }
+        }
+    }
+]

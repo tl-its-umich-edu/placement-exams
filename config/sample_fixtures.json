@@ -15,7 +15,8 @@
             "name": "Some Language Placement Exam",
             "report": 1,
             "course_id": 100000,
-            "assignment_id": 200000
+            "assignment_id": 200000,
+            "default_time_filter": "2020-06-01T00:00:00Z"
         }
     }
 ]

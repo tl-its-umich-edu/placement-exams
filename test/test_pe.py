@@ -1,10 +1,12 @@
 # standard libraries
 import logging
 from datetime import datetime
+from typing import List, Tuple, Union
 
 # third-party libraries
 from django.core.management import call_command
 from django.test import TestCase
+from django.utils.timezone import utc
 
 # Local libraries
 from pe.models import Report, Exam, Submission
@@ -12,7 +14,7 @@ from pe.models import Report, Exam, Submission
 
 LOGGER = logging.getLogger(__name__)
 
-EXAM_FIELDS = ('name', 'report_id', 'sa_code', 'course_id', 'assignment_id')
+EXAM_FIELDS: Tuple[str, ...] = ('name', 'report_id', 'sa_code', 'course_id', 'assignment_id', 'default_time_filter')
 
 
 class LoadFixturesTestCase(TestCase):
@@ -20,9 +22,9 @@ class LoadFixturesTestCase(TestCase):
     def test_fixtures_load_when_db_is_empty(self):
         """
         Loading fixtures results in new model instances when the database is empty.
+
         This tests the creation of Report and Exam models using the loaddata command.
         """
-
         call_command('loaddata', 'test_01.json')
 
         # Test Potions report loaded
@@ -59,7 +61,8 @@ class LoadFixturesTestCase(TestCase):
                 "report_id": 1,
                 "sa_code": "PP",
                 "course_id": 888888,
-                "assignment_id": 111111
+                "assignment_id": 111111,
+                "default_time_filter": datetime(2020, 6, 1, 0, 0, 0, tzinfo=utc)
             }
         )
 
@@ -75,17 +78,18 @@ class LoadFixturesTestCase(TestCase):
                 "report_id": 1,
                 "sa_code": "PV",
                 "course_id": 888888,
-                "assignment_id": 111112
+                "assignment_id": 111112,
+                "default_time_filter": datetime(2020, 5, 1, 0, 0, 0, tzinfo=utc)
             }
         )
 
     def test_fixtures_load_updates_when_data_in_db(self):
         """
         Loading fixtures results in updated model instances.
+
         The assertions test whether all change-able properties of Report (everything but id) and
         Exam (everything but sa_code) are properly updated. This test assumes the prior test case succeeded.
         """
-
         # Load previous test's fixtures
         call_command('loaddata', 'test_01.json')
 
@@ -96,10 +100,11 @@ class LoadFixturesTestCase(TestCase):
         self.assertEqual(potions_report.name, 'Placement Potions')
         self.assertEqual(potions_report.contact, 'hslughorn@hogwarts.edu')
 
-        # Test Placement Potions exam name and course_id changed
+        # Test Placement Potions exam name, course_id, and default_time_filter changed
         placement_exam = Exam.objects.get(sa_code='PP')
         self.assertEqual(placement_exam.name, 'Potions Placement Advanced')
         self.assertEqual(placement_exam.course_id, 888889)
+        self.assertEqual(placement_exam.default_time_filter, datetime(2020, 6, 2, 12, 0, 0, tzinfo=utc))
 
         # Test Potions Validation report and assignment_id changed
         validation_exam = Exam.objects.get(name='Potions Validation')
@@ -115,9 +120,9 @@ class LoadFixturesTestCase(TestCase):
     def test_fixtures_load_adds_data_when_data_in_db(self):
         """
         Loading brand new fixtures results in new objects while previous ones remain in the database.
+
         This test assumes the previous test case succeeded.
         """
-
         # Load previous test's fixtures
         call_command('loaddata', 'test_02.json')
 
@@ -160,16 +165,17 @@ class LoadFixturesTestCase(TestCase):
                 "name": "DADA Placement",
                 "report_id": 3,
                 "course_id": 999999,
-                "assignment_id": 222222
+                "assignment_id": 222222,
+                "default_time_filter": datetime(2020, 7, 1, 0, 0, 0, tzinfo=utc)
             }
         )
 
     def test_fixtures_load_maintains_submission_link(self):
         """
         Loading submission and updating related exam results in maintained relationship.
+
         This test assumes the first two test cases succeeded.
         """
-
         # Load first test's fixtures
         call_command('loaddata', 'test_01.json')
 
@@ -182,7 +188,7 @@ class LoadFixturesTestCase(TestCase):
         if not submission_queryset.exists():
             return None
 
-        submission_dict = submission_queryset.values(
+        submission_dict = submission_queryset.filter(submission_id=123456).values(
             'submission_id', 'exam_id', 'student_uniqname', 'submitted_timestamp', 'score',
             'transmitted', 'transmitted_timestamp'
         )[0]
@@ -192,10 +198,10 @@ class LoadFixturesTestCase(TestCase):
                 "submission_id": 123456,
                 "exam_id": 1,
                 "student_uniqname": "hpotter",
-                "submitted_timestamp": datetime(2020, 6, 12, 8, 15, 30),
+                "submitted_timestamp": datetime(2020, 6, 12, 8, 15, 30, tzinfo=utc),
                 "score": 100.0,
                 "transmitted": True,
-                "transmitted_timestamp": datetime(2020, 6, 12, 12, 0, 30)
+                "transmitted_timestamp": datetime(2020, 6, 12, 12, 0, 30, tzinfo=utc)
             }
         )
 
@@ -213,35 +219,31 @@ class LoadFixturesTestCase(TestCase):
 
 
 class StringMethodsTestCase(TestCase):
-    fixtures = ['test_01.json', 'test_04.json']
+    fixtures: List[str] = ['test_01.json', 'test_04.json']
 
     def test_report_string_method(self):
-        """Report string method should present all variables in the correct format"""
-
+        """Report string method presents all variables in the correct format."""
         potions_report = Report.objects.get(id=1)
         self.assertEqual(potions_report.__str__(), '(id=1, name=Potions, contact=halfbloodprince@hogwarts.edu)')
 
     def test_exam_string_method(self):
         """
-        Exam string method should present all variables, and nested Report object, in the correct format.
+        Exam string method presents all variables, and nested Report object, in the correct format.
         """
-
         potions_exam = Exam.objects.get(id=1)
         self.assertEqual(
             potions_exam.__str__(),
             (
                 '(id=1, sa_code=PP, name=Potions Placement, ' +
                 'report=(id=1, name=Potions, contact=halfbloodprince@hogwarts.edu), ' +
-                'course_id=888888, assignment_id=111111)'
+                'course_id=888888, assignment_id=111111, default_time_filter=2020-06-01 00:00:00+00:00)'
             )
         )
 
     def test_submission_string_method(self):
         """
-        Submission string method should present all variables, and nested Exam and Report objects, in the
-        correct format.
+        Submission string method presents all variables (and Exam and Report objects), in the correct format.
         """
-
         potions_submission = Submission.objects.get(id=1)
         self.assertEqual(
             potions_submission.__str__(),
@@ -249,8 +251,44 @@ class StringMethodsTestCase(TestCase):
                 '(id=1, submission_id=123456, exam=' +
                 '(id=1, sa_code=PP, name=Potions Placement, ' +
                 'report=(id=1, name=Potions, contact=halfbloodprince@hogwarts.edu), ' +
-                'course_id=888888, assignment_id=111111), ' +
-                'student_uniqname=hpotter, submitted_timestamp=2020-06-12 08:15:30, score=100.0, ' +
-                'transmitted=True, transmitted_timestamp=2020-06-12 12:00:30)'
+                'course_id=888888, assignment_id=111111, default_time_filter=2020-06-01 00:00:00+00:00), ' +
+                'student_uniqname=hpotter, submitted_timestamp=2020-06-12 08:15:30+00:00, ' +
+                'graded_timestamp=2020-06-12 09:30:15+00:00, score=100.0, ' +
+                'transmitted=True, transmitted_timestamp=2020-06-12 12:00:30+00:00)'
             )
+        )
+
+
+class CustomMethodsTestCase(TestCase):
+    fixtures: List[str] = ['test_01.json', 'test_03.json', 'test_04.json']
+
+    def test_get_last_sub_graded_datetime_with_submissions(self):
+        """
+        Exam.get_last_sub_graded_datetime returns the latest graded_timestamp when submissions are present.
+        """
+        potions_exam = Exam.objects.get(id=1)
+        last_sub_graded_dt: Union[datetime, None] = potions_exam.get_last_sub_graded_datetime()
+        self.assertTrue(last_sub_graded_dt, datetime(2020, 6, 12, 12, 0, 30, tzinfo=utc))
+
+    def test_get_last_sub_graded_datetime_without_submissions(self):
+        """
+        Exam.get_last_sub_graded_datetime returns None when no submissions are present.
+        """
+        dada_place_exam = Exam.objects.get(id=3)
+        last_sub_graded_dt: Union[datetime, None] = dada_place_exam.get_last_sub_graded_datetime()
+        self.assertIsNone(last_sub_graded_dt)
+
+    def test_submission_prepare_score(self):
+        """
+        Submission.prepare_score returns proper score dictionary for submission.
+        """
+        sub_two: Submission = Submission.objects.get(submission_id=123457)
+
+        self.assertEqual(
+            sub_two.prepare_score(),
+            {
+                'ID': 'hgranger',
+                'Form': 'PP',
+                'GradePoints': '300.0'
+            }
         )

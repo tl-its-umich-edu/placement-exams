@@ -77,7 +77,6 @@ def main():
             }
             reporter.exams_metadata[exam.id] = metadata
         reporter.prepare_context()
-        LOGGER.info(reporter.context)
         LOGGER.info(f'Sending email to {report.contact}')
         reporter.send_email()
 

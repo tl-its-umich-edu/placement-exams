@@ -98,7 +98,6 @@ class Reporter:
         html_email: str = render_to_string('email.html', self.context)
 
         try:
-            LOGGER.info(os.getenv('SMTP_FROM', ''))
             result = send_mail(
                 subject=self.get_subject(),
                 message=plain_text_email,
@@ -106,7 +105,7 @@ class Reporter:
                 recipient_list=[self.report.contact],
                 html_message=html_email
             )
-            LOGGER.info(result)
+            LOGGER.debug(result)
             LOGGER.info('Successfully sent email')
         except SMTPException as e:
             LOGGER.info(f'Error: unable to send email due to {e}')

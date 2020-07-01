@@ -1,11 +1,12 @@
 # standard libraries
 import logging, os, sys
+from logging import Logger
 from datetime import datetime
-from typing import List
+from typing import Dict, List, Union
 
 # third-party libraries
-from autologging import logged
 from django.core.wsgi import get_wsgi_application
+from django.utils.timezone import utc
 from dotenv import load_dotenv
 from umich_api.api_utils import ApiUtil
 
@@ -17,7 +18,7 @@ from constants import ROOT_DIR
 # Initialize globals and environment
 
 # Logging will be configured in config/settings.py
-LOGGER = logging.getLogger(__name__)
+LOGGER: Logger = logging.getLogger(__name__)
 
 CONFIG_DIR: str = os.getenv('ENV_DIR', os.path.join('config', 'secrets'))
 ENV_PATH: str = os.path.join(ROOT_DIR, CONFIG_DIR, os.getenv('ENV_FILE', '.env'))
@@ -32,6 +33,7 @@ try:
     application = get_wsgi_application()
     from pe.models import Exam, Report
     from pe.orchestration import ScoresOrchestration
+    from pe.reporter import Reporter
 except Exception as e:
     LOGGER.error(e)
     LOGGER.error('Failed to load Django application; the program will exit')
@@ -50,9 +52,8 @@ except Exception as e:
     sys.exit(1)
 
 
-@logged
 def main():
-    start_time: datetime = datetime.now()
+    start_time: datetime = datetime.now(tz=utc)
     logging.info(f'Starting new run at {start_time}')
 
     reports: List[Report] = list(Report.objects.all())
@@ -61,39 +62,27 @@ def main():
     exams: List[Exam] = list(Exam.objects.all())
     logging.info(exams)
 
-    for exam in exams:
-        LOGGER.info(f'Processing Exam: {exam.name}')
-        exam_orca: ScoresOrchestration = ScoresOrchestration(API_UTIL, exam)
-        exam_orca.main()
+    for report in reports:
+        reporter: Reporter = Reporter(report)
+        for exam in report.exams.all():
+            LOGGER.info(f'Processing Exam: {exam.name}')
+            exam_start_time = datetime.now(tz=utc)
+            exam_orca: ScoresOrchestration = ScoresOrchestration(API_UTIL, exam)
+            exam_orca.main()
+            exam_end_time = datetime.now(tz=utc)
+            metadata: Dict[str, Union[int, datetime]] = {
+                'start_time': exam_start_time,
+                'end_time': exam_end_time,
+                'datetime_filter': exam_orca.sub_time_filter
+            }
+            reporter.exams_metadata[exam.id] = metadata
+        reporter.prepare_context()
+        LOGGER.info(reporter.context)
+        LOGGER.info(f'Sending email to {report.contact}')
+        reporter.send_email()
 
-    # spe_report: SPESummaryReport = SPESummaryReport()
-    # next_query_date: Dict[str, str] = score_handler.orchestrator()
-    # if next_query_date:
-    #     try:
-    #         # sorting the dict so that it always be in format {'place':2019-09-12T14:04:42Z, 'val':2019-09-15T14:04:42Z}
-    #         sorted_next_query_date = dict(sorted(next_query_date.items()))
-    #         query_date_holder.store_next_query_date(sorted_next_query_date)
-    #         spe_report.next_stored_persisted_date = sorted_next_query_date
-    #     except (OSError, IOError, Exception) as e:
-    #         logging.error(f"""error storing the latest assignment submitted date due to {e} 
-    #                     stored date in persisted storage is {stored_submission_date}""")
-    #         spe_report.next_stored_persisted_date = stored_submission_date
-    # else:
-    #     logging.info(f"No next Query date to update either no new scores or error in sending first score")
-    #     spe_report.next_stored_persisted_date = stored_submission_date
-
-    end_time: datetime = datetime.now()
+    end_time: datetime = datetime.now(tz=utc)
     delta: datetime = end_time - start_time
-
-    # spe_report.start_time = start_time
-    # spe_report.end_time = end_time
-    # spe_report.elapsed_time = delta
-
-    # if spe_report.is_any_scores_received():
-    #     logging.info('Sending Email....')
-    #     spe_report.send_email()
-    # else:
-    #     logging.info('Not Sending Email since no scores received')
 
     logging.info(f'The run ended at {end_time}')
     logging.info(f'Duration of run: {delta}')

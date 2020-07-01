@@ -1,0 +1,54 @@
+<div>
+    <h1>Placement Exams Report: {{ report.name }}</h1>
+    <p>This report covers the results of the latest Placement Exams run, including providing the latest scores 
+        from Canvas exams, and whether they were successfully sent to M-Pathways or not. For each exam, the report
+        also provides counts of successfully transmitted scores, scores that could not be sent, and new submissions
+        gathered from Canvas, as well as the time used to filter when finding new submissions in Canvas.
+    </p>
+    {% for exam in exams %}
+    <h2>Exam: {{ exam.name }}</h2>
+    <p>Canvas Course ID: {{ exam.course_id}}</p>
+    <p>Canvas Assignment ID: {{ exam.assignment_id }}</p>
+    <p>Exam Processing Start: {{ exam.time.start_time }}</p>
+    <p>Exam Processing End: {{ exam.time.end_time }}</p>
+    <p>Time used for filtering Canvas submissions: {{ exam.time.datetime_filter }}</p>
+    <h3>Successes</h3>
+    {% if exam.successes %}
+    <table>
+        <tr>
+            <th>Student Uniqname</th>
+            <th>Score</th>
+            <th>Submitted Timestamp</th>
+        </tr>
+        {% for submission in exam.successes %}
+        <tr>
+            <td>{{ submission.student_uniqname }}</td>
+            <td>{{ submission.score }}</td>
+            <td>{{ submission.submitted_timestamp }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>The application did not send any scores for this exam.</p>
+    {% endif %}
+    <h3>Failures</h3>
+    {% if exam.failures %}
+    <table>
+        <tr>
+            <th>Student Uniqname</th>
+            <th>Score</th>
+            <th>Submitted Timestamp</th>
+        </tr>
+        {% for submission in exam.failures %}
+        <tr>
+            <td>{{ submission.student_uniqname }}</td>
+            <td>{{ submission.score }}</td>
+            <td>{{ submission.submitted_timestamp }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>The application did not fail to send any scores for this exam.</p>
+    {% endif %}
+    {% endfor %}
+</div>

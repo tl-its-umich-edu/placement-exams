@@ -23,6 +23,12 @@ DATABASES: Dict[str, Dict[str, str]] = {
     }
 }
 
+if os.getenv('EMAIL_DEBUG', 'True') == 'True':
+    EMAIL_BACKEND: str = 'django.core.mail.backends.console.EmailBackend'
+
+EMAIL_HOST: str = os.getenv('SMTP_HOST', '')
+EMAIL_PORT: int = int(os.getenv('SMTP_PORT', 0))
+
 FIXTURE_DIRS: List[str] = [
     CONFIG_DIR,
     os.path.join(BASE_DIR, 'test', 'fixtures')
@@ -60,6 +66,14 @@ INSTALLED_APPS: List[str] = [
 ]
 
 SECRET_KEY: str = os.getenv('SECRET_KEY', '-- A SECRET KEY --')
+
+TEMPLATES: List[Dict[str, Any]] = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': ['templates'],
+        'APP_DIRS': True
+    },
+]
 
 TIME_ZONE: str = os.getenv('TIME_ZONE', 'America/Detroit')
 USE_TZ: bool = True

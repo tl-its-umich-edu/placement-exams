@@ -59,11 +59,10 @@ class Reporter:
             }
             exam_dict['time'] = self.exams_metadata[exam.id]
 
-            sub_values: Tuple[str, ...] = ('student_uniqname', 'score', 'submitted_timestamp')
+            sub_values: Tuple[str, ...] = ('submission_id', 'student_uniqname', 'score', 'submitted_timestamp')
             exam_dict['successes'] = list(success_sub_qs.values(*sub_values))
             exam_dict['failures'] = list(failure_sub_qs.values(*sub_values))
             exam_dicts.append(exam_dict)
-            # exam_dict['new'] = list(new_sub_qs.values(*sub_values))
 
             self.total_successes += num_successes
             self.total_failures += num_failures

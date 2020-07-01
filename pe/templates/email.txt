@@ -1,38 +1,40 @@
 Placement Exams Report: {{ report.name }}
 
-This report covers the results of the latest Placement Exams run, including providing the latest scores 
-from Canvas exams, and whether they were successfully sent to M-Pathways or not. For each exam, the report
-also provides counts of successfully transmitted scores, scores that could not be sent, and new submissions
-gathered from Canvas, as well as the time used to filter when finding new submissions in Canvas.
+This report covers the results of the latest Placement Exams run, including providing the
+latest scores from Canvas exams, and whether they were successfully sent to M-Pathways or not. For each exam,
+the report also provides processing details (start and end times), the time used to filter when gathering new
+submissions from Canvas, and a count of new submissions.
 
 {% for exam in exams %}
 Exam: {{ exam.name }}
 Canvas Course ID: {{ exam.course_id}}
 Canvas Assignment ID: {{ exam.assignment_id }}
+Process Start: {{ exam.time.start_time }}
+Process End: {{ exam.time.end_time }}
+Time used for filtering Canvas submissions: {{ exam.time.datetime_filter }}
+New submissions count: {{ exam.summary.new_count}}
 
-Exam Processing Start: {{ exam.time.start_time }}
-Exam Processing End: {{ exam.time.end_time }}
-Time for filtering Canvas submissions: {{ exam.time.datetime_filter }}
-
-Successes
-
+Successes: Scores transmitted
 {% if exam.successes %}
-Student Uniqname - Score - Submitted Timestamp
+Canvas ID - Student Uniqname - Score - Submitted At (EST)
 {% for submission in exam.successes %}
-{{ submission.student_uniqname }} - {{ submission.score }} - {{ submission.submitted_timestamp }}
+{{ submission.submission_id }} - {{ submission.student_uniqname }} - {{ submission.score }} - {{ submission.submitted_timestamp }}
 {% endfor %}
 {% else %}
 The application did not send any scores for this exam.
 {% endif %}
 
-Failures
-
+Failures: Scores not transmitted
 {% if exam.failures %}
-Student Uniqname - Score - Submitted Timestamp
+Canvas ID - Student Uniqname - Score - Submitted At (EST)
 {% for submission in exam.failures %}
-{{ submission.student_uniqname }} - {{ submission.score }} - {{ submission.submitted_timestamp }}
+{{ submission.submission_id }} - {{ submission.student_uniqname }} - {{ submission.score }} - {{ submission.submitted_timestamp }}
 {% endfor %}
 {% else %}
 The application did not fail to send any scores for this exam.
 {% endif %}
 {% endfor %}
+
+Questions?
+If you would like more information about these emails, or would like to be removed from the mailing list,
+email its.tl.staff@umich.edu, mentioning "Placement Exams" in the subject.

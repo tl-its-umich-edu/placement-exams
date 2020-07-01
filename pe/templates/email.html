@@ -1,49 +1,74 @@
 <div>
     <h1>Placement Exams Report: {{ report.name }}</h1>
-    <p>This report covers the results of the latest Placement Exams run, including providing the latest scores 
-        from Canvas exams, and whether they were successfully sent to M-Pathways or not. For each exam, the report
-        also provides counts of successfully transmitted scores, scores that could not be sent, and new submissions
-        gathered from Canvas, as well as the time used to filter when finding new submissions in Canvas.
+    <p style="width: 600px">This report covers the results of the latest Placement Exams run, including providing the
+        latest scores from Canvas exams, and whether they were successfully sent to M-Pathways or not. For each exam,
+        the report also provides processing details (start and end times), the time used to filter when gathering new
+        submissions from Canvas, and a count of new submissions.
     </p>
     {% for exam in exams %}
     <h2>Exam: {{ exam.name }}</h2>
-    <p>Canvas Course ID: {{ exam.course_id}}</p>
-    <p>Canvas Assignment ID: {{ exam.assignment_id }}</p>
-    <p>Exam Processing Start: {{ exam.time.start_time }}</p>
-    <p>Exam Processing End: {{ exam.time.end_time }}</p>
-    <p>Time used for filtering Canvas submissions: {{ exam.time.datetime_filter }}</p>
-    <h3>Successes</h3>
-    {% if exam.successes %}
     <table>
         <tr>
-            <th>Student Uniqname</th>
-            <th>Score</th>
-            <th>Submitted Timestamp</th>
+            <td style="height: 50px; width: 200px">Canvas Course ID</td>
+            <td style="height: 50px; width: 200px">{{ exam.course_id}}</td>
+        </tr>
+        <tr>
+            <td style="height: 50px; width: 200px">Canvas Assignment ID</td>
+            <td style="height: 50px; width: 200px">{{ exam.assignment_id }}</td>
+        </tr>
+        <tr>
+            <td style="height: 50px; width: 200px">Process Start</td>
+            <td style="height: 50px; width: 200px">{{ exam.time.start_time }}</td>
+        </tr>
+        <tr>
+            <td style="height: 50px; width: 200px">Process End</td>
+            <td style="height: 50px; width: 200px">{{ exam.time.end_time }}</td>
+        </tr>
+        <tr>
+            <td style="height: 50px; width: 200px">Time used for filtering Canvas submissions</td>
+            <td style="height: 50px; width: 200px">{{ exam.time.datetime_filter }}</td>
+        </tr>
+        <tr>
+            <td style="height: 50px; width: 200px">New submissions count</td>
+            <td style="height: 50px; width: 200px">{{ exam.summary.new_count }}</td>
+        </tr>
+    </table>
+    <h3>Successes: Scores transmitted</h3>
+    {% if exam.successes %}
+    <table style="width: 600px">
+        <tr>
+            <th style="height: 50px; width: 100px; text-align: left">Canvas ID</th>
+            <th style="height: 50px; width: 200px; text-align: left">Student Uniqname</th>
+            <th style="height: 50px; width: 100px; text-align: left">Score</th>
+            <th style="height: 50px; width: 200px; text-align: left">Submitted At (EST)</th>
         </tr>
         {% for submission in exam.successes %}
         <tr>
-            <td>{{ submission.student_uniqname }}</td>
-            <td>{{ submission.score }}</td>
-            <td>{{ submission.submitted_timestamp }}</td>
+            <td style="height: 50px; width: 100px">{{ submission.submission_id }}</td>
+            <td style="height: 50px; width: 200px">{{ submission.student_uniqname }}</td>
+            <td style="height: 50px; width: 100px">{{ submission.score }}</td>
+            <td style="height: 50px; width: 200px">{{ submission.submitted_timestamp }}</td>
         </tr>
         {% endfor %}
     </table>
     {% else %}
     <p>The application did not send any scores for this exam.</p>
     {% endif %}
-    <h3>Failures</h3>
+    <h3>Failures: Scores not transmitted</h3>
     {% if exam.failures %}
-    <table>
+    <table style="width: 600px">
         <tr>
-            <th>Student Uniqname</th>
-            <th>Score</th>
-            <th>Submitted Timestamp</th>
+            <th style="height: 50px; width: 100px; text-align: left">Canvas ID</th>
+            <th style="height: 50px; width: 200px; text-align: left">Student Uniqname</th>
+            <th style="height: 50px; width: 100px; text-align: left">Score</th>
+            <th style="height: 50px; width: 200px; text-align: left">Submitted At (EST)</th>
         </tr>
         {% for submission in exam.failures %}
         <tr>
-            <td>{{ submission.student_uniqname }}</td>
-            <td>{{ submission.score }}</td>
-            <td>{{ submission.submitted_timestamp }}</td>
+            <td style="height: 50px; width: 100px">{{ submission.submission_id }}</td>
+            <td style="height: 50px; width: 200px">{{ submission.student_uniqname }}</td>
+            <td style="height: 50px; width: 100px">{{ submission.score }}</td>
+            <td style="height: 50px; width: 200px">{{ submission.submitted_timestamp }}</td>
         </tr>
         {% endfor %}
     </table>
@@ -51,4 +76,8 @@
     <p>The application did not fail to send any scores for this exam.</p>
     {% endif %}
     {% endfor %}
+    <h2>Questions?</h2>
+    <p style="width: 600px">If you would like more information about these emails, or would like to be removed from the mailing list,
+        email its.tl.staff@umich.edu, mentioning "Placement Exams" in the subject.
+    </p>
 </div>

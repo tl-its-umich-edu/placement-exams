@@ -118,4 +118,4 @@ class Reporter:
             LOGGER.debug(result)
             LOGGER.info('Successfully sent email')
         except SMTPException as e:
-            LOGGER.info(f'Error: unable to send email due to {e}')
+            LOGGER.error(f'Error: unable to send email due to {e}')

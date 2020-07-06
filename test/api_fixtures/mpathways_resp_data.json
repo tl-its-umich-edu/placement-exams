@@ -41,7 +41,7 @@
         "putPlcExamScoreResponse": {
             "@schemaLocation": "<The real schema string would go here>",
             "putPlcExamScoreResponse": {
-                "GoodCount": 2,
+                "GoodCount": 4,
                 "Success": [
                     {
                         "uniqname": "hpotter",
@@ -90,6 +90,20 @@
                 },
                 "BadCount": 0,
                 "Errors": "No errors found"
+            }
+        }
+    },
+    {
+        "putPlcExamScoreResponse": {
+            "@schemaLocation": "<The real schema string would go here>",
+            "putPlcExamScoreResponse": {
+                "GoodCount": 0,
+                "Success": "No successes",
+                "BadCount": 1,
+                "Errors": {
+                    "uniqname": "rweasley",
+                    "placementType": "PP"
+                }
             }
         }
     }

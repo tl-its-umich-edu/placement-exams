@@ -78,7 +78,8 @@ class Reporter:
             'new_count': self.total_new
         }
 
-        self.context = {'report': report_dict, 'exams': exam_dicts}
+        support_email: str = os.getenv('SUPPORT_EMAIL', 'its.tl.staff@umich.edu')
+        self.context = {'report': report_dict, 'exams': exam_dicts, 'support_email': support_email}
         LOGGER.debug(self.context)
 
     def get_subject(self) -> str:

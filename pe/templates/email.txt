@@ -37,4 +37,4 @@ The application did not fail to send any scores for this exam.
 
 Questions?
 If you would like more information about these emails, or would like to be removed from the mailing list,
-email its.tl.staff@umich.edu, mentioning "Placement Exams" in the subject.
+email {{ support_email }}, mentioning "Placement Exams" in the subject.

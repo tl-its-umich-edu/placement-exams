@@ -2,7 +2,7 @@
 import logging, os, sys
 from logging import Logger
 from datetime import datetime
-from typing import Dict, List, Union
+from typing import Dict, List
 
 # third-party libraries
 from django.core.wsgi import get_wsgi_application
@@ -57,10 +57,10 @@ def main():
     logging.info(f'Starting new run at {start_time}')
 
     reports: List[Report] = list(Report.objects.all())
-    logging.info(reports)
+    logging.debug(reports)
 
     exams: List[Exam] = list(Exam.objects.all())
-    logging.info(exams)
+    logging.debug(exams)
 
     for report in reports:
         reporter: Reporter = Reporter(report)
@@ -70,12 +70,12 @@ def main():
             exam_orca: ScoresOrchestration = ScoresOrchestration(API_UTIL, exam)
             exam_orca.main()
             exam_end_time = datetime.now(tz=utc)
-            metadata: Dict[str, Union[int, datetime]] = {
+            metadata: Dict[str, datetime] = {
                 'start_time': exam_start_time,
                 'end_time': exam_end_time,
                 'datetime_filter': exam_orca.sub_time_filter
             }
-            reporter.exams_metadata[exam.id] = metadata
+            reporter.exams_time_metadata[exam.id] = metadata
         reporter.prepare_context()
         LOGGER.info(f'Sending email to {report.contact}')
         reporter.send_email()

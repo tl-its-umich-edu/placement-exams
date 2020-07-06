@@ -3,7 +3,7 @@
     <p style="width: 600px">This report covers the results of the latest Placement Exams run, including providing the
         latest scores from Canvas exams, and whether they were successfully sent to M-Pathways or not. For each exam,
         the report also provides processing details (start and end times), the time used to filter when gathering new
-        submissions from Canvas, and a count of new submissions.
+        submissions from Canvas, and a count of new submissions. All times are in Eastern Standard Time (EST).
     </p>
     {% for exam in exams %}
     <h2>Exam: {{ exam.name }}</h2>
@@ -40,7 +40,7 @@
             <th style="height: 30px; width: 100px; text-align: left">Canvas ID</th>
             <th style="height: 30px; width: 200px; text-align: left">Student Uniqname</th>
             <th style="height: 30px; width: 100px; text-align: left">Score</th>
-            <th style="height: 30px; width: 200px; text-align: left">Submitted At (EST)</th>
+            <th style="height: 30px; width: 200px; text-align: left">Submitted At</th>
         </tr>
         {% for submission in exam.successes %}
         <tr>
@@ -61,7 +61,7 @@
             <th style="height: 30px; width: 100px; text-align: left">Canvas ID</th>
             <th style="height: 30px; width: 200px; text-align: left">Student Uniqname</th>
             <th style="height: 30px; width: 100px; text-align: left">Score</th>
-            <th style="height: 30px; width: 200px; text-align: left">Submitted At (EST)</th>
+            <th style="height: 30px; width: 200px; text-align: left">Submitted At</th>
         </tr>
         {% for submission in exam.failures %}
         <tr>

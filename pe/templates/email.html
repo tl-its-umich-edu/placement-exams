@@ -9,45 +9,45 @@
     <h2>Exam: {{ exam.name }}</h2>
     <table>
         <tr>
-            <td style="height: 50px; width: 200px">Canvas Course ID</td>
-            <td style="height: 50px; width: 200px">{{ exam.course_id}}</td>
+            <td style="height: 30px; width: 250px">Canvas Course ID</td>
+            <td style="height: 30px; width: 250px">{{ exam.course_id}}</td>
         </tr>
         <tr>
-            <td style="height: 50px; width: 200px">Canvas Assignment ID</td>
-            <td style="height: 50px; width: 200px">{{ exam.assignment_id }}</td>
+            <td style="height: 30px; width: 250px">Canvas Assignment ID</td>
+            <td style="height: 30px; width: 250px">{{ exam.assignment_id }}</td>
         </tr>
         <tr>
-            <td style="height: 50px; width: 200px">Process Start</td>
-            <td style="height: 50px; width: 200px">{{ exam.time.start_time }}</td>
+            <td style="height: 30px; width: 250px">Process Start</td>
+            <td style="height: 30px; width: 250px">{{ exam.time.start_time|date:"N j, Y g:i:s a" }}</td>
         </tr>
         <tr>
-            <td style="height: 50px; width: 200px">Process End</td>
-            <td style="height: 50px; width: 200px">{{ exam.time.end_time }}</td>
+            <td style="height: 30px; width: 250px">Process End</td>
+            <td style="height: 30px; width: 250px">{{ exam.time.end_time|date:"N j, Y g:i:s a" }}</td>
         </tr>
         <tr>
-            <td style="height: 50px; width: 200px">Time used for filtering Canvas submissions</td>
-            <td style="height: 50px; width: 200px">{{ exam.time.datetime_filter }}</td>
+            <td style="height: 30px; width: 250px">Time used for filtering Canvas submissions</td>
+            <td style="height: 30px; width: 250px">{{ exam.time.datetime_filter|date:"N j, Y g:i:s a" }}</td>
         </tr>
         <tr>
-            <td style="height: 50px; width: 200px">New submissions count</td>
-            <td style="height: 50px; width: 200px">{{ exam.summary.new_count }}</td>
+            <td style="height: 30px; width: 250px">New submissions count</td>
+            <td style="height: 30px; width: 250px">{{ exam.summary.new_count }}</td>
         </tr>
     </table>
     <h3>Successes: Scores transmitted</h3>
     {% if exam.successes %}
     <table style="width: 600px">
         <tr>
-            <th style="height: 50px; width: 100px; text-align: left">Canvas ID</th>
-            <th style="height: 50px; width: 200px; text-align: left">Student Uniqname</th>
-            <th style="height: 50px; width: 100px; text-align: left">Score</th>
-            <th style="height: 50px; width: 200px; text-align: left">Submitted At (EST)</th>
+            <th style="height: 30px; width: 100px; text-align: left">Canvas ID</th>
+            <th style="height: 30px; width: 200px; text-align: left">Student Uniqname</th>
+            <th style="height: 30px; width: 100px; text-align: left">Score</th>
+            <th style="height: 30px; width: 200px; text-align: left">Submitted At (EST)</th>
         </tr>
         {% for submission in exam.successes %}
         <tr>
-            <td style="height: 50px; width: 100px">{{ submission.submission_id }}</td>
-            <td style="height: 50px; width: 200px">{{ submission.student_uniqname }}</td>
-            <td style="height: 50px; width: 100px">{{ submission.score }}</td>
-            <td style="height: 50px; width: 200px">{{ submission.submitted_timestamp }}</td>
+            <td style="height: 30px; width: 100px">{{ submission.submission_id }}</td>
+            <td style="height: 30px; width: 200px">{{ submission.student_uniqname }}</td>
+            <td style="height: 30px; width: 100px">{{ submission.score }}</td>
+            <td style="height: 30px; width: 200px">{{ submission.submitted_timestamp|date:"N j, Y g:i:s a" }}</td>
         </tr>
         {% endfor %}
     </table>
@@ -58,17 +58,17 @@
     {% if exam.failures %}
     <table style="width: 600px">
         <tr>
-            <th style="height: 50px; width: 100px; text-align: left">Canvas ID</th>
-            <th style="height: 50px; width: 200px; text-align: left">Student Uniqname</th>
-            <th style="height: 50px; width: 100px; text-align: left">Score</th>
-            <th style="height: 50px; width: 200px; text-align: left">Submitted At (EST)</th>
+            <th style="height: 30px; width: 100px; text-align: left">Canvas ID</th>
+            <th style="height: 30px; width: 200px; text-align: left">Student Uniqname</th>
+            <th style="height: 30px; width: 100px; text-align: left">Score</th>
+            <th style="height: 30px; width: 200px; text-align: left">Submitted At (EST)</th>
         </tr>
         {% for submission in exam.failures %}
         <tr>
-            <td style="height: 50px; width: 100px">{{ submission.submission_id }}</td>
-            <td style="height: 50px; width: 200px">{{ submission.student_uniqname }}</td>
-            <td style="height: 50px; width: 100px">{{ submission.score }}</td>
-            <td style="height: 50px; width: 200px">{{ submission.submitted_timestamp }}</td>
+            <td style="height: 30px; width: 100px">{{ submission.submission_id }}</td>
+            <td style="height: 30px; width: 200px">{{ submission.student_uniqname }}</td>
+            <td style="height: 30px; width: 100px">{{ submission.score }}</td>
+            <td style="height: 30px; width: 200px">{{ submission.submitted_timestamp|date:"N j, Y g:i:s a" }}</td>
         </tr>
         {% endfor %}
     </table>

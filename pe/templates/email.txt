@@ -21,7 +21,7 @@ Canvas ID - Student Uniqname - Score - Submitted At
 {{ submission.submission_id }} - {{ submission.student_uniqname }} - {{ submission.score }} - {{ submission.submitted_timestamp }}
 {% endfor %}
 {% else %}
-The application did not send any scores for this exam.
+The application did not send any scores for the {{ exam.name }} exam.
 {% endif %}
 
 Failures: Scores not transmitted
@@ -31,7 +31,7 @@ Canvas ID - Student Uniqname - Score - Submitted At
 {{ submission.submission_id }} - {{ submission.student_uniqname }} - {{ submission.score }} - {{ submission.submitted_timestamp }}
 {% endfor %}
 {% else %}
-The application did not fail to send any scores for this exam.
+The application did not fail to send any scores for the {{ exam.name }} exam.
 {% endif %}
 {% endfor %}
 

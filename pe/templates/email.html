@@ -52,7 +52,7 @@
         {% endfor %}
     </table>
     {% else %}
-    <p>The application did not send any scores for this exam.</p>
+    <p>The application did not send any scores for the {{ exam.name }} exam.</p>
     {% endif %}
     <h3>Failures: Scores not transmitted</h3>
     {% if exam.failures %}
@@ -73,7 +73,7 @@
         {% endfor %}
     </table>
     {% else %}
-    <p>The application did not fail to send any scores for this exam.</p>
+    <p>The application did not fail to send any scores for the {{ exam.name }} exam.</p>
     {% endif %}
     {% endfor %}
     <h2>Questions?</h2>

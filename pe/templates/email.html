@@ -5,7 +5,7 @@
         the report also provides processing details (start and end times), the time used to filter when gathering new
         submissions from Canvas, and a count of new submissions. All times are in Eastern Standard Time (EST).
     </p>
-    {% for exam in exams %}
+{% for exam in exams %}
     <h2>Exam: {{ exam.name }}</h2>
     <table>
         <tr>
@@ -34,7 +34,7 @@
         </tr>
     </table>
     <h3>Successes: Scores transmitted</h3>
-    {% if exam.successes %}
+{% if exam.successes %}
     <table style="width: 600px">
         <tr>
             <th style="height: 30px; width: 100px; text-align: left">Canvas ID</th>
@@ -42,20 +42,20 @@
             <th style="height: 30px; width: 100px; text-align: left">Score</th>
             <th style="height: 30px; width: 200px; text-align: left">Submitted At</th>
         </tr>
-        {% for submission in exam.successes %}
+{% for submission in exam.successes %}
         <tr>
             <td style="height: 30px; width: 100px">{{ submission.submission_id }}</td>
             <td style="height: 30px; width: 200px">{{ submission.student_uniqname }}</td>
             <td style="height: 30px; width: 100px">{{ submission.score }}</td>
             <td style="height: 30px; width: 200px">{{ submission.submitted_timestamp }}</td>
         </tr>
-        {% endfor %}
+{% endfor %}
     </table>
-    {% else %}
+{% else %}
     <p>The application did not send any scores for the {{ exam.name }} exam.</p>
-    {% endif %}
+{% endif %}
     <h3>Failures: Scores not transmitted</h3>
-    {% if exam.failures %}
+{% if exam.failures %}
     <table style="width: 600px">
         <tr>
             <th style="height: 30px; width: 100px; text-align: left">Canvas ID</th>
@@ -63,19 +63,19 @@
             <th style="height: 30px; width: 100px; text-align: left">Score</th>
             <th style="height: 30px; width: 200px; text-align: left">Submitted At</th>
         </tr>
-        {% for submission in exam.failures %}
+{% for submission in exam.failures %}
         <tr>
             <td style="height: 30px; width: 100px">{{ submission.submission_id }}</td>
             <td style="height: 30px; width: 200px">{{ submission.student_uniqname }}</td>
             <td style="height: 30px; width: 100px">{{ submission.score }}</td>
             <td style="height: 30px; width: 200px">{{ submission.submitted_timestamp }}</td>
         </tr>
-        {% endfor %}
+{% endfor %}
     </table>
-    {% else %}
+{% else %}
     <p>The application did not fail to send any scores for the {{ exam.name }} exam.</p>
-    {% endif %}
-    {% endfor %}
+{% endif %}
+{% endfor %}
     <h2>Questions?</h2>
     <p style="width: 600px">If you would like more information about these emails, or would like to be removed from the mailing list,
         email {{ support_email }}, mentioning "Placement Exams" in the subject.

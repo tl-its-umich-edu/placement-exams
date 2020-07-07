@@ -18,15 +18,15 @@
         </tr>
         <tr>
             <td style="height: 30px; width: 250px">Process Start</td>
-            <td style="height: 30px; width: 250px">{{ exam.time.start_time|date:"N j, Y g:i:s a" }}</td>
+            <td style="height: 30px; width: 250px">{{ exam.time.start_time }}</td>
         </tr>
         <tr>
             <td style="height: 30px; width: 250px">Process End</td>
-            <td style="height: 30px; width: 250px">{{ exam.time.end_time|date:"N j, Y g:i:s a" }}</td>
+            <td style="height: 30px; width: 250px">{{ exam.time.end_time }}</td>
         </tr>
         <tr>
             <td style="height: 30px; width: 250px">Time used for filtering Canvas submissions</td>
-            <td style="height: 30px; width: 250px">{{ exam.time.datetime_filter|date:"N j, Y g:i:s a" }}</td>
+            <td style="height: 30px; width: 250px">{{ exam.time.datetime_filter }}</td>
         </tr>
         <tr>
             <td style="height: 30px; width: 250px">New submissions count</td>
@@ -47,7 +47,7 @@
             <td style="height: 30px; width: 100px">{{ submission.submission_id }}</td>
             <td style="height: 30px; width: 200px">{{ submission.student_uniqname }}</td>
             <td style="height: 30px; width: 100px">{{ submission.score }}</td>
-            <td style="height: 30px; width: 200px">{{ submission.submitted_timestamp|date:"N j, Y g:i:s a" }}</td>
+            <td style="height: 30px; width: 200px">{{ submission.submitted_timestamp }}</td>
         </tr>
         {% endfor %}
     </table>
@@ -68,7 +68,7 @@
             <td style="height: 30px; width: 100px">{{ submission.submission_id }}</td>
             <td style="height: 30px; width: 200px">{{ submission.student_uniqname }}</td>
             <td style="height: 30px; width: 100px">{{ submission.score }}</td>
-            <td style="height: 30px; width: 200px">{{ submission.submitted_timestamp|date:"N j, Y g:i:s a" }}</td>
+            <td style="height: 30px; width: 200px">{{ submission.submitted_timestamp }}</td>
         </tr>
         {% endfor %}
     </table>

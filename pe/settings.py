@@ -23,6 +23,8 @@ DATABASES: Dict[str, Dict[str, str]] = {
     }
 }
 
+DATETIME_FORMAT: str = "N j, Y g:i:s a"
+
 if os.getenv('EMAIL_DEBUG', 'True') == 'True':
     EMAIL_BACKEND: str = 'django.core.mail.backends.console.EmailBackend'
 

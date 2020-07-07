@@ -9,16 +9,16 @@ submissions from Canvas, and a count of new submissions. All times are in Easter
 Exam: {{ exam.name }}
 Canvas Course ID: {{ exam.course_id}}
 Canvas Assignment ID: {{ exam.assignment_id }}
-Process Start: {{ exam.time.start_time|date:"N j, Y g:i:s a" }}
-Process End: {{ exam.time.end_time|date:"N j, Y g:i:s a" }}
-Time used for filtering Canvas submissions: {{ exam.time.datetime_filter|date:"N j, Y g:i:s a" }}
+Process Start: {{ exam.time.start_time }}
+Process End: {{ exam.time.end_time }}
+Time used for filtering Canvas submissions: {{ exam.time.datetime_filter }}
 New submissions count: {{ exam.summary.new_count}}
 
 Successes: Scores transmitted
 {% if exam.successes %}
 Canvas ID - Student Uniqname - Score - Submitted At
 {% for submission in exam.successes %}
-{{ submission.submission_id }} - {{ submission.student_uniqname }} - {{ submission.score }} - {{ submission.submitted_timestamp|date:"N j, Y g:i:s a" }}
+{{ submission.submission_id }} - {{ submission.student_uniqname }} - {{ submission.score }} - {{ submission.submitted_timestamp }}
 {% endfor %}
 {% else %}
 The application did not send any scores for this exam.
@@ -28,7 +28,7 @@ Failures: Scores not transmitted
 {% if exam.failures %}
 Canvas ID - Student Uniqname - Score - Submitted At
 {% for submission in exam.failures %}
-{{ submission.submission_id }} - {{ submission.student_uniqname }} - {{ submission.score }} - {{ submission.submitted_timestamp|date:"N j, Y g:i:s a" }}
+{{ submission.submission_id }} - {{ submission.student_uniqname }} - {{ submission.score }} - {{ submission.submitted_timestamp }}
 {% endfor %}
 {% else %}
 The application did not fail to send any scores for this exam.

@@ -1,5 +1,5 @@
 # standard libraries
-import json, logging, os  # re
+import json, logging, os
 from datetime import datetime
 from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, patch
 # third-party libraries
 from django.core import mail
 from django.core.mail import EmailMultiAlternatives
+from django.template import Context, Template
 from django.test import TestCase
 from django.utils.timezone import utc
 from requests import Response
@@ -18,6 +19,7 @@ from pe.models import Report
 from pe.orchestration import ScoresOrchestration
 from pe.reporter import Reporter
 
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -26,8 +28,9 @@ class ReporterSuccessTestCase(TestCase):
 
     def setUp(self):
         """
+        Intializes ApiUtil instance, fixtures, and report, and runs orchestrations for report, gathering time metadata.
         """
-        self.api_handler: ApiUtil = ApiUtil(
+        api_handler: ApiUtil = ApiUtil(
             os.getenv('API_DIR_URL', ''),
             os.getenv('API_DIR_CLIENT_ID', ''),
             os.getenv('API_DIR_SECRET', ''),
@@ -60,7 +63,7 @@ class ReporterSuccessTestCase(TestCase):
                 self.exams_time_metadata = {}
                 for exam in self.potions_report.exams.all():
                     start: datetime = datetime.now(tz=utc)
-                    exam_orca = ScoresOrchestration(self.api_handler, exam)
+                    exam_orca = ScoresOrchestration(api_handler, exam)
                     exam_orca.main()
                     end: datetime = datetime.now(tz=utc)
                     self.exams_time_metadata[exam.id] = {
@@ -75,6 +78,7 @@ class ReporterSuccessTestCase(TestCase):
 
     def test_prepare_context(self):
         """
+        prepare_context properly uses accumulated time metadata and database records to create a context.
         """
         reporter = Reporter(self.potions_report)
         # Initialized with no data
@@ -100,6 +104,7 @@ class ReporterSuccessTestCase(TestCase):
         first_exam_dict = reporter.context['exams'][0]
         second_exam_dict = reporter.context['exams'][1]
 
+        # Maybe replace with JSON Schema?
         keys_list: List[List[str]] = [
             [
                 'assignment_id', 'course_id', 'default_time_filter', 'failures', 'id', 'name', 'report', 'sa_code',
@@ -135,6 +140,7 @@ class ReporterSuccessTestCase(TestCase):
 
     def test_get_subject(self):
         """
+        get_subject properly uses the report instance and count instance variables to return a subject string.
         """
         reporter = Reporter(self.potions_report)
         reporter.exams_time_metadata = self.exams_time_metadata
@@ -144,6 +150,7 @@ class ReporterSuccessTestCase(TestCase):
 
     def test_send_email(self):
         """
+        send_email properly renders plain text and HTML strings (localizing times) using the context and sends an email.
         """
         reporter = Reporter(self.potions_report)
         reporter.exams_time_metadata = self.exams_time_metadata
@@ -155,17 +162,55 @@ class ReporterSuccessTestCase(TestCase):
         self.assertEqual(email.subject, self.expected_subject)
         self.assertEqual(email.to, ['halfbloodprince@hogwarts.edu'])
 
-        # LOGGER.info(email.body)
-        # self.assertTrue(re.search(email.body, f''))
-
-        # Test exam summary string
-        # Test no successful subs
-        # Test no failed subs
-        # Test failed sub
-        # Test success subs
-
-        # LOGGER.info(email.alternatives[0][0])
         self.assertEqual(len(email.alternatives), 1)
         self.assertEqual(email.alternatives[0][1], 'text/html')
+        email_html_msg: str = email.alternatives[0][0]
 
+        # Check that exam summary block/table is properly generated.
+        # This needs to be generated programmatically since the times are created at runtime.
+        process_time_template: Template = Template('Process Start: {{ start_time }}\nProcess End: {{ end_time }}\n')
+        process_time_context: Context = Context(self.exams_time_metadata[1])
+        process_time_block: str = process_time_template.render(process_time_context)
+        placement_summary_block: str = (
+            'Exam: Potions Placement\nCanvas Course ID: 888888\nCanvas Assignment ID: 111111\n' +
+            process_time_block +
+            'Time used for filtering Canvas submissions: June 12, 2020 12:00:01 p.m.\n' +
+            'New submissions count: 0'
+        )
+        self.assertTrue(placement_summary_block in email.body)
 
+        # HTML equivalent?
+
+        # Check that report indicates no scores were sent successfuly
+        no_successes_msg: str = 'The application did not send any scores for the Potions Placement exam.'
+        self.assertTrue(no_successes_msg in email.body)
+        self.assertTrue(no_successes_msg in email_html_msg)
+
+        # Check that report indicates the application did not fail to send any scores
+        no_failures_msg: str = 'The application did not fail to send any scores for the Potions Validation exam.'
+        self.assertTrue(no_failures_msg in email.body)
+        self.assertTrue(no_successes_msg in email_html_msg)
+
+        headers: str = 'Canvas ID - Student Uniqname - Score - Submitted At'
+
+        # Check that failed score sending is reported for Potions Placement
+        failed_sub_block: str = '\n\n'.join(
+            ['Failures: Scores not transmitted', headers, '123458 - rweasley - 150.0 - June 12, 2020 8:50:07 a.m.']
+        )
+        self.assertTrue(failed_sub_block in email.body)
+
+        # HTML equivalent?
+
+        # Check that successfully sent scores are reported for Potions Validation
+        success_sub_block: str = '\n\n'.join(
+            [
+                'Successes: Scores transmitted', headers,
+                '123460 - nlongbottom - 300.0 - June 12, 2020 9:05:01 a.m.',
+                '210000 - rweasley - 150.0 - June 13, 2020 6:05:00 a.m.',
+                '444444 - hpotter - 125.0 - June 19, 2020 1:45:33 p.m.',
+                '444445 - cchang - 200.0 - June 20, 2020 6:35:01 a.m.'
+            ]
+        )
+        self.assertTrue(success_sub_block in email.body)
+
+        # HTML equivalent?

@@ -1,7 +1,7 @@
 # standard libraries
 import logging, os, sys
 from logging import Logger
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List
 
 # third-party libraries
@@ -52,15 +52,15 @@ except Exception as e:
     sys.exit(1)
 
 
-def main():
+def main() -> None:
     start_time: datetime = datetime.now(tz=utc)
-    logging.info(f'Starting new run at {start_time}')
+    LOGGER.info(f'Starting new run at {start_time}')
 
     reports: List[Report] = list(Report.objects.all())
-    logging.debug(reports)
+    LOGGER.debug(reports)
 
     exams: List[Exam] = list(Exam.objects.all())
-    logging.debug(exams)
+    LOGGER.debug(exams)
 
     for report in reports:
         reporter: Reporter = Reporter(report)
@@ -81,10 +81,10 @@ def main():
         reporter.send_email()
 
     end_time: datetime = datetime.now(tz=utc)
-    delta: datetime = end_time - start_time
+    delta: timedelta = end_time - start_time
 
-    logging.info(f'The run ended at {end_time}')
-    logging.info(f'Duration of run: {delta}')
+    LOGGER.info(f'The run ended at {end_time}')
+    LOGGER.info(f'Duration of run: {delta}')
 
 
 if __name__ == '__main__':

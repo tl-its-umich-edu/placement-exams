@@ -1,20 +1,19 @@
 # standard libraries
 import json, logging, os
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
 
 # third-party libraries
 from django.core import mail
 from django.core.mail import EmailMultiAlternatives
-from django.template import Context, Template
 from django.test import TestCase
 from django.utils.timezone import utc
 from requests import Response
 from umich_api.api_utils import ApiUtil
 
 # local libraries
-from constants import API_FIXTURES_DIR, ROOT_DIR
+from constants import API_FIXTURES_DIR, ROOT_DIR, SNAPSHOTS_DIR
 from pe.models import Report
 from pe.orchestration import ScoresOrchestration
 from pe.reporter import Reporter
@@ -43,6 +42,12 @@ class ReporterSuccessTestCase(TestCase):
         with open(os.path.join(API_FIXTURES_DIR, 'mpathways_resp_data.json'), 'r') as mpathways_resp_data_file:
             self.mpathways_resp_data: List[Dict[str, Any]] = json.loads(mpathways_resp_data_file.read())
 
+        with open(os.path.join(SNAPSHOTS_DIR, 'email_snap.txt'), 'r') as email_snap_plain_file:
+            self.email_snap_plain: str = email_snap_plain_file.read()
+
+        with open(os.path.join(SNAPSHOTS_DIR, 'email_snap.html'), 'r') as email_snap_html_file:
+            self.email_snap_html: str = email_snap_html_file.read()
+
         self.potions_report = Report.objects.get(id=1)
 
         with patch('pe.orchestration.api_call_with_retries', autospec=True) as mock_get:
@@ -60,17 +65,20 @@ class ReporterSuccessTestCase(TestCase):
                     MagicMock(spec=Response, status_code=200, text=json.dumps(self.mpathways_resp_data[2]))
                 ]
 
-                self.exams_time_metadata = {}
+                fake_running_datetime: datetime = datetime(2020, 6, 25, 16, 0, 0, tzinfo=utc)
+                self.exams_time_metadata = dict()
                 for exam in self.potions_report.exams.all():
-                    start: datetime = datetime.now(tz=utc)
+                    start: datetime = fake_running_datetime
                     exam_orca = ScoresOrchestration(api_handler, exam)
                     exam_orca.main()
-                    end: datetime = datetime.now(tz=utc)
+                    fake_running_datetime += timedelta(seconds=5)
+                    end: datetime = fake_running_datetime
                     self.exams_time_metadata[exam.id] = {
                         'start_time': start,
                         'end_time': end,
                         'datetime_filter': exam_orca.sub_time_filter
                     }
+                    fake_running_datetime += timedelta(seconds=1)
 
         self.expected_subject: str = (
             'Placement Exams Report - Potions - Success: 4, Failure: 1, New: 2 - Potions Placement, Potions Validation'
@@ -84,7 +92,7 @@ class ReporterSuccessTestCase(TestCase):
         # Initialized with no data
         self.assertEqual(
             (reporter.total_successes, reporter.total_failures, reporter.total_new, reporter.context),
-            (0, 0, 0, {})
+            (0, 0, 0, dict())
         )
         
         reporter.exams_time_metadata = self.exams_time_metadata
@@ -104,7 +112,6 @@ class ReporterSuccessTestCase(TestCase):
         first_exam_dict = reporter.context['exams'][0]
         second_exam_dict = reporter.context['exams'][1]
 
-        # Maybe replace with JSON Schema?
         keys_list: List[List[str]] = [
             [
                 'assignment_id', 'course_id', 'default_time_filter', 'failures', 'id', 'name', 'report', 'sa_code',
@@ -154,63 +161,24 @@ class ReporterSuccessTestCase(TestCase):
         """
         reporter = Reporter(self.potions_report)
         reporter.exams_time_metadata = self.exams_time_metadata
-        reporter.prepare_context()
-        reporter.send_email()
+
+        # Patch os.environ to override environment variables
+        with patch.dict(os.environ, {'SUPPORT_EMAIL': 'admin@hogwarts.edu', 'SMTP_FROM': 'admin@hogwarts.edu'}):
+            reporter.prepare_context()
+            reporter.send_email()
 
         self.assertEqual(len(mail.outbox), 1)
         email: EmailMultiAlternatives = mail.outbox[0]
         self.assertEqual(email.subject, self.expected_subject)
         self.assertEqual(email.to, ['halfbloodprince@hogwarts.edu'])
+        self.assertEqual(email.from_email, 'admin@hogwarts.edu')
 
         self.assertEqual(len(email.alternatives), 1)
         self.assertEqual(email.alternatives[0][1], 'text/html')
         email_html_msg: str = email.alternatives[0][0]
 
-        # Check that exam summary block/table is properly generated.
-        # This needs to be generated programmatically since the times are created at runtime.
-        process_time_template: Template = Template('Process Start: {{ start_time }}\nProcess End: {{ end_time }}\n')
-        process_time_context: Context = Context(self.exams_time_metadata[1])
-        process_time_block: str = process_time_template.render(process_time_context)
-        placement_summary_block: str = (
-            'Exam: Potions Placement\nCanvas Course ID: 888888\nCanvas Assignment ID: 111111\n' +
-            process_time_block +
-            'Time used for filtering Canvas submissions: June 12, 2020 12:00:01 p.m.\n' +
-            'New submissions count: 0'
-        )
-        self.assertTrue(placement_summary_block in email.body)
+        # Check that body matches plain text snapshot
+        self.assertEqual(email.body, self.email_snap_plain)
 
-        # HTML equivalent?
-
-        # Check that report indicates no scores were sent successfuly
-        no_successes_msg: str = 'The application did not send any scores for the Potions Placement exam.'
-        self.assertTrue(no_successes_msg in email.body)
-        self.assertTrue(no_successes_msg in email_html_msg)
-
-        # Check that report indicates the application did not fail to send any scores
-        no_failures_msg: str = 'The application did not fail to send any scores for the Potions Validation exam.'
-        self.assertTrue(no_failures_msg in email.body)
-        self.assertTrue(no_successes_msg in email_html_msg)
-
-        headers: str = 'Canvas ID - Student Uniqname - Score - Submitted At'
-
-        # Check that failed score sending is reported for Potions Placement
-        failed_sub_block: str = '\n\n'.join(
-            ['Failures: Scores not transmitted', headers, '123458 - rweasley - 150.0 - June 12, 2020 8:50:07 a.m.']
-        )
-        self.assertTrue(failed_sub_block in email.body)
-
-        # HTML equivalent?
-
-        # Check that successfully sent scores are reported for Potions Validation
-        success_sub_block: str = '\n\n'.join(
-            [
-                'Successes: Scores transmitted', headers,
-                '123460 - nlongbottom - 300.0 - June 12, 2020 9:05:01 a.m.',
-                '210000 - rweasley - 150.0 - June 13, 2020 6:05:00 a.m.',
-                '444444 - hpotter - 125.0 - June 19, 2020 1:45:33 p.m.',
-                '444445 - cchang - 200.0 - June 20, 2020 6:35:01 a.m.'
-            ]
-        )
-        self.assertTrue(success_sub_block in email.body)
-
-        # HTML equivalent?
+        # Check that HTML alternative matches HTML snapshot
+        self.assertEqual(email_html_msg, self.email_snap_html)

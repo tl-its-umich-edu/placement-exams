@@ -89,17 +89,16 @@ class ReporterSuccessTestCase(TestCase):
         prepare_context properly uses accumulated time metadata and database records to create a context.
         """
         reporter = Reporter(self.potions_report)
-        # Initialized with no data
+        # Check that Reporter is initialized with no data
         self.assertEqual(
             (reporter.total_successes, reporter.total_failures, reporter.total_new, reporter.context),
             (0, 0, 0, dict())
         )
-        
+
         reporter.exams_time_metadata = self.exams_time_metadata
         reporter.prepare_context()
 
         self.assertEqual((reporter.total_successes, reporter.total_failures, reporter.total_new), (4, 1, 2))
-
         self.assertEqual(sorted(list(reporter.context.keys())), ['exams', 'report', 'support_email'])
         self.assertEqual(reporter.context['report'], {
             'id': 1,
@@ -126,11 +125,13 @@ class ReporterSuccessTestCase(TestCase):
         self.assertEqual(first_exam_dict['time'], self.exams_time_metadata[1])
         self.assertEqual(second_exam_dict['time'], self.exams_time_metadata[2])
 
+        # Check whether QuerySet-derived lists have correct lengths
         self.assertEqual(len(first_exam_dict['successes']), 0)
         self.assertEqual(len(first_exam_dict['failures']), 1)
         self.assertEqual(len(second_exam_dict['successes']), 4)
         self.assertEqual(len(second_exam_dict['failures']), 0)
 
+        # Check roughly that failures and successes are present
         self.assertEqual(
             first_exam_dict['failures'][0],
             {
@@ -169,13 +170,15 @@ class ReporterSuccessTestCase(TestCase):
 
         self.assertEqual(len(mail.outbox), 1)
         email: EmailMultiAlternatives = mail.outbox[0]
-        self.assertEqual(email.subject, self.expected_subject)
-        self.assertEqual(email.to, ['halfbloodprince@hogwarts.edu'])
-        self.assertEqual(email.from_email, 'admin@hogwarts.edu')
 
         self.assertEqual(len(email.alternatives), 1)
         self.assertEqual(email.alternatives[0][1], 'text/html')
         email_html_msg: str = email.alternatives[0][0]
+
+        # Check subject, to, and from
+        self.assertEqual(email.subject, self.expected_subject)
+        self.assertEqual(email.to, ['halfbloodprince@hogwarts.edu'])
+        self.assertEqual(email.from_email, 'admin@hogwarts.edu')
 
         # Check that body matches plain text snapshot
         self.assertEqual(email.body, self.email_snap_plain)

@@ -162,15 +162,42 @@ To configure the application to actually send email, in `.env`, ensure `EMAIL_DE
 you have provided `SMTP_PORT` and `SMTP_HOST` values pointing to a SMTP server accessible from your host
 (see **Configuration** above).
 
-### Openshift setup
-1. login to openshift from command line
-2. `oc new-project <name-you-like>`
-3. creating a new bash app for storing `persisted.txt` file `oc new-app --docker-image=bash` and configure it to run 
-    unconditionally add a persistent storage
-   and mount the volumn on bash pod
-4. creating a new app from a git branch `oc new-app https://github.com/<user>/spanish-placement-exam-python#i3_dockerizing_spe`
-    a. link the persisted.txt to this pod
-5. Using Openshift [cronJob](https://docs.openshift.com/container-platform/3.10/dev_guide/cron_jobs.html) feature to run the SPE process.
-6. starting the cron run as `oc create -f cron_spe_test.yml`. You can download the file from the [Box Folder](https://umich.app.box.com/folder/67252746472) for respective env
-7. Looking at the cron job in openshift instance `oc get cronjobs`
-8. For deleting cron jobs `oc delete cronjob/cron1` (beware we have only once instance that holds both dev/prod instance)
+### Deployment: OpenShift
+
+Deploying the application as a job using OpenShift and Jenkins involves several steps, which are beyond the scope of
+this README. However, some details about how the job is configured are provided below.
+
+The files described in the **Configuration** section above need to be made available to running placement-exams
+containers as [OpenShift Secrets](https://docs.openshift.com/container-platform/3.7/dev_guide/secrets.html).
+A volume containing versions of `.env` and `fixtures.json` should be mapped to a configuration directory,
+typically `config/secrets`. These details will be specified in a YAML configuration file defining the pod. 
+
+In OpenShift, some application settings are controlled by specifying environment variables in the OpenShift pod
+configuration file. More details on these environment variables -- and whether they are optional or required --
+are provided below.
+
+* `ENV_DIR` (Optional): By default, the application will expect to find the files described in **Configuration**
+  within the `config/secrets` sub-directory. However, this location can be changed by setting `ENV_DIR` to the
+  desired path. To avoid problems during volume mapping, the specified directory should not contain any files
+  needed by the application. Using `config/secrets` is currently recommended.
+
+* `ENV_FILE` (Optional): By default, the application will expect the main configuration file to be named `.env`.
+  However, this name can be changed by setting `ENV_FILE` to the desired name. This can be useful when maintaining
+  multiple versions of the configuration file, e.g. `test.env` or `prod.env`.
+
+* `FIXTURES_FILE` (Required): When the `start.sh` script load fixture data, it references the `FIXTURES_FILE`
+  environment variable; thus, this variable **must** be set in the pod configuration. While using the
+  `fixtures.json` name employed by `docker-compose` for local development is acceptable, this variable can
+  also be used to change the file name as desired.
+
+When setting all the above variables, the `env` block in the YAML file will look something like this:
+
+```yaml
+- env:
+  - name: ENV_DIR
+    value: /config/secrets
+  - name: ENV_FILE
+    value: test.env
+  - name: FIXTURES_FILE
+    value: some_fixtures.json
+```

@@ -1,5 +1,6 @@
 # standard libraries
 import logging, os
+from datetime import datetime
 from smtplib import SMTPException
 from typing import Any, Dict, List, Tuple
 
@@ -29,7 +30,7 @@ class Reporter:
         :rtype: None
         """
         self.report: Report = report
-        self.exams_time_metadata: Dict[int, Dict[str, Any]] = dict()
+        self.exams_time_metadata: Dict[int, Dict[str, datetime]] = dict()
         self.total_successes: int = 0
         self.total_failures: int = 0
         self.total_new: int = 0

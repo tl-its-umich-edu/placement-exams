@@ -48,7 +48,7 @@ class Reporter:
             exam_dict: Dict[str, Any] = model_to_dict(exam)
 
             exam_dict['time'] = self.exams_time_metadata[exam.id]
-            
+
             success_sub_qs: QuerySet = exam.submissions.filter(
                 transmitted=True, transmitted_timestamp__gte=exam_dict['time']['start_time']
             ).order_by('submitted_timestamp')

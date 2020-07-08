@@ -12,7 +12,6 @@ from umich_api.api_utils import ApiUtil
 
 # local libraries
 from constants import ROOT_DIR
-# from spe_report.summary import SPESummaryReport
 
 
 # Initialize globals and environment

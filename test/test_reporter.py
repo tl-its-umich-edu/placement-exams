@@ -27,7 +27,7 @@ class ReporterSuccessTestCase(TestCase):
 
     def setUp(self):
         """
-        Intializes ApiUtil instance, fixtures, and report, and runs orchestrations for report, gathering time metadata.
+        Initializes report; runs orchestrations, gathering time metadata; and sets up other shared variables.
         """
         api_handler: ApiUtil = ApiUtil(
             os.getenv('API_DIR_URL', ''),
@@ -37,16 +37,10 @@ class ReporterSuccessTestCase(TestCase):
         )
 
         with open(os.path.join(API_FIXTURES_DIR, 'canvas_subs.json'), 'r') as test_canvas_subs_file:
-            self.canvas_potions_val_subs: List[Dict[str, Any]] = json.loads(test_canvas_subs_file.read())
+            canvas_potions_val_subs: List[Dict[str, Any]] = json.loads(test_canvas_subs_file.read())
 
         with open(os.path.join(API_FIXTURES_DIR, 'mpathways_resp_data.json'), 'r') as mpathways_resp_data_file:
-            self.mpathways_resp_data: List[Dict[str, Any]] = json.loads(mpathways_resp_data_file.read())
-
-        with open(os.path.join(SNAPSHOTS_DIR, 'email_snap.txt'), 'r') as email_snap_plain_file:
-            self.email_snap_plain: str = email_snap_plain_file.read()
-
-        with open(os.path.join(SNAPSHOTS_DIR, 'email_snap.html'), 'r') as email_snap_html_file:
-            self.email_snap_html: str = email_snap_html_file.read()
+            mpathways_resp_data: List[Dict[str, Any]] = json.loads(mpathways_resp_data_file.read())
 
         self.potions_report = Report.objects.get(id=1)
 
@@ -56,29 +50,29 @@ class ReporterSuccessTestCase(TestCase):
                     # Potions Placement - no more new submissions
                     MagicMock(spec=Response, status_code=200, text=json.dumps([])),
                     # Potions Validation - two more new submissions
-                    MagicMock(spec=Response, status_code=200, text=json.dumps(self.canvas_potions_val_subs))
+                    MagicMock(spec=Response, status_code=200, text=json.dumps(canvas_potions_val_subs))
                 ]
                 mock_send.side_effect = [
                     # Potions Placement - Only rweasley sub from test_04.json, fails to send
-                    MagicMock(spec=Response, status_code=200, text=json.dumps(self.mpathways_resp_data[5])),
+                    MagicMock(spec=Response, status_code=200, text=json.dumps(mpathways_resp_data[5])),
                     # Potions Validation - Four subs, two from canvas_subs.json, two from test_04.json, all send
-                    MagicMock(spec=Response, status_code=200, text=json.dumps(self.mpathways_resp_data[2]))
+                    MagicMock(spec=Response, status_code=200, text=json.dumps(mpathways_resp_data[2]))
                 ]
 
-                fake_running_datetime: datetime = datetime(2020, 6, 25, 16, 0, 0, tzinfo=utc)
-                self.exams_time_metadata = dict()
+                fake_running_dt: datetime = datetime(2020, 6, 25, 16, 0, 0, tzinfo=utc)
+                self.exams_time_metadata: Dict[int, Dict[str, datetime]] = dict()
                 for exam in self.potions_report.exams.all():
-                    start: datetime = fake_running_datetime
-                    exam_orca = ScoresOrchestration(api_handler, exam)
+                    start: datetime = fake_running_dt
+                    exam_orca: ScoresOrchestration = ScoresOrchestration(api_handler, exam)
                     exam_orca.main()
-                    fake_running_datetime += timedelta(seconds=5)
-                    end: datetime = fake_running_datetime
+                    fake_running_dt += timedelta(seconds=5)
+                    end: datetime = fake_running_dt
                     self.exams_time_metadata[exam.id] = {
                         'start_time': start,
                         'end_time': end,
                         'datetime_filter': exam_orca.sub_time_filter
                     }
-                    fake_running_datetime += timedelta(seconds=1)
+                    fake_running_dt += timedelta(seconds=1)
 
         self.expected_subject: str = (
             'Placement Exams Report - Potions - Success: 4, Failure: 1, New: 2 - Potions Placement, Potions Validation'
@@ -88,13 +82,15 @@ class ReporterSuccessTestCase(TestCase):
         """
         prepare_context properly uses accumulated time metadata and database records to create a context.
         """
-        reporter = Reporter(self.potions_report)
+        reporter: Reporter = Reporter(self.potions_report)
         # Check that Reporter is initialized with no data
         self.assertEqual(
             (reporter.total_successes, reporter.total_failures, reporter.total_new, reporter.context),
             (0, 0, 0, dict())
         )
 
+        # I decided to keep Reporter initialization in tests (not setUp), so time metadata is assigned all at once here.
+        # This is different from main() in entry.py, where key-value pairs are accumulated.
         reporter.exams_time_metadata = self.exams_time_metadata
         reporter.prepare_context()
 
@@ -108,8 +104,8 @@ class ReporterSuccessTestCase(TestCase):
         })
         self.assertEqual(len(reporter.context['exams']), 2)
 
-        first_exam_dict = reporter.context['exams'][0]
-        second_exam_dict = reporter.context['exams'][1]
+        first_exam_dict: Dict[str, Any] = reporter.context['exams'][0]
+        second_exam_dict: Dict[str, Any] = reporter.context['exams'][1]
 
         keys_list: List[List[str]] = [
             [
@@ -150,7 +146,7 @@ class ReporterSuccessTestCase(TestCase):
         """
         get_subject properly uses the report instance and count instance variables to return a subject string.
         """
-        reporter = Reporter(self.potions_report)
+        reporter: Reporter = Reporter(self.potions_report)
         reporter.exams_time_metadata = self.exams_time_metadata
         reporter.prepare_context()
 
@@ -160,7 +156,14 @@ class ReporterSuccessTestCase(TestCase):
         """
         send_email properly renders plain text and HTML strings (localizing times) using the context and sends an email.
         """
-        reporter = Reporter(self.potions_report)
+        # Set up snapshots
+        with open(os.path.join(SNAPSHOTS_DIR, 'email_snap.txt'), 'r') as email_snap_plain_file:
+            self.email_snap_plain: str = email_snap_plain_file.read()
+
+        with open(os.path.join(SNAPSHOTS_DIR, 'email_snap.html'), 'r') as email_snap_html_file:
+            self.email_snap_html: str = email_snap_html_file.read()
+
+        reporter: Reporter = Reporter(self.potions_report)
         reporter.exams_time_metadata = self.exams_time_metadata
 
         # Patch os.environ to override environment variables

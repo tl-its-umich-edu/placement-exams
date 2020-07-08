@@ -25,11 +25,12 @@ DATABASES: Dict[str, Dict[str, str]] = {
 
 DATETIME_FORMAT: str = "N j, Y g:i:s a"
 
-if os.getenv('EMAIL_DEBUG', 'True') == 'True':
+if bool(os.getenv('EMAIL_DEBUG', 1)):
     EMAIL_BACKEND: str = 'django.core.mail.backends.console.EmailBackend'
 
 EMAIL_HOST: str = os.getenv('SMTP_HOST', '')
 EMAIL_PORT: int = int(os.getenv('SMTP_PORT', 0))
+EMAIL_USE_TLS: bool = True
 
 FIXTURE_DIRS: List[str] = [
     CONFIG_DIR,

@@ -158,10 +158,10 @@ class ReporterSuccessTestCase(TestCase):
         """
         # Set up snapshots
         with open(os.path.join(SNAPSHOTS_DIR, 'email_snap.txt'), 'r') as email_snap_plain_file:
-            self.email_snap_plain: str = email_snap_plain_file.read()
+            email_snap_plain: str = email_snap_plain_file.read()
 
         with open(os.path.join(SNAPSHOTS_DIR, 'email_snap.html'), 'r') as email_snap_html_file:
-            self.email_snap_html: str = email_snap_html_file.read()
+            email_snap_html: str = email_snap_html_file.read()
 
         reporter: Reporter = Reporter(self.potions_report)
         reporter.exams_time_metadata = self.exams_time_metadata
@@ -184,7 +184,7 @@ class ReporterSuccessTestCase(TestCase):
         self.assertEqual(email.from_email, 'admin@hogwarts.edu')
 
         # Check that body matches plain text snapshot
-        self.assertEqual(email.body, self.email_snap_plain)
+        self.assertEqual(email.body, email_snap_plain)
 
         # Check that HTML alternative matches HTML snapshot
-        self.assertEqual(email_html_msg, self.email_snap_html)
+        self.assertEqual(email_html_msg, email_snap_html)

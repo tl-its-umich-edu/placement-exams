@@ -172,7 +172,7 @@ containers as [OpenShift Secrets](https://docs.openshift.com/container-platform/
 A volume containing versions of `.env` and `fixtures.json` should be mapped to a configuration directory,
 typically `config/secrets`. These details will be specified in a YAML configuration file defining the pod. 
 
-In OpenShift, some application settings are controlled by specifying environment variables in the OpenShift pod
+In OpenShift, some application settings are controlled by specifying environment variables in the pod
 configuration file. More details on these environment variables -- and whether they are optional or required --
 are provided below.
 
@@ -185,7 +185,7 @@ are provided below.
     However, this name can be changed by setting `ENV_FILE` to the desired name. This can be useful when maintaining
     multiple versions of the configuration file, e.g. `test.env` or `prod.env`.
 
-*   `FIXTURES_FILE` (Required): When the `start.sh` script load fixture data, it references the `FIXTURES_FILE`
+*   `FIXTURES_FILE` (Required): When the `start.sh` script loads fixture data, it references the `FIXTURES_FILE`
     environment variable; thus, this variable **must** be set in the pod configuration. While using the
     `fixtures.json` name employed by `docker-compose` for local development is acceptable, this variable can
     also be used to change the file name as desired.

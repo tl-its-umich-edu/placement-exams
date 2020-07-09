@@ -59,7 +59,7 @@ class Reporter:
             failure_sub_qs: QuerySet = exam.submissions.filter(transmitted=False).order_by('submitted_timestamp')
             num_failures: int = len(failure_sub_qs)
 
-            new_sub_qs: QuerySet = exam.submissions.filter(graded_timestamp__gte=exam_dict['time']['datetime_filter'])
+            new_sub_qs: QuerySet = exam.submissions.filter(graded_timestamp__gte=exam_dict['time']['sub_time_filter'])
             num_new: int = len(new_sub_qs)
 
             exam_dict['summary'] = {'success_count': num_successes, 'failure_count': num_failures, 'new_count': num_new}

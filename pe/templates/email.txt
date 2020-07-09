@@ -11,7 +11,7 @@ Canvas Course ID: {{ exam.course_id}}
 Canvas Assignment ID: {{ exam.assignment_id }}
 Process Start: {{ exam.time.start_time }}
 Process End: {{ exam.time.end_time }}
-Time used for filtering Canvas submissions: {{ exam.time.datetime_filter }}
+Time used for filtering Canvas submissions: {{ exam.time.sub_time_filter }}
 New submissions count: {{ exam.summary.new_count}}
 
 Successes: Scores transmitted

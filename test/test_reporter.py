@@ -70,7 +70,7 @@ class ReporterSuccessTestCase(TestCase):
                     self.exams_time_metadata[exam.id] = {
                         'start_time': start,
                         'end_time': end,
-                        'datetime_filter': exam_orca.sub_time_filter
+                        'sub_time_filter': exam_orca.sub_time_filter
                     }
                     fake_running_dt += timedelta(seconds=1)
 

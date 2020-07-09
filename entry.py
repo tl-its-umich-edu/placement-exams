@@ -72,7 +72,7 @@ def main() -> None:
             metadata: Dict[str, datetime] = {
                 'start_time': exam_start_time,
                 'end_time': exam_end_time,
-                'datetime_filter': exam_orca.sub_time_filter
+                'sub_time_filter': exam_orca.sub_time_filter
             }
             reporter.exams_time_metadata[exam.id] = metadata
         reporter.prepare_context()

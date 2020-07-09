@@ -60,7 +60,7 @@ LOGGING: Dict[str, Any] = {
             'handlers': ['console'],
             'level': os.getenv('LOG_LEVEL', 'INFO'),
             'propagate': False
-        },
+        }
     }
 }
 
@@ -75,7 +75,7 @@ TEMPLATES: List[Dict[str, Any]] = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': ['templates'],
         'APP_DIRS': True
-    },
+    }
 ]
 
 TIME_ZONE: str = os.getenv('TIME_ZONE', 'America/Detroit')

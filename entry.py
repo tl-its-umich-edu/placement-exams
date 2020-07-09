@@ -76,7 +76,7 @@ def main() -> None:
             }
             reporter.exams_time_metadata[exam.id] = metadata
         reporter.prepare_context()
-        LOGGER.info(f'Sending email to {report.contact}')
+        LOGGER.info(f'Sending {report.name} report email to {report.contact}')
         reporter.send_email()
 
     end_time: datetime = datetime.now(tz=utc)

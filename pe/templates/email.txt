@@ -1,0 +1,40 @@
+Placement Exams Report: {{ report.name }}
+
+This report covers the results of the latest Placement Exams run, including providing the
+latest scores from Canvas exams, and whether they were successfully sent to M-Pathways or not. For each exam,
+the report also provides processing details (start and end times), the time used to filter when gathering new
+submissions from Canvas, and a count of new submissions. All times are in Eastern Standard Time (EST).
+
+{% for exam in exams %}
+Exam: {{ exam.name }}
+Canvas Course ID: {{ exam.course_id}}
+Canvas Assignment ID: {{ exam.assignment_id }}
+Process Start: {{ exam.time.start_time }}
+Process End: {{ exam.time.end_time }}
+Time used for filtering Canvas submissions: {{ exam.time.sub_time_filter }}
+New submissions count: {{ exam.summary.new_count}}
+
+Successes: Scores transmitted
+{% if exam.successes %}
+Canvas ID - Student Uniqname - Score - Submitted At
+{% for submission in exam.successes %}
+{{ submission.submission_id }} - {{ submission.student_uniqname }} - {{ submission.score }} - {{ submission.submitted_timestamp }}
+{% endfor %}
+{% else %}
+The application did not send any scores for the {{ exam.name }} exam.
+{% endif %}
+
+Failures: Scores not transmitted
+{% if exam.failures %}
+Canvas ID - Student Uniqname - Score - Submitted At
+{% for submission in exam.failures %}
+{{ submission.submission_id }} - {{ submission.student_uniqname }} - {{ submission.score }} - {{ submission.submitted_timestamp }}
+{% endfor %}
+{% else %}
+The application did not fail to send any scores for the {{ exam.name }} exam.
+{% endif %}
+{% endfor %}
+
+Questions?
+If you would like more information about these emails, or would like to be removed from the mailing list,
+email {{ support_email }}, mentioning "Placement Exams" in the subject.

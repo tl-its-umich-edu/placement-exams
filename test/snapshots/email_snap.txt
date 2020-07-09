@@ -1,0 +1,60 @@
+Placement Exams Report: Potions
+
+This report covers the results of the latest Placement Exams run, including providing the
+latest scores from Canvas exams, and whether they were successfully sent to M-Pathways or not. For each exam,
+the report also provides processing details (start and end times), the time used to filter when gathering new
+submissions from Canvas, and a count of new submissions. All times are in Eastern Standard Time (EST).
+
+
+Exam: Potions Placement
+Canvas Course ID: 888888
+Canvas Assignment ID: 111111
+Process Start: June 25, 2020 12:00:00 p.m.
+Process End: June 25, 2020 12:00:05 p.m.
+Time used for filtering Canvas submissions: June 12, 2020 12:00:01 p.m.
+New submissions count: 0
+
+Successes: Scores transmitted
+
+The application did not send any scores for the Potions Placement exam.
+
+
+Failures: Scores not transmitted
+
+Canvas ID - Student Uniqname - Score - Submitted At
+
+123458 - rweasley - 150.0 - June 12, 2020 8:50:07 a.m.
+
+
+
+Exam: Potions Validation
+Canvas Course ID: 888888
+Canvas Assignment ID: 111112
+Process Start: June 25, 2020 12:00:06 p.m.
+Process End: June 25, 2020 12:00:11 p.m.
+Time used for filtering Canvas submissions: June 13, 2020 4:05:18 p.m.
+New submissions count: 2
+
+Successes: Scores transmitted
+
+Canvas ID - Student Uniqname - Score - Submitted At
+
+123460 - nlongbottom - 300.0 - June 12, 2020 9:05:01 a.m.
+
+210000 - rweasley - 150.0 - June 13, 2020 6:05:00 a.m.
+
+444444 - hpotter - 125.0 - June 19, 2020 1:45:33 p.m.
+
+444445 - cchang - 200.0 - June 20, 2020 6:35:01 a.m.
+
+
+
+Failures: Scores not transmitted
+
+The application did not fail to send any scores for the Potions Validation exam.
+
+
+
+Questions?
+If you would like more information about these emails, or would like to be removed from the mailing list,
+email admin@hogwarts.edu, mentioning "Placement Exams" in the subject.

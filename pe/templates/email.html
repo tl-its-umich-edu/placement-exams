@@ -1,0 +1,83 @@
+<div>
+    <h1>Placement Exams Report: {{ report.name }}</h1>
+    <p style="width: 600px">This report covers the results of the latest Placement Exams run, including providing the
+        latest scores from Canvas exams, and whether they were successfully sent to M-Pathways or not. For each exam,
+        the report also provides processing details (start and end times), the time used to filter when gathering new
+        submissions from Canvas, and a count of new submissions. All times are in Eastern Standard Time (EST).
+    </p>
+{% for exam in exams %}
+    <h2>Exam: {{ exam.name }}</h2>
+    <table>
+        <tr>
+            <td style="height: 30px; width: 250px">Canvas Course ID</td>
+            <td style="height: 30px; width: 250px">{{ exam.course_id}}</td>
+        </tr>
+        <tr>
+            <td style="height: 30px; width: 250px">Canvas Assignment ID</td>
+            <td style="height: 30px; width: 250px">{{ exam.assignment_id }}</td>
+        </tr>
+        <tr>
+            <td style="height: 30px; width: 250px">Process Start</td>
+            <td style="height: 30px; width: 250px">{{ exam.time.start_time }}</td>
+        </tr>
+        <tr>
+            <td style="height: 30px; width: 250px">Process End</td>
+            <td style="height: 30px; width: 250px">{{ exam.time.end_time }}</td>
+        </tr>
+        <tr>
+            <td style="height: 30px; width: 250px">Time used for filtering Canvas submissions</td>
+            <td style="height: 30px; width: 250px">{{ exam.time.sub_time_filter }}</td>
+        </tr>
+        <tr>
+            <td style="height: 30px; width: 250px">New submissions count</td>
+            <td style="height: 30px; width: 250px">{{ exam.summary.new_count }}</td>
+        </tr>
+    </table>
+    <h3>Successes: Scores transmitted</h3>
+{% if exam.successes %}
+    <table style="width: 600px">
+        <tr>
+            <th style="height: 30px; width: 100px; text-align: left">Canvas ID</th>
+            <th style="height: 30px; width: 200px; text-align: left">Student Uniqname</th>
+            <th style="height: 30px; width: 100px; text-align: left">Score</th>
+            <th style="height: 30px; width: 200px; text-align: left">Submitted At</th>
+        </tr>
+{% for submission in exam.successes %}
+        <tr>
+            <td style="height: 30px; width: 100px">{{ submission.submission_id }}</td>
+            <td style="height: 30px; width: 200px">{{ submission.student_uniqname }}</td>
+            <td style="height: 30px; width: 100px">{{ submission.score }}</td>
+            <td style="height: 30px; width: 200px">{{ submission.submitted_timestamp }}</td>
+        </tr>
+{% endfor %}
+    </table>
+{% else %}
+    <p>The application did not send any scores for the {{ exam.name }} exam.</p>
+{% endif %}
+    <h3>Failures: Scores not transmitted</h3>
+{% if exam.failures %}
+    <table style="width: 600px">
+        <tr>
+            <th style="height: 30px; width: 100px; text-align: left">Canvas ID</th>
+            <th style="height: 30px; width: 200px; text-align: left">Student Uniqname</th>
+            <th style="height: 30px; width: 100px; text-align: left">Score</th>
+            <th style="height: 30px; width: 200px; text-align: left">Submitted At</th>
+        </tr>
+{% for submission in exam.failures %}
+        <tr>
+            <td style="height: 30px; width: 100px">{{ submission.submission_id }}</td>
+            <td style="height: 30px; width: 200px">{{ submission.student_uniqname }}</td>
+            <td style="height: 30px; width: 100px">{{ submission.score }}</td>
+            <td style="height: 30px; width: 200px">{{ submission.submitted_timestamp }}</td>
+        </tr>
+{% endfor %}
+    </table>
+{% else %}
+    <p>The application did not fail to send any scores for the {{ exam.name }} exam.</p>
+{% endif %}
+{% endfor %}
+    <h2>Questions?</h2>
+    <p style="width: 600px">If you would like more information about these emails, or would like to be removed from the mailing list,
+        email {{ support_email }}, mentioning "Placement Exams" in the subject.
+    </p>
+</div>

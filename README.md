@@ -149,14 +149,18 @@ You can also set up the application using `virtualenv` by doing the following:
 
 To run the test suite, use the following commands:
 
-  ```sh
-  # New tests
-  python manage.py test -v 3
-  # Previous tests
-  python -m unittest test/spe_test.py
-  ```
+```sh
+coverage manage.py test -v 3
+```
 
-(*I'm going to worry about updating the below sections later.* - Sam)
+#### Sending email
+
+The application sends emails reporting on the results of its runs. The process defaults to sending email
+instead to the console, using
+[one of Django's dummy email backends](https://docs.djangoproject.com/en/3.0/topics/email/#console-backend).
+To configure the application to actually send email, in `.env`, ensure `EMAIL_DEBUG` is set to `0` and that
+you have provided `SMTP_PORT` and `SMTP_HOST` values pointing to a SMTP server accessible from your host
+(see **Configuration** above).
 
 ### Openshift setup
 1. login to openshift from command line
@@ -170,8 +174,3 @@ To run the test suite, use the following commands:
 6. starting the cron run as `oc create -f cron_spe_test.yml`. You can download the file from the [Box Folder](https://umich.app.box.com/folder/67252746472) for respective env
 7. Looking at the cron job in openshift instance `oc get cronjobs`
 8. For deleting cron jobs `oc delete cronjob/cron1` (beware we have only once instance that holds both dev/prod instance)
-
-### Sending email
-Running a local SMTP debugging server. Rather than sending emails to the specified address, 
-it discards them and prints their content to the console.
-1. 'python -m smtpd -d -n -c DebuggingServer localhost:1025 &'

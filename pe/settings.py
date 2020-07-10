@@ -25,7 +25,7 @@ DATABASES: Dict[str, Dict[str, str]] = {
 
 DATETIME_FORMAT: str = "N j, Y g:i:s a"
 
-if bool(os.getenv('EMAIL_DEBUG', 1)):
+if bool(int(os.getenv('EMAIL_DEBUG', '1'))):
     EMAIL_BACKEND: str = 'django.core.mail.backends.console.EmailBackend'
 
 EMAIL_HOST: str = os.getenv('SMTP_HOST', '')

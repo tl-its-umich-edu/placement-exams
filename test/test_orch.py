@@ -30,7 +30,6 @@ class ScoresOrchestrationTestCase(TestCase):
         'submission_id', 'student_uniqname', 'score', 'submitted_timestamp', 'graded_timestamp'
     )
 
-
     def setUp(self):
         """Sets up ApiUtil instance and custom fixtures to be used by ScoresOrchestration tests."""
         self.api_handler: ApiUtil = ApiUtil(

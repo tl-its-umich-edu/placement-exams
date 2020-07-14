@@ -28,7 +28,6 @@ services:
       - ${HOME}/secrets/placement-exams:/app/config/secrets
       - .:/app
     environment:
-      - DJANGO_SETTINGS_MODULE=pe.settings
       - ENV_DIR=config/secrets
       - ENV_FILE=.env
       - FIXTURES_FILE=fixtures.json

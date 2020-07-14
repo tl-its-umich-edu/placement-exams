@@ -53,5 +53,5 @@ class ChunkingTestCase(TestCase):
         self.assertEqual(len(result[0]), 2)
         self.assertEqual(len(result[1]), 1)
 
-        all: List[int] = [submission for sublist in result for submission in sublist]
+        all: List[Submission] = [submission for sublist in result for submission in sublist]
         self.assertEqual(self.submissions, all)

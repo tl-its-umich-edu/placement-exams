@@ -26,6 +26,11 @@ LOGGER = logging.getLogger(__name__)
 class ScoresOrchestrationTestCase(TestCase):
     fixtures: List[str] = ['test_01.json', 'test_03.json', 'test_04.json', 'test_05.json']
 
+    test_sub_fields: Tuple[str, ...] = (
+        'submission_id', 'student_uniqname', 'score', 'submitted_timestamp', 'graded_timestamp'
+    )
+
+
     def setUp(self):
         """Sets up ApiUtil instance and custom fixtures to be used by ScoresOrchestration tests."""
         self.api_handler: ApiUtil = ApiUtil(
@@ -36,7 +41,10 @@ class ScoresOrchestrationTestCase(TestCase):
         )
 
         with open(os.path.join(API_FIXTURES_DIR, 'canvas_subs.json'), 'r') as test_canvas_subs_file:
-            self.canvas_potions_val_subs: List[Dict[str, Any]] = json.loads(test_canvas_subs_file.read())
+            canvas_subs_dict: Dict[str, List[Dict[str, Any]]] = json.loads(test_canvas_subs_file.read())
+
+        self.canvas_potions_val_subs = canvas_subs_dict['Potions_Validation']
+        self.canvas_dada_place_subs = canvas_subs_dict['DADA_Placement']
 
         with open(os.path.join(API_FIXTURES_DIR, 'mpathways_resp_data.json'), 'r') as mpathways_resp_data_file:
             self.mpathways_resp_data: List[Dict[str, Any]] = json.loads(mpathways_resp_data_file.read())
@@ -134,9 +142,8 @@ class ScoresOrchestrationTestCase(TestCase):
         self.assertEqual(len(new_potions_val_sub_qs), 2)
         self.assertEqual(len(new_potions_val_sub_qs.filter(transmitted=False, transmitted_timestamp=None)), 2)
 
-        sub_dicts: List[Dict[str, Any]] = new_potions_val_sub_qs.order_by('student_uniqname').values(
-            'submission_id', 'student_uniqname', 'score', 'submitted_timestamp', 'graded_timestamp'
-        )
+        sub_dicts: List[Dict[str, Any]] = new_potions_val_sub_qs.order_by('student_uniqname')\
+            .values(*self.test_sub_fields)
         self.assertEqual(
             sub_dicts[0],
             {
@@ -153,8 +160,32 @@ class ScoresOrchestrationTestCase(TestCase):
                 'submission_id': 444444,
                 'student_uniqname': 'hpotter',
                 'score': 125.0,
-                'submitted_timestamp': datetime(2020, 6, 19, 17, 45, 33, tzinfo=utc),
+                'submitted_timestamp': datetime(2020, 6, 19, 17, 30, 5, tzinfo=utc),
                 'graded_timestamp': datetime(2020, 6, 19, 17, 45, 33, tzinfo=utc)
+            }
+        )
+
+    def test_create_sub_records_with_null_submitted_timestamp(self):
+        """
+        create_sub_records stores submissions when submitted_timetamp is not provided, as if grade was entered manually.
+        """
+        dada_place_exam = Exam.objects.get(id=3)
+        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, dada_place_exam)
+        some_orca.create_sub_records(self.canvas_dada_place_subs)
+
+        new_dada_place_sub_qs: QuerySet = some_orca.exam.submissions.filter(submission_id=888888)
+        self.assertEqual(len(new_dada_place_sub_qs), 1)
+        self.assertEqual(len(new_dada_place_sub_qs.filter(transmitted=False, transmitted_timestamp=None)), 1)
+
+        sub_dict: Dict[str, Any] = new_dada_place_sub_qs.values(*self.test_sub_fields).first()
+        self.assertEqual(
+            sub_dict,
+            {
+                'submission_id': 888888,
+                'student_uniqname': 'nlongbottom',
+                'score': 500.0,
+                'submitted_timestamp': None,
+                'graded_timestamp': datetime(2020, 7, 7, 13, 22, 49, tzinfo=utc)
             }
         )
 

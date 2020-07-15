@@ -28,8 +28,8 @@ class ChunkingTestCase(TestCase):
         self.assertEqual(len(result[1]), 100)
         self.assertEqual(len(result[2]), 50)
 
-        all: List[int] = [random_num for sublist in result for random_num in sublist]
-        self.assertEqual(all, random_nums)
+        all_nums: List[int] = [random_num for sublist in result for random_num in sublist]
+        self.assertEqual(random_nums, all_nums)
 
     def test_chunk_list_of_random_nums_with_default_size_and_less_than_one_chunk(self):
         """
@@ -48,10 +48,10 @@ class ChunkingTestCase(TestCase):
         """
         submissions: List[Submission] = list(Exam.objects.get(id=1).submissions.all())
         result: List[List[Submission]] = chunk_list(submissions, chunk_size=2)
-        
+
         self.assertEqual(len(result), 2)
         self.assertEqual(len(result[0]), 2)
         self.assertEqual(len(result[1]), 1)
 
-        all: List[Submission] = [submission for sublist in result for submission in sublist]
-        self.assertEqual(self.submissions, all)
+        all_subs: List[Submission] = [submission for sublist in result for submission in sublist]
+        self.assertEqual(submissions, all_subs)

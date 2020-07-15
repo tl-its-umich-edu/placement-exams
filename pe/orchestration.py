@@ -15,6 +15,7 @@ from constants import (
     CANVAS_SCOPE, CANVAS_URL_BEGIN, ISO8601_FORMAT, MPATHWAYS_SCOPE, MPATHWAYS_URL
 )
 from pe.models import Exam, Submission
+from util import chunk_list
 
 
 LOGGER = logging.getLogger(__name__)
@@ -232,8 +233,10 @@ class ScoresOrchestration:
 
         # Send scores and update the database
         if len(regular_subs) > 0:
-            # Send all regular submissions at once
-            self.send_scores(regular_subs)
+            # Send regular submissions in chunks of 100
+            regular_sub_lists: List[List[Submission]] = chunk_list(regular_subs)
+            for regular_sub_list in regular_sub_lists:
+                self.send_scores(regular_sub_list)
         if len(dup_uniqname_subs) > 0:
             LOGGER.info('Found submissions to send with duplicate uniqnames; they will be sent individually')
             # Send each submission with a duplicate uniqname individually

@@ -44,7 +44,7 @@ class ChunkingTestCase(TestCase):
 
     def test_chunk_list_of_subs_with_custom_size_and_more_than_one_chunk(self):
         """
-        chunk_list chunks a list of three submissions into a list of two lists with length 2 and 1 when chunk_size is 2.
+        chunk_list chunks a list of three submissions into a list of two lists with lengths 2 and 1 when chunk_size is 2.
         """
         submissions: List[Submission] = list(Exam.objects.get(id=1).submissions.all())
         result: List[List[Submission]] = chunk_list(submissions, chunk_size=2)

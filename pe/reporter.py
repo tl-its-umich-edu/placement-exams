@@ -20,7 +20,7 @@ LOGGER = logging.getLogger(__name__)
 class Reporter:
     """Utility class for collecting metadata, preparing report data, rendering templates, and sending email."""
 
-    report_sub_fields: Tuple[str, ...] = ('submission_id', 'student_uniqname', 'score', 'submitted_timestamp')
+    report_sub_fields: Tuple[str, ...] = ('submission_id', 'student_uniqname', 'score', 'graded_timestamp')
 
     def __init__(self, report) -> None:
         """
@@ -51,12 +51,12 @@ class Reporter:
 
             success_sub_qs: QuerySet = exam.submissions.filter(
                 transmitted=True, transmitted_timestamp__gte=exam_dict['time']['start_time']
-            ).order_by('submitted_timestamp')
+            ).order_by('graded_timestamp')
             num_successes: int = len(success_sub_qs)
 
             # ScoresOrchestration tries to send everything that is un-transmitted,
             # so anything left un-transmitted after a run is a failure.
-            failure_sub_qs: QuerySet = exam.submissions.filter(transmitted=False).order_by('submitted_timestamp')
+            failure_sub_qs: QuerySet = exam.submissions.filter(transmitted=False).order_by('graded_timestamp')
             num_failures: int = len(failure_sub_qs)
 
             new_sub_qs: QuerySet = exam.submissions.filter(graded_timestamp__gte=exam_dict['time']['sub_time_filter'])
@@ -81,7 +81,6 @@ class Reporter:
 
         support_email: str = os.getenv('SUPPORT_EMAIL', 'its.tl.staff@umich.edu')
         self.context = {'report': report_dict, 'exams': exam_dicts, 'support_email': support_email}
-        LOGGER.debug(self.context)
 
     def get_subject(self) -> str:
         """

@@ -21,9 +21,9 @@ The application did not send any scores for the Potions Placement exam.
 
 Failures: Scores not transmitted
 
-Canvas ID - Student Uniqname - Score - Submitted At
+Canvas ID - Student Uniqname - Score - Graded At
 
-123458 - rweasley - 150.0 - June 12, 2020 8:50:07 a.m.
+123458 - rweasley - 150.0 - June 12, 2020 12:00:00 p.m.
 
 
 
@@ -37,15 +37,15 @@ New submissions count: 2
 
 Successes: Scores transmitted
 
-Canvas ID - Student Uniqname - Score - Submitted At
+Canvas ID - Student Uniqname - Score - Graded At
 
-123460 - nlongbottom - 300.0 - June 12, 2020 9:05:01 a.m.
+123460 - nlongbottom - 300.0 - June 12, 2020 12:03:00 p.m.
 
-210000 - rweasley - 150.0 - June 13, 2020 6:05:00 a.m.
+210000 - rweasley - 150.0 - June 13, 2020 4:05:17 p.m.
 
 444444 - hpotter - 125.0 - June 19, 2020 1:45:33 p.m.
 
-444445 - cchang - 200.0 - June 20, 2020 6:35:01 a.m.
+444445 - cchang - 200.0 - June 20, 2020 6:45:00 a.m.
 
 
 

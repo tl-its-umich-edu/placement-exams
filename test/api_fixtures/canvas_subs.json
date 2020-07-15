@@ -1,22 +1,36 @@
-[
-    {
-        "id": 444444,
-        "score": 125.0,
-        "submitted_at": "2020-06-19T17:45:33Z",
-        "assignment_id": 111112,
-        "graded_at": "2020-06-19T17:45:33Z",
-        "user": {
-            "login_id": "hpotter"
+{
+    "Potions_Validation" : [
+        {
+            "id": 444444,
+            "score": 125.0,
+            "submitted_at": "2020-06-19T17:30:05Z",
+            "assignment_id": 111112,
+            "graded_at": "2020-06-19T17:45:33Z",
+            "user": {
+                "login_id": "hpotter"
+            }
+        },
+        {
+            "id": 444445,
+            "score": 200.0,
+            "submitted_at": "2020-06-20T10:35:01Z",
+            "assignment_id": 111112,
+            "graded_at": "2020-06-20T10:45:00Z",
+            "user": {
+                "login_id": "cchang"
+            }
         }
-    },
-    {
-        "id": 444445,
-        "score": 200.0,
-        "submitted_at": "2020-06-20T10:35:01Z",
-        "assignment_id": 111112,
-        "graded_at": "2020-06-20T10:45:00Z",
-        "user": {
-            "login_id": "cchang"
+    ],
+    "DADA_Placement": [
+        {
+            "id": 888888,
+            "score": 500.0,
+            "submitted_at": null,
+            "assignment_id": 222222,
+            "graded_at": "2020-07-07T13:22:49Z",
+            "user": {
+                "login_id": "nlongbottom"
+            }
         }
-    }
-]
+    ]
+}

@@ -55,7 +55,7 @@ class Submission(models.Model):
     submission_id = models.IntegerField(verbose_name='Canvas Submission ID', unique=True)
     exam = models.ForeignKey(to='Exam', related_name='submissions', on_delete=models.CASCADE)
     student_uniqname = models.CharField(max_length=255, verbose_name='Student Uniqname')
-    submitted_timestamp = models.DateTimeField(verbose_name='Submitted At Date & Time')
+    submitted_timestamp = models.DateTimeField(verbose_name='Submitted At Date & Time', null=True)
     graded_timestamp = models.DateTimeField(verbose_name='Graded At Date & Time')
     score = models.FloatField(verbose_name='Submission Score')
     transmitted = models.BooleanField(verbose_name='Transmitted')

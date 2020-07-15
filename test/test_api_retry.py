@@ -30,7 +30,9 @@ class TestApiRetry(TestCase):
         )
 
         with open(os.path.join(API_FIXTURES_DIR, 'canvas_subs.json'), 'r') as test_canvas_subs_file:
-            self.canvas_potions_val_subs: List[Dict[str, Any]] = json.loads(test_canvas_subs_file.read())
+            canvas_subs_dict: Dict[str, List[Dict[str, Any]]] = json.loads(test_canvas_subs_file.read())
+
+        self.canvas_potions_val_subs: List[Dict[str, Any]] = canvas_subs_dict['Potions_Validation']
 
         # "Potions Validation" from test_04.json
         some_course_id: int = 888888

@@ -40,14 +40,14 @@
             <th style="height: 30px; width: 100px; text-align: left">Canvas ID</th>
             <th style="height: 30px; width: 200px; text-align: left">Student Uniqname</th>
             <th style="height: 30px; width: 100px; text-align: left">Score</th>
-            <th style="height: 30px; width: 200px; text-align: left">Submitted At</th>
+            <th style="height: 30px; width: 200px; text-align: left">Graded At</th>
         </tr>
 {% for submission in exam.successes %}
         <tr>
             <td style="height: 30px; width: 100px">{{ submission.submission_id }}</td>
             <td style="height: 30px; width: 200px">{{ submission.student_uniqname }}</td>
             <td style="height: 30px; width: 100px">{{ submission.score }}</td>
-            <td style="height: 30px; width: 200px">{{ submission.submitted_timestamp }}</td>
+            <td style="height: 30px; width: 200px">{{ submission.graded_timestamp }}</td>
         </tr>
 {% endfor %}
     </table>
@@ -61,14 +61,14 @@
             <th style="height: 30px; width: 100px; text-align: left">Canvas ID</th>
             <th style="height: 30px; width: 200px; text-align: left">Student Uniqname</th>
             <th style="height: 30px; width: 100px; text-align: left">Score</th>
-            <th style="height: 30px; width: 200px; text-align: left">Submitted At</th>
+            <th style="height: 30px; width: 200px; text-align: left">Graded At</th>
         </tr>
 {% for submission in exam.failures %}
         <tr>
             <td style="height: 30px; width: 100px">{{ submission.submission_id }}</td>
             <td style="height: 30px; width: 200px">{{ submission.student_uniqname }}</td>
             <td style="height: 30px; width: 100px">{{ submission.score }}</td>
-            <td style="height: 30px; width: 200px">{{ submission.submitted_timestamp }}</td>
+            <td style="height: 30px; width: 200px">{{ submission.graded_timestamp }}</td>
         </tr>
 {% endfor %}
     </table>

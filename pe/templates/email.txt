@@ -16,9 +16,9 @@ New submissions count: {{ exam.summary.new_count}}
 
 Successes: Scores transmitted
 {% if exam.successes %}
-Canvas ID - Student Uniqname - Score - Submitted At
+Canvas ID - Student Uniqname - Score - Graded At
 {% for submission in exam.successes %}
-{{ submission.submission_id }} - {{ submission.student_uniqname }} - {{ submission.score }} - {{ submission.submitted_timestamp }}
+{{ submission.submission_id }} - {{ submission.student_uniqname }} - {{ submission.score }} - {{ submission.graded_timestamp }}
 {% endfor %}
 {% else %}
 The application did not send any scores for the {{ exam.name }} exam.
@@ -26,9 +26,9 @@ The application did not send any scores for the {{ exam.name }} exam.
 
 Failures: Scores not transmitted
 {% if exam.failures %}
-Canvas ID - Student Uniqname - Score - Submitted At
+Canvas ID - Student Uniqname - Score - Graded At
 {% for submission in exam.failures %}
-{{ submission.submission_id }} - {{ submission.student_uniqname }} - {{ submission.score }} - {{ submission.submitted_timestamp }}
+{{ submission.submission_id }} - {{ submission.student_uniqname }} - {{ submission.score }} - {{ submission.graded_timestamp }}
 {% endfor %}
 {% else %}
 The application did not fail to send any scores for the {{ exam.name }} exam.

@@ -120,6 +120,7 @@ class ScoresOrchestration:
                     objs=[
                         Submission(
                             submission_id=sub_dict['id'],
+                            attempt_num=sub_dict['attempt'],
                             exam=self.exam,
                             student_uniqname=sub_dict['user']['login_id'],
                             submitted_timestamp=sub_dict['submitted_at'],

@@ -31,7 +31,7 @@ class ScoresOrchestrationTestCase(TestCase):
     )
 
     def setUp(self):
-        """Sets up ApiUtil instance and custom fixtures to be used by ScoresOrchestration tests"""
+        """Sets up ApiUtil instance and custom fixtures to be used by ScoresOrchestration tests."""
         self.api_handler: ApiUtil = ApiUtil(
             os.getenv('API_DIR_URL', ''),
             os.getenv('API_DIR_CLIENT_ID', ''),
@@ -43,7 +43,7 @@ class ScoresOrchestrationTestCase(TestCase):
             canvas_subs_dict: Dict[str, List[Dict[str, Any]]] = json.loads(test_canvas_subs_file.read())
 
         self.canvas_potions_val_subs: List[Dict[str, Any]] = canvas_subs_dict['Potions_Validation_1']
-        self.canvas_dada_place_subs = canvas_subs_dict['DADA_Placement_1']
+        self.canvas_dada_place_subs: List[Dict[str, Any]] = canvas_subs_dict['DADA_Placement_1']
 
         with open(os.path.join(API_FIXTURES_DIR, 'mpathways_resp_data.json'), 'r') as mpathways_resp_data_file:
             self.mpathways_resp_data: List[Dict[str, Any]] = json.loads(mpathways_resp_data_file.read())
@@ -69,7 +69,7 @@ class ScoresOrchestrationTestCase(TestCase):
         """
         dada_place_exam: Exam = Exam.objects.get(id=3)
 
-        some_orca = ScoresOrchestration(self.api_handler, dada_place_exam)
+        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, dada_place_exam)
         self.assertEqual(some_orca.sub_time_filter, datetime(2020, 7, 1, 0, 0, 0, tzinfo=utc))
 
     def test_get_sub_dicts_for_exam_with_null_response(self):
@@ -81,7 +81,7 @@ class ScoresOrchestrationTestCase(TestCase):
 
         with patch('pe.orchestration.api_call_with_retries', autospec=True) as mock_retry_func:
             mock_retry_func.return_value = None
-            sub_dicts = some_orca.get_sub_dicts_for_exam()
+            sub_dicts: List[Dict[str, Any]] = some_orca.get_sub_dicts_for_exam()
 
         self.assertEqual(mock_retry_func.call_count, 1)
         self.assertEqual(len(sub_dicts), 0)
@@ -175,7 +175,7 @@ class ScoresOrchestrationTestCase(TestCase):
         """
         create_sub_records stores submissions when submitted_timetamp is not provided, as if grade was entered manually.
         """
-        dada_place_exam = Exam.objects.get(id=3)
+        dada_place_exam: Exam = Exam.objects.get(id=3)
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, dada_place_exam)
         some_orca.create_sub_records(self.canvas_dada_place_subs)
 

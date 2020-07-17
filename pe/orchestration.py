@@ -131,7 +131,7 @@ class ScoresOrchestration:
                         for sub_dict in sub_dicts
                     ]
                 )
-                LOGGER.info(f'Inserted {len(sub_dicts)} new Submission records in the database')
+                LOGGER.info(f'Inserted {len(sub_dicts)} new Submission record(s) in the database')
             except Exception as e:
                 LOGGER.error(e)
                 LOGGER.error('Submissions bulk creation failed')

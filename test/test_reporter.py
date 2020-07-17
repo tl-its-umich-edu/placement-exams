@@ -39,7 +39,7 @@ class ReporterSuccessTestCase(TestCase):
         with open(os.path.join(API_FIXTURES_DIR, 'canvas_subs.json'), 'r') as test_canvas_subs_file:
             canvas_subs_dict: Dict[str, List[Dict[str, Any]]] = json.loads(test_canvas_subs_file.read())
 
-        canvas_potions_val_subs: List[Dict[str, Any]] = canvas_subs_dict['Potions_Validation']
+        canvas_potions_val_subs: List[Dict[str, Any]] = canvas_subs_dict['Potions_Validation_1']
 
         with open(os.path.join(API_FIXTURES_DIR, 'mpathways_resp_data.json'), 'r') as mpathways_resp_data_file:
             mpathways_resp_data: List[Dict[str, Any]] = json.loads(mpathways_resp_data_file.read())

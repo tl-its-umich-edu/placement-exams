@@ -189,13 +189,14 @@ class LoadFixturesTestCase(TestCase):
             return None
 
         submission_dict = submission_queryset.filter(submission_id=123456).values(
-            'submission_id', 'exam_id', 'student_uniqname', 'submitted_timestamp', 'score',
+            'submission_id', 'attempt_num', 'exam_id', 'student_uniqname', 'submitted_timestamp', 'score',
             'transmitted', 'transmitted_timestamp'
         )[0]
         self.assertEqual(
             submission_dict,
             {
                 "submission_id": 123456,
+                'attempt_num': 1,
                 "exam_id": 1,
                 "student_uniqname": "hpotter",
                 "submitted_timestamp": datetime(2020, 6, 12, 8, 15, 30, tzinfo=utc),
@@ -248,7 +249,7 @@ class StringMethodsTestCase(TestCase):
         self.assertEqual(
             potions_submission.__str__(),
             (
-                '(id=1, submission_id=123456, exam=' +
+                '(id=1, submission_id=123456, attempt_num=1, exam=' +
                 '(id=1, sa_code=PP, name=Potions Placement, ' +
                 'report=(id=1, name=Potions, contact=halfbloodprince@hogwarts.edu), ' +
                 'course_id=888888, assignment_id=111111, default_time_filter=2020-06-01 00:00:00+00:00), ' +

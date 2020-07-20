@@ -61,5 +61,29 @@
                 "login_id": "nlongbottom"
             }
         }
+    ],
+    "DADA_Placement_2": [
+        {
+            "id": 888889,
+            "attempt": 1,
+            "score": 600.0,
+            "submitted_at": "2020-07-08T22:03:00Z",
+            "assignment_id": 222222,
+            "graded_at": "2020-07-09T10:15:00Z",
+            "user": {
+                "login_id": "hpotter"
+            }
+        },
+        {
+            "id": 888890,
+            "attempt": 1,
+            "score": null,
+            "submitted_at": "2020-07-08T23:30:45Z",
+            "assignment_id": 222222,
+            "graded_at": "2020-07-09T10:16:00Z",
+            "user": {
+                "login_id": "rweasley"
+            }
+        }
     ]
 }

@@ -43,7 +43,8 @@ class ScoresOrchestrationTestCase(TestCase):
             canvas_subs_dict: Dict[str, List[Dict[str, Any]]] = json.loads(test_canvas_subs_file.read())
 
         self.canvas_potions_val_subs: List[Dict[str, Any]] = canvas_subs_dict['Potions_Validation_1']
-        self.canvas_dada_place_subs: List[Dict[str, Any]] = canvas_subs_dict['DADA_Placement_1']
+        self.canvas_dada_place_subs_one: List[Dict[str, Any]] = canvas_subs_dict['DADA_Placement_1']
+        self.canvas_dada_place_subs_two: List[Dict[str, Any]] = canvas_subs_dict['DADA_Placement_2']
 
         with open(os.path.join(API_FIXTURES_DIR, 'mpathways_resp_data.json'), 'r') as mpathways_resp_data_file:
             self.mpathways_resp_data: List[Dict[str, Any]] = json.loads(mpathways_resp_data_file.read())
@@ -134,6 +135,25 @@ class ScoresOrchestrationTestCase(TestCase):
         self.assertEqual(len(sub_dicts), 2)
         self.assertEqual(sub_dicts, self.canvas_potions_val_subs)
 
+    def test_get_sub_dicts_for_exam_discards_subs_with_null_scores(self):
+        """
+        get_sub_dicts_for_exam discards a Canvas submission without a score and keeps another submission with a score.
+        """
+        dada_place_exam: Exam = Exam.objects.get(id=3)
+        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, dada_place_exam)
+
+        with patch('pe.orchestration.api_call_with_retries', autospec=True) as mock_retry_func:
+            mock_retry_func.return_value = MagicMock(
+                spec=Response, ok=True, links={}, text=json.dumps(self.canvas_dada_place_subs_two)
+            )
+            with self.assertLogs(level='INFO') as cm:
+                sub_dicts: List[Dict[str, Any]] = some_orca.get_sub_dicts_for_exam()
+
+        self.assertEqual(len(sub_dicts), 1)
+        self.assertTrue('INFO:pe.orchestration:Discarded 1 Canvas submission(s) with no score(s)' in cm.output)
+        sub_dict: Dict[str, Any] = sub_dicts[0]
+        self.assertEqual((sub_dict['id'], sub_dict['score'], sub_dict['user']['login_id']), (888889, 600.0, 'hpotter'))
+
     def test_create_sub_records(self):
         """
         create_sub_records parses Canvas submission dictionaries and creates records in the database.
@@ -177,7 +197,7 @@ class ScoresOrchestrationTestCase(TestCase):
         """
         dada_place_exam: Exam = Exam.objects.get(id=3)
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, dada_place_exam)
-        some_orca.create_sub_records(self.canvas_dada_place_subs)
+        some_orca.create_sub_records(self.canvas_dada_place_subs_one)
 
         new_dada_place_sub_qs: QuerySet = some_orca.exam.submissions.filter(submission_id=888888)
         self.assertEqual(len(new_dada_place_sub_qs), 1)

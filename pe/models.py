@@ -1,10 +1,11 @@
 # standard libaries
 import logging
 from datetime import datetime
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 # third-party libraries
 from django.db import models
+from django.db.models.constraints import BaseConstraint
 
 
 LOGGER = logging.getLogger(__name__)
@@ -52,7 +53,8 @@ class Exam(models.Model):
 
 class Submission(models.Model):
     id = models.AutoField(primary_key=True, verbose_name='Submission ID')
-    submission_id = models.IntegerField(verbose_name='Canvas Submission ID', unique=True)
+    submission_id = models.IntegerField(verbose_name='Canvas Submission ID')
+    attempt_num = models.IntegerField(verbose_name='Submission Attempt Number')
     exam = models.ForeignKey(to='Exam', related_name='submissions', on_delete=models.CASCADE)
     student_uniqname = models.CharField(max_length=255, verbose_name='Student Uniqname')
     submitted_timestamp = models.DateTimeField(verbose_name='Submitted At Date & Time', null=True)
@@ -63,11 +65,16 @@ class Submission(models.Model):
 
     def __str__(self):
         return (
-            f'(id={self.id}, submission_id={self.submission_id}, exam={self.exam}, ' +
+            f'(id={self.id}, submission_id={self.submission_id}, attempt_num={self.attempt_num}, exam={self.exam}, ' +
             f'student_uniqname={self.student_uniqname}, submitted_timestamp={self.submitted_timestamp}, ' +
             f'graded_timestamp={self.graded_timestamp}, score={self.score}, transmitted={self.transmitted}, ' +
             f'transmitted_timestamp={self.transmitted_timestamp})'
         )
+
+    class Meta:
+        constraints: List[BaseConstraint] = [
+            models.UniqueConstraint(fields=['submission_id', 'attempt_num'], name='unique_canvas_submission')
+        ]
 
     def prepare_score(self) -> Dict[str, str]:
         """

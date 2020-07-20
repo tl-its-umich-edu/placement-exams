@@ -4,6 +4,7 @@
         "pk": 1,
         "fields": {
             "submission_id": 123456,
+            "attempt_num": 1,
             "exam_id": 1,
             "student_uniqname": "hpotter",
             "submitted_timestamp": "2020-06-12T08:15:30Z",
@@ -18,6 +19,7 @@
         "pk": 2,
         "fields": {
             "submission_id": 123457,
+            "attempt_num": 1,
             "exam_id": 1,
             "student_uniqname": "hgranger",
             "submitted_timestamp": "2020-06-12T06:07:45Z",
@@ -32,6 +34,7 @@
         "pk": 3,
         "fields": {
             "submission_id": 123458,
+            "attempt_num": 1,
             "exam_id": 1,
             "student_uniqname": "rweasley",
             "submitted_timestamp": "2020-06-12T12:50:07Z",
@@ -46,6 +49,7 @@
         "pk": 4,
         "fields": {
             "submission_id": 123460,
+            "attempt_num": 1,
             "exam_id": 2,
             "student_uniqname": "nlongbottom",
             "submitted_timestamp": "2020-06-12T13:05:01Z",
@@ -60,6 +64,7 @@
         "pk": 5,
         "fields": {
             "submission_id": 210000,
+            "attempt_num": 1,
             "exam_id": 2,
             "student_uniqname": "rweasley",
             "submitted_timestamp": "2020-06-13T10:05:00Z",

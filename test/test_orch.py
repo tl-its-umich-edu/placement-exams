@@ -24,10 +24,10 @@ LOGGER = logging.getLogger(__name__)
 
 
 class ScoresOrchestrationTestCase(TestCase):
-    fixtures: List[str] = ['test_01.json', 'test_03.json', 'test_04.json', 'test_05.json']
+    fixtures: List[str] = ['test_01.json', 'test_03.json', 'test_04.json']
 
     test_sub_fields: Tuple[str, ...] = (
-        'submission_id', 'student_uniqname', 'score', 'submitted_timestamp', 'graded_timestamp'
+        'submission_id', 'attempt_num', 'student_uniqname', 'score', 'submitted_timestamp', 'graded_timestamp'
     )
 
     def setUp(self):
@@ -42,11 +42,16 @@ class ScoresOrchestrationTestCase(TestCase):
         with open(os.path.join(API_FIXTURES_DIR, 'canvas_subs.json'), 'r') as test_canvas_subs_file:
             canvas_subs_dict: Dict[str, List[Dict[str, Any]]] = json.loads(test_canvas_subs_file.read())
 
-        self.canvas_potions_val_subs = canvas_subs_dict['Potions_Validation']
-        self.canvas_dada_place_subs = canvas_subs_dict['DADA_Placement']
+        self.canvas_potions_val_subs: List[Dict[str, Any]] = canvas_subs_dict['Potions_Validation_1']
+        self.canvas_dada_place_subs: List[Dict[str, Any]] = canvas_subs_dict['DADA_Placement_1']
 
         with open(os.path.join(API_FIXTURES_DIR, 'mpathways_resp_data.json'), 'r') as mpathways_resp_data_file:
             self.mpathways_resp_data: List[Dict[str, Any]] = json.loads(mpathways_resp_data_file.read())
+
+        self.dup_get_mocks: List[MagicMock] = [
+            MagicMock(spec=Response, status_code=200, text=json.dumps(canvas_subs_dict['Potions_Placement_1'])),
+            MagicMock(spec=Response, status_code=200, text=json.dumps(canvas_subs_dict['Potions_Placement_2']))
+        ]
 
     def test_constructor_uses_latest_graded_dt_when_subs(self):
         """
@@ -56,7 +61,7 @@ class ScoresOrchestrationTestCase(TestCase):
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_place_exam)
 
         # Extra second for standard one-second increment
-        self.assertEqual(some_orca.sub_time_filter, datetime(2020, 6, 20, 12, 3, 1, tzinfo=utc))
+        self.assertEqual(some_orca.sub_time_filter, datetime(2020, 6, 12, 16, 0, 1, tzinfo=utc))
 
     def test_constructor_uses_default_filter_when_no_subs(self):
         """
@@ -64,7 +69,7 @@ class ScoresOrchestrationTestCase(TestCase):
         """
         dada_place_exam: Exam = Exam.objects.get(id=3)
 
-        some_orca = ScoresOrchestration(self.api_handler, dada_place_exam)
+        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, dada_place_exam)
         self.assertEqual(some_orca.sub_time_filter, datetime(2020, 7, 1, 0, 0, 0, tzinfo=utc))
 
     def test_get_sub_dicts_for_exam_with_null_response(self):
@@ -76,7 +81,7 @@ class ScoresOrchestrationTestCase(TestCase):
 
         with patch('pe.orchestration.api_call_with_retries', autospec=True) as mock_retry_func:
             mock_retry_func.return_value = None
-            sub_dicts = some_orca.get_sub_dicts_for_exam()
+            sub_dicts: List[Dict[str, Any]] = some_orca.get_sub_dicts_for_exam()
 
         self.assertEqual(mock_retry_func.call_count, 1)
         self.assertEqual(len(sub_dicts), 0)
@@ -147,6 +152,7 @@ class ScoresOrchestrationTestCase(TestCase):
             sub_dicts[0],
             {
                 'submission_id': 444445,
+                'attempt_num': 1,
                 'student_uniqname': 'cchang',
                 'score': 200.0,
                 'submitted_timestamp': datetime(2020, 6, 20, 10, 35, 1, tzinfo=utc),
@@ -157,6 +163,7 @@ class ScoresOrchestrationTestCase(TestCase):
             sub_dicts[1],
             {
                 'submission_id': 444444,
+                'attempt_num': 1,
                 'student_uniqname': 'hpotter',
                 'score': 125.0,
                 'submitted_timestamp': datetime(2020, 6, 19, 17, 30, 5, tzinfo=utc),
@@ -168,7 +175,7 @@ class ScoresOrchestrationTestCase(TestCase):
         """
         create_sub_records stores submissions when submitted_timetamp is not provided, as if grade was entered manually.
         """
-        dada_place_exam = Exam.objects.get(id=3)
+        dada_place_exam: Exam = Exam.objects.get(id=3)
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, dada_place_exam)
         some_orca.create_sub_records(self.canvas_dada_place_subs)
 
@@ -181,6 +188,7 @@ class ScoresOrchestrationTestCase(TestCase):
             sub_dict,
             {
                 'submission_id': 888888,
+                'attempt_num': 1,
                 'student_uniqname': 'nlongbottom',
                 'score': 500.0,
                 'submitted_timestamp': None,
@@ -322,41 +330,79 @@ class ScoresOrchestrationTestCase(TestCase):
         self.assertEqual(len(brand_new_subs), 2)
         self.assertEqual([sub.student_uniqname for sub in brand_new_subs], ['cchang', 'hpotter'])
 
-    def test_main_with_exam_scores_with_duplicate_uniqnames(self):
+    def test_main_with_exam_scores_with_duplicate_uniqnames_sent_on_different_runs(self):
         """
-        Scores for the same exam with duplicate uniqnames are properly sent separately and individually.
+        The main process pulls, stores, and sends scores with duplicate uniqnames on different runs.
         """
         current_dt: datetime = datetime.now(tz=utc)
         potions_place_exam: Exam = Exam.objects.get(id=1)
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_place_exam)
 
+        dup_send_mocks: List[MagicMock] = [
+            MagicMock(spec=Response, status_code=200, text=json.dumps(self.mpathways_resp_data[6])),
+            MagicMock(spec=Response, status_code=200, text=json.dumps(self.mpathways_resp_data[4]))
+        ]
+
         with patch('pe.orchestration.api_call_with_retries', autospec=True) as mock_get:
             with patch.object(ApiUtil, 'api_call', autospec=True) as mock_send:
-                mock_get.return_value = MagicMock(
-                    spec=Response, status_code=200, text=json.dumps({})
-                )
-
-                send_mocks: List[MagicMock] = [
-                    MagicMock(spec=Response, status_code=200, text=json.dumps(self.mpathways_resp_data[3]))
-                ]
-                # Though request may be different, the response will look exactly the same.
-                send_mocks += [
-                    MagicMock(spec=Response, status_code=200, text=json.dumps(self.mpathways_resp_data[4]))
-                    for i in range(2)
-                ]
-                mock_send.side_effect = send_mocks
+                mock_get.side_effect = self.dup_get_mocks
+                mock_send.side_effect = dup_send_mocks
+                some_orca.main()
                 some_orca.main()
 
-        self.assertEqual(mock_get.call_count, 1)
-        # Once for rweasley score, twice for hgranger scores
-        self.assertEqual(mock_send.call_count, 3)
+        self.assertEqual(mock_get.call_count, 2)
+        # Once for rweasley and first hgranger score, once for second hgranger score
+        self.assertEqual(mock_send.call_count, 2)
 
         transmitted_qs: QuerySet = some_orca.exam.submissions.filter(transmitted=True)
         self.assertEqual(len(transmitted_qs), 5)
         new_transmitted_qs: QuerySet = transmitted_qs.filter(transmitted_timestamp__gt=current_dt)
         self.assertEqual(len(new_transmitted_qs), 3)
 
-        dup_subs: List[Submission] = new_transmitted_qs.filter(student_uniqname='hgranger')
+        dup_subs_qs: QuerySet = new_transmitted_qs.filter(student_uniqname='hgranger')
+        self.assertEqual(len(dup_subs_qs), 2)
+        dup_subs: List[Submission] = list(dup_subs_qs)
+        self.assertEqual([dup_sub.attempt_num for dup_sub in dup_subs], [2, 3])
+        self.assertTrue(dup_subs[0].transmitted_timestamp < dup_subs[1].transmitted_timestamp)
+
+    def test_main_with_exam_scores_with_duplicate_uniqnames_sent_on_same_run(self):
+        """
+        The main process pulls, stores, and sends scores with duplicate uniqnames on the same run.
+        """
+        current_dt: datetime = datetime.now(tz=utc)
+        potions_place_exam: Exam = Exam.objects.get(id=1)
+        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_place_exam)
+
+        dup_send_mocks: List[MagicMock] = [
+            # Simulate network error which could lead to duplicates sent in one process run
+            MagicMock(spec=Response, status_code=504, text=json.dumps({})),
+            MagicMock(spec=Response, status_code=200, text=json.dumps(self.mpathways_resp_data[3]))
+        ]
+        # Though request may be different, the response will look exactly the same
+        dup_send_mocks += [
+            MagicMock(spec=Response, status_code=200, text=json.dumps(self.mpathways_resp_data[4]))
+            for i in range(2)
+        ]
+
+        with patch('pe.orchestration.api_call_with_retries', autospec=True) as mock_get:
+            with patch.object(ApiUtil, 'api_call', autospec=True) as mock_send:
+                mock_get.side_effect = self.dup_get_mocks
+                mock_send.side_effect = dup_send_mocks
+                # First run gathers data, but fails to send it because of a network error
+                some_orca.main()
+                # Second run sends all the data pulled from both runs
+                some_orca.main()
+
+        self.assertEqual(mock_get.call_count, 2)
+        # Once for failure, once for rweasley score, twice for hgranger scores
+        self.assertEqual(mock_send.call_count, 4)
+
+        transmitted_qs: QuerySet = some_orca.exam.submissions.filter(transmitted=True)
+        self.assertEqual(len(transmitted_qs), 5)
+        new_transmitted_qs: QuerySet = transmitted_qs.filter(transmitted_timestamp__gt=current_dt)
+        self.assertEqual(len(new_transmitted_qs), 3)
+
+        dup_subs: List[Submission] = list(new_transmitted_qs.filter(student_uniqname='hgranger'))
         self.assertEqual(len(dup_subs), 2)
-        self.assertEqual([dup_sub.student_uniqname for dup_sub in dup_subs], ['hgranger', 'hgranger'])
-        self.assertNotEqual(dup_subs[0].transmitted_timestamp, dup_subs[1].transmitted_timestamp)
+        self.assertEqual([dup_sub.attempt_num for dup_sub in dup_subs], [2, 3])
+        self.assertTrue(dup_subs[0].transmitted_timestamp < dup_subs[1].transmitted_timestamp)

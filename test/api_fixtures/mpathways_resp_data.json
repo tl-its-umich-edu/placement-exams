@@ -106,5 +106,25 @@
                 }
             }
         }
+    },
+    {
+        "putPlcExamScoreResponse": {
+            "@schemaLocation": "<The real schema string would go here>",
+            "putPlcExamScoreResponse": {
+                "GoodCount": 2,
+                "Success": [
+                    {
+                        "uniqname": "rweasley",
+                        "placementType": "PP"
+                    },
+                    {
+                        "uniqname": "hgranger",
+                        "placementType": "PP"
+                    }
+                ],
+                "BadCount": 0,
+                "Errors": "No errors found"
+            }
+        }
     }
 ]

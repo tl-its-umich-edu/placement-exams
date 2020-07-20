@@ -332,7 +332,7 @@ class ScoresOrchestrationTestCase(TestCase):
 
     def test_main_with_exam_scores_with_duplicate_uniqnames_sent_on_different_runs(self):
         """
-        The main process pulls, stores, and sends scores with duplicate uniqunames on different runs.
+        The main process pulls, stores, and sends scores with duplicate uniqnames on different runs.
         """
         current_dt: datetime = datetime.now(tz=utc)
         potions_place_exam: Exam = Exam.objects.get(id=1)
@@ -374,7 +374,7 @@ class ScoresOrchestrationTestCase(TestCase):
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_place_exam)
 
         dup_send_mocks: List[MagicMock] = [
-            # Simulate network error which could lead to duplicates sent in one process
+            # Simulate network error which could lead to duplicates sent in one process run
             MagicMock(spec=Response, status_code=504, text=json.dumps({})),
             MagicMock(spec=Response, status_code=200, text=json.dumps(self.mpathways_resp_data[3]))
         ]

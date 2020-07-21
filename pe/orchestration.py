@@ -106,7 +106,7 @@ class ScoresOrchestration:
         if filter_diff > 0:
             LOGGER.info(f'Discarded {filter_diff} Canvas submission(s) with no score(s)')
 
-        LOGGER.info(f'Gathered {len(sub_dicts_with_scores)} submissions from Canvas')
+        LOGGER.info(f'Gathered {len(sub_dicts_with_scores)} submission(s) from Canvas')
         LOGGER.debug(sub_dicts_with_scores)
         return sub_dicts_with_scores
 

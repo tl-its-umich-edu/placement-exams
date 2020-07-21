@@ -54,7 +54,7 @@ class Exam(models.Model):
 class Submission(models.Model):
     id = models.AutoField(primary_key=True, verbose_name='Submission ID')
     submission_id = models.IntegerField(verbose_name='Canvas Submission ID')
-    attempt_num = models.IntegerField(verbose_name='Submission Attempt Number')
+    attempt_num = models.IntegerField(verbose_name='Submission Attempt Number', null=True)
     exam = models.ForeignKey(to='Exam', related_name='submissions', on_delete=models.CASCADE)
     student_uniqname = models.CharField(max_length=255, verbose_name='Student Uniqname')
     submitted_timestamp = models.DateTimeField(verbose_name='Submitted At Date & Time', null=True)
@@ -73,7 +73,7 @@ class Submission(models.Model):
 
     class Meta:
         constraints: List[BaseConstraint] = [
-            models.UniqueConstraint(fields=['submission_id', 'attempt_num'], name='unique_canvas_submission')
+            models.UniqueConstraint(fields=['submission_id', 'graded_timestamp'], name='unique_canvas_submission')
         ]
 
     def prepare_score(self) -> Dict[str, str]:

@@ -101,9 +101,14 @@ class ScoresOrchestration:
                     next_params = page_info
                     page_num += 1
 
-        LOGGER.info(f'Gathered {len(sub_dicts)} submissions from Canvas')
-        LOGGER.debug(sub_dicts)
-        return sub_dicts
+        sub_dicts_with_scores: List[Dict[str, Any]] = list(filter((lambda x: x['score'] is not None), sub_dicts))
+        filter_diff: int = len(sub_dicts) - len(sub_dicts_with_scores)
+        if filter_diff > 0:
+            LOGGER.info(f'Discarded {filter_diff} Canvas submission(s) with no score(s)')
+
+        LOGGER.info(f'Gathered {len(sub_dicts_with_scores)} submission(s) from Canvas')
+        LOGGER.debug(sub_dicts_with_scores)
+        return sub_dicts_with_scores
 
     def create_sub_records(self, sub_dicts: List[Dict[str, Any]]) -> None:
         """

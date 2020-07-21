@@ -193,7 +193,7 @@ class ScoresOrchestrationTestCase(TestCase):
 
     def test_create_sub_records_with_null_submitted_timestamp_and_attempt_num(self):
         """
-        create_sub_records stores submissions when submitted_timetamp and attempt_num are not provided.
+        create_sub_records stores submissions when submitted_timestamp and attempt_num are not provided.
         The fixture used mimics what a submission would look like if a grade was entered manually.
         """
         dada_place_exam: Exam = Exam.objects.get(id=3)

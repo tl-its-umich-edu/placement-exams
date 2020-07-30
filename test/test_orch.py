@@ -191,9 +191,10 @@ class ScoresOrchestrationTestCase(TestCase):
             }
         )
 
-    def test_create_sub_records_with_null_submitted_timestamp(self):
+    def test_create_sub_records_with_null_submitted_timestamp_and_attempt_num(self):
         """
-        create_sub_records stores submissions when submitted_timetamp is not provided, as if grade was entered manually.
+        create_sub_records stores submissions when submitted_timestamp and attempt_num are not provided.
+        The fixture used mimics what a submission would look like if a grade was entered manually.
         """
         dada_place_exam: Exam = Exam.objects.get(id=3)
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, dada_place_exam)
@@ -208,7 +209,7 @@ class ScoresOrchestrationTestCase(TestCase):
             sub_dict,
             {
                 'submission_id': 888888,
-                'attempt_num': 1,
+                'attempt_num': None,
                 'student_uniqname': 'nlongbottom',
                 'score': 500.0,
                 'submitted_timestamp': None,
@@ -379,10 +380,8 @@ class ScoresOrchestrationTestCase(TestCase):
         new_transmitted_qs: QuerySet = transmitted_qs.filter(transmitted_timestamp__gt=current_dt)
         self.assertEqual(len(new_transmitted_qs), 3)
 
-        dup_subs_qs: QuerySet = new_transmitted_qs.filter(student_uniqname='hgranger')
-        self.assertEqual(len(dup_subs_qs), 2)
-        dup_subs: List[Submission] = list(dup_subs_qs)
-        self.assertEqual([dup_sub.attempt_num for dup_sub in dup_subs], [2, 3])
+        dup_subs: List[Submission] = list(new_transmitted_qs.filter(student_uniqname='hgranger').order_by('id'))
+        self.assertEqual(len(dup_subs), 2)
         self.assertTrue(dup_subs[0].transmitted_timestamp < dup_subs[1].transmitted_timestamp)
 
     def test_main_with_exam_scores_with_duplicate_uniqnames_sent_on_same_run(self):
@@ -422,7 +421,6 @@ class ScoresOrchestrationTestCase(TestCase):
         new_transmitted_qs: QuerySet = transmitted_qs.filter(transmitted_timestamp__gt=current_dt)
         self.assertEqual(len(new_transmitted_qs), 3)
 
-        dup_subs: List[Submission] = list(new_transmitted_qs.filter(student_uniqname='hgranger'))
+        dup_subs: List[Submission] = list(new_transmitted_qs.filter(student_uniqname='hgranger').order_by('id'))
         self.assertEqual(len(dup_subs), 2)
-        self.assertEqual([dup_sub.attempt_num for dup_sub in dup_subs], [2, 3])
         self.assertTrue(dup_subs[0].transmitted_timestamp < dup_subs[1].transmitted_timestamp)

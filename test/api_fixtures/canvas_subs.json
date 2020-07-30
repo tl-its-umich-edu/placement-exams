@@ -52,7 +52,7 @@
     "DADA_Placement_1": [
         {
             "id": 888888,
-            "attempt": 1,
+            "attempt": null,
             "score": 500.0,
             "submitted_at": null,
             "assignment_id": 222222,

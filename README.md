@@ -150,7 +150,7 @@ You can also set up the application using `virtualenv` by doing the following:
 To run the test suite, use the following commands:
 
 ```sh
-coverage manage.py test -v 3
+coverage run manage.py test -v 3
 ```
 
 #### Sending email

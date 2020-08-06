@@ -151,6 +151,7 @@ To run the test suite, use the following commands:
 
 ```sh
 coverage run manage.py test -v 3
+coverage report
 ```
 
 #### Sending email

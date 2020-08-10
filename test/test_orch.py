@@ -45,6 +45,7 @@ class ScoresOrchestrationTestCase(TestCase):
         self.canvas_potions_val_subs: List[Dict[str, Any]] = canvas_subs_dict['Potions_Validation_1']
         self.canvas_dada_place_subs_one: List[Dict[str, Any]] = canvas_subs_dict['DADA_Placement_1']
         self.canvas_dada_place_subs_two: List[Dict[str, Any]] = canvas_subs_dict['DADA_Placement_2']
+        self.canvas_potions_place_subs_three: List[Dict[str, Any]] = canvas_subs_dict['Potions_Placement_3']
 
         with open(os.path.join(API_FIXTURES_DIR, 'mpathways_resp_data.json'), 'r') as mpathways_resp_data_file:
             self.mpathways_resp_data: List[Dict[str, Any]] = json.loads(mpathways_resp_data_file.read())
@@ -216,6 +217,16 @@ class ScoresOrchestrationTestCase(TestCase):
                 'graded_timestamp': datetime(2020, 7, 7, 13, 22, 49, tzinfo=utc)
             }
         )
+
+    def test_create_sub_records_strips_whitespace_in_login_id(self):
+        """create_sub_records strips leading and trailing whitespace characters from Canvas login_ids."""
+        potions_place_exam: Exam = Exam.objects.get(id=1)
+        some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_place_exam)
+        some_orca.create_sub_records(self.canvas_potions_place_subs_three)
+
+        latest_two_subs: List[Submission] = list(Submission.objects.filter(exam=potions_place_exam).order_by('-id'))[:2]
+        uniqnames: List[str] = [sub.student_uniqname for sub in latest_two_subs]
+        self.assertEqual(uniqnames, ['visitor_two@magicking.edu', 'visitor_one@magicking.edu'])
 
     def test_send_scores_when_successful(self):
         """

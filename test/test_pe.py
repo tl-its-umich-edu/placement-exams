@@ -218,6 +218,15 @@ class LoadFixturesTestCase(TestCase):
         self.assertEqual(submission.exam.sa_code, 'PP')
         self.assertEqual(submission.exam.name, 'Potions Placement Advanced')
 
+    def test_load_fixtures_with_supplementary_characters(self):
+        """Loading exam and report fixtures with characters that need utf8mb4 encoding succeeds."""
+        call_command('loaddata', 'test_05.json')
+        div_report: Report = Report.objects.get(id=4)
+        self.assertEqual(div_report.name, 'Divination 🔮')
+        div_exam: Exam = div_report.exams.first()
+        self.assertEqual(div_exam.sa_code, 'Δ')
+        self.assertEqual(div_exam.name, 'Δ𓀤𝌕👁')
+
 
 class StringMethodsTestCase(TestCase):
     fixtures: List[str] = ['test_01.json', 'test_04.json']

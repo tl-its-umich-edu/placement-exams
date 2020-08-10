@@ -4,6 +4,7 @@ services:
   mysql:
     image: mysql:5.7
     restart: on-failure
+    command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
     environment:
       - MYSQL_ROOT_PASSWORD=pe_root_pw
       - MYSQL_HOST=placement_exams_mysql

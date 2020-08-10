@@ -1,0 +1,22 @@
+[
+    {
+        "model": "pe.report",
+        "pk": 4,
+        "fields": {
+            "name": "Divination 🔮",
+            "contact": "trelawn@hogwarts.edu"
+        }
+    },
+    {
+        "model": "pe.exam",
+        "pk": 4,
+        "fields": {
+            "sa_code": "Δ",
+            "name": "Δ𓀤𝌕👁",
+            "report_id": 4,
+            "course_id": 1111111,
+            "assignment_id": 777777,
+            "default_time_filter": "2020-08-01T00:00:00Z"
+        }
+    }
+]

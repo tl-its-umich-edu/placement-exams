@@ -127,7 +127,7 @@ class ScoresOrchestration:
                             submission_id=sub_dict['id'],
                             attempt_num=sub_dict['attempt'],
                             exam=self.exam,
-                            student_uniqname=sub_dict['user']['login_id'],
+                            student_uniqname=sub_dict['user']['login_id'].strip(),
                             submitted_timestamp=sub_dict['submitted_at'],
                             graded_timestamp=sub_dict['graded_at'],
                             score=sub_dict['score'],

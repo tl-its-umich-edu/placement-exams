@@ -76,8 +76,9 @@ def main() -> None:
             }
             reporter.exams_time_metadata[exam.id] = metadata
         reporter.prepare_context()
-        LOGGER.info(f'Sending {report.name} report email to {report.contact}')
-        reporter.send_email()
+        if reporter.total_successes > 0 or reporter.total_failures > 0:
+            LOGGER.info(f'Sending {report.name} report email to {report.contact}')
+            reporter.send_email()
 
     end_time: datetime = datetime.now(tz=utc)
     delta: timedelta = end_time - start_time

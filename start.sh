@@ -22,5 +22,5 @@ if [ "${TEST_MODE}" == "True" ]; then
     coverage report
 else
     echo "Running main placement-exams process"
-    python entry.py
+    python manage.py run
 fi

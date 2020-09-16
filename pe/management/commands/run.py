@@ -19,10 +19,20 @@ from pe.reporter import Reporter
 LOGGER: Logger = logging.getLogger(__name__)
 
 
-class Command(BaseCommand):
+class RunCommand(BaseCommand):
+    """
+    Django management command used for running the application process, specifically the processes
+    handled by the ScoresOrchestration and Reporter classes.
+    """
 
-    def run(self, api_util: ApiUtil):
+    def run(self, api_util: ApiUtil) -> None:
         """
+        Runs the highest-level application process.
+
+        :param api_util: Instance of ApiUtil for making API calls
+        :type api_util: ApiUtil
+        :return: None
+        :rtype: None
         """
         start_time: datetime = datetime.now(tz=utc)
         LOGGER.info(f'Starting new run at {start_time}')
@@ -57,8 +67,11 @@ class Command(BaseCommand):
         LOGGER.info(f'The run ended at {end_time}')
         LOGGER.info(f'Duration of run: {delta}')
 
-    def handle(self, *args, **options):
+    def handle(self, *args, **options) -> None:
         """
+        Entrypoint method required by BaseCommand class (see Django docs).
+        Checks whether the ApiUtil instance is properly configured, invoking the run method if so
+        and exiting if not.
         """
         try:
             api_util: ApiUtil = ApiUtil(

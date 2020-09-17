@@ -14,7 +14,7 @@ from constants import ROOT_DIR
 LOGGER: Logger = logging.getLogger(__name__)
 
 
-class RunCommand(BaseCommand):
+class Command(BaseCommand):
     """
     Django management command used for launching the process defined in the main module.
     """

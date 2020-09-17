@@ -8,7 +8,7 @@ from umich_api.api_utils import ApiUtil
 
 # local libraries
 from pe.main import main
-from constants import ROOT_DIR
+from constants import API_CONFIG_PATH
 
 
 LOGGER: Logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ class Command(BaseCommand):
                 os.getenv('API_DIR_URL', ''),
                 os.getenv('API_DIR_CLIENT_ID', ''),
                 os.getenv('API_DIR_SECRET', ''),
-                os.path.join(ROOT_DIR, 'config', 'apis.json')
+                API_CONFIG_PATH
             )
         except Exception as e:
             LOGGER.error(e)

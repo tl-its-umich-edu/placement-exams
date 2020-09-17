@@ -7,6 +7,7 @@ ISO8601_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
 # Paths
 ROOT_DIR: str = os.path.dirname(os.path.abspath(__file__))
+API_CONFIG_PATH: str = os.path.join(ROOT_DIR, 'config', 'apis.json')
 TEST_DIR: str = os.path.join(ROOT_DIR, 'test')
 API_FIXTURES_DIR = os.path.join(TEST_DIR, 'api_fixtures')
 SNAPSHOTS_DIR = os.path.join(TEST_DIR, 'snapshots')

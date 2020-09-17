@@ -52,7 +52,7 @@ class MainTestCase(TestCase):
                     spec=Response, status_code=200, text=json.dumps(self.mpathways_resp_data[7])
                 )
                 main(self.api_handler)
-        
+
         dada_report: Report = Report.objects.get(id=3)
         new_submissions_qs: QuerySet = dada_report.exams.first().submissions.all()
         self.assertEqual(

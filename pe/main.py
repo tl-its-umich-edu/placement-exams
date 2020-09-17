@@ -19,7 +19,7 @@ LOGGER: Logger = logging.getLogger(__name__)
 
 def main(api_util: ApiUtil) -> None:
     """
-    Runs the highest-level application process, coordinating the use of ScoresOrchestration and Reporter 
+    Runs the highest-level application process, coordinating the use of ScoresOrchestration and Reporter
     classes and the transfer of data between them.
 
     :param api_util: Instance of ApiUtil for making API calls

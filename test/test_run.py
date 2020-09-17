@@ -20,7 +20,7 @@ class RunCommandTestCase(TestCase):
         handle launches the pe.main.main function if ApiUtil is properly configured.
         """
         # Patch main so it isn't invoked
-        with patch('pe.main.main', autospec=True) as mock_main:
+        with patch('pe.management.commands.run.main', autospec=True) as mock_main:
             call_command('run')
 
         mock_main.assert_called()
@@ -31,9 +31,9 @@ class RunCommandTestCase(TestCase):
         the apis.json configuration file was not found at the specified path.
         """
         fake_config_path: str = os.path.join(ROOT_DIR, 'fake_dir_name', 'apis.json')
-        with patch('constants.API_CONFIG_PATH', fake_config_path):
+        with patch('pe.management.commands.run.API_CONFIG_PATH', fake_config_path):
             # Patch main as a precaution so it isn't invoked
-            with patch('pe.main.main', autospec=True) as mock_main:
+            with patch('pe.management.commands.run.main', autospec=True) as mock_main:
                 try:
                     call_command('run')
                 except SystemExit:

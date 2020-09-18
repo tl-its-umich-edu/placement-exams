@@ -19,7 +19,6 @@ class RunCommandTestCase(TestCase):
         """
         handle launches the pe.main.main function if ApiUtil is properly configured.
         """
-        # Patch main so it isn't invoked
         with patch('pe.management.commands.run.main', autospec=True) as mock_main:
             call_command('run')
 
@@ -32,7 +31,6 @@ class RunCommandTestCase(TestCase):
         """
         fake_config_path: str = os.path.join(ROOT_DIR, 'fake_dir_name', 'apis.json')
         with patch('pe.management.commands.run.API_CONFIG_PATH', fake_config_path):
-            # Patch main as a precaution so it isn't invoked
             with patch('pe.management.commands.run.main', autospec=True) as mock_main:
                 try:
                     call_command('run')

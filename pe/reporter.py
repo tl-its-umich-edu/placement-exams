@@ -39,7 +39,8 @@ class Reporter:
 
     def prepare_context(self) -> None:
         """
-        Prepares the context in a dictionary structure that can be passed to the template via render_to_string.
+        Prepares summary counts and the context in a dictionary structure that can be passed to the template
+        via render_to_string.
 
         :return: None
         :rtype: None

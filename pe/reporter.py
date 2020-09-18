@@ -9,6 +9,7 @@ from django.core.mail import send_mail
 from django.db.models import QuerySet
 from django.forms.models import model_to_dict
 from django.template.loader import render_to_string
+from django.utils.timezone import localtime, utc
 
 # local libraries
 from pe.models import Report
@@ -22,7 +23,7 @@ class Reporter:
 
     report_sub_fields: Tuple[str, ...] = ('submission_id', 'student_uniqname', 'score', 'graded_timestamp')
 
-    def __init__(self, report) -> None:
+    def __init__(self, report: Report) -> None:
         """
         Assigns report and initializes other instance variables set externally or via prepare_context.
 
@@ -89,11 +90,14 @@ class Reporter:
         :return: Email subject line referencing the report name, summary counts, and exams covered.
         :rtype: str
         """
-        subject: str = (
-            f'Placement Exams Report - {self.report.name} - ' +
-            f'Success: {self.total_successes}, Failure: {self.total_failures}, New: {self.total_new} - ' +
-            ', '.join([exam.name for exam in self.report.exams.all()])
-        )
+        local_time_str: str = localtime(datetime.now(utc)).strftime('%Y-%m-%d %I:%M %p')
+
+        subject: str = ' - '.join([
+            'Placement Exams Report',
+            self.report.name,
+            f'Success: {self.total_successes}, Failure: {self.total_failures}, New: {self.total_new}',
+            f'Run finished at {local_time_str}'
+        ])
         LOGGER.debug(subject)
         return subject
 

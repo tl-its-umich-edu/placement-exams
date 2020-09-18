@@ -56,7 +56,7 @@ class MainTestCase(TestCase):
         dada_report: Report = Report.objects.get(id=3)
         new_submissions_qs: QuerySet = dada_report.exams.first().submissions.all()
         self.assertEqual(
-            [{'student_uniqname': 'nlongbottom', 'score': 500.0, 'transmitted': True}],
-            list(new_submissions_qs.values('student_uniqname', 'score', 'transmitted'))
+            list(new_submissions_qs.values('student_uniqname', 'score', 'transmitted')),
+            [{'student_uniqname': 'nlongbottom', 'score': 500.0, 'transmitted': True}]
         )
         self.assertEqual(len(mail.outbox), 1)

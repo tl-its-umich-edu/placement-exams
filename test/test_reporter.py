@@ -22,7 +22,7 @@ from pe.reporter import Reporter
 LOGGER = logging.getLogger(__name__)
 
 
-class ReporterSuccessTestCase(TestCase):
+class ReporterTestCase(TestCase):
     fixtures: List[str] = ['test_01.json', 'test_04.json']
 
     def setUp(self):
@@ -76,8 +76,9 @@ class ReporterSuccessTestCase(TestCase):
                     }
                     fake_running_dt += timedelta(seconds=1)
 
+        self.fake_finished_at: datetime = fake_running_dt
         self.expected_subject: str = (
-            'Placement Exams Report - Potions - Success: 4, Failure: 1, New: 2 - Potions Placement, Potions Validation'
+            'Placement Exams Report - Potions - Success: 4, Failure: 1, New: 2 - Run finished at 2020-06-25 12:00 PM'
         )
 
     def test_prepare_context(self):
@@ -152,7 +153,11 @@ class ReporterSuccessTestCase(TestCase):
         reporter.exams_time_metadata = self.exams_time_metadata
         reporter.prepare_context()
 
-        self.assertEqual(reporter.get_subject(), self.expected_subject)
+        with patch('pe.reporter.datetime', autospec=True) as mock_datetime:
+            mock_datetime.now.return_value = self.fake_finished_at
+            subject: str = reporter.get_subject()
+
+        self.assertEqual(subject, self.expected_subject)
 
     def test_send_email(self):
         """
@@ -171,7 +176,9 @@ class ReporterSuccessTestCase(TestCase):
         # Patch os.environ to override environment variables
         with patch.dict(os.environ, {'SUPPORT_EMAIL': 'admin@hogwarts.edu', 'SMTP_FROM': 'admin@hogwarts.edu'}):
             reporter.prepare_context()
-            reporter.send_email()
+            with patch('pe.reporter.datetime', autospec=True) as mock_datetime:
+                mock_datetime.now.return_value = self.fake_finished_at
+                reporter.send_email()
 
         self.assertEqual(len(mail.outbox), 1)
         email: EmailMultiAlternatives = mail.outbox[0]

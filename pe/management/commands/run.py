@@ -7,8 +7,8 @@ from django.core.management.base import BaseCommand
 from umich_api.api_utils import ApiUtil
 
 # local libraries
-from pe.main import main
 from constants import API_CONFIG_PATH
+from pe.main import main
 
 
 LOGGER: Logger = logging.getLogger(__name__)

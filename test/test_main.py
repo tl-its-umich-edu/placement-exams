@@ -11,8 +11,8 @@ from requests import Response
 from umich_api.api_utils import ApiUtil
 
 # local libraries
-from pe.main import main
 from constants import API_FIXTURES_DIR, ROOT_DIR
+from pe.main import main
 from pe.models import Report
 
 

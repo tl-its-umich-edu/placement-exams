@@ -5,7 +5,8 @@ import logging, os, sys
 from dotenv import load_dotenv
 
 
-ENV_PATH = os.path.join(os.getenv('ENV_DIR', os.path.join('config', 'secrets')), os.getenv('ENV_FILE', '.env'))
+CONFIG_DIR: str = os.getenv('ENV_DIR', os.path.join('config', 'secrets'))
+ENV_PATH = os.path.join(CONFIG_DIR, os.getenv('ENV_FILE', '.env'))
 load_dotenv(dotenv_path=ENV_PATH, verbose=True)
 
 LOGGER = logging.getLogger(__name__)

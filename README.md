@@ -144,7 +144,7 @@ You can also set up the application using `virtualenv` by doing the following:
 6. Run the application.
 
     ```sh
-    python entry.py
+    python manage.py run
     ```
 
 To run the test suite, use the following commands:

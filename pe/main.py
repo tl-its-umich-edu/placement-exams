@@ -50,9 +50,13 @@ def main(api_util: ApiUtil) -> None:
                 'sub_time_filter': exam_orca.sub_time_filter
             }
             reporter.exams_time_metadata[exam.id] = metadata
+
         reporter.prepare_context()
-        LOGGER.info(f'Sending {report.name} report email to {report.contact}')
-        reporter.send_email()
+        if reporter.total_successes > 0 or reporter.total_failures > 0:
+            LOGGER.info(f'Sending {report.name} report email to {report.contact}')
+            reporter.send_email()
+        else:
+            LOGGER.info(f'No email will be sent for the {report.name} report as there was no transmission activity.')
 
     end_time: datetime = datetime.now(tz=utc)
     delta: timedelta = end_time - start_time

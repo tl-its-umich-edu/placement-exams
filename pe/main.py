@@ -56,7 +56,7 @@ def main(api_util: ApiUtil) -> None:
             LOGGER.info(f'Sending {report.name} report email to {report.contact}')
             reporter.send_email()
         else:
-            LOGGER.info(f'No email will be sent for the {report.name} report as there was no transmission activty.')
+            LOGGER.info(f'No email will be sent for the {report.name} report as there was no transmission activity.')
 
     end_time: datetime = datetime.now(tz=utc)
     delta: timedelta = end_time - start_time

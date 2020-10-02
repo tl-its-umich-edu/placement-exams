@@ -38,7 +38,7 @@ class MainTestCase(TestCase):
         with open(os.path.join(API_FIXTURES_DIR, 'mpathways_resp_data.json'), 'r') as mpathways_resp_data_file:
             self.mpathways_resp_data: List[Dict[str, Any]] = json.loads(mpathways_resp_data_file.read())
 
-    def test_main(self):
+    def test_main_sends_email_when_transmissions_succeed(self):
         """
         Function main successfully uses ScoresOrchestration and Reporter classes to collect, transmit, and
         report by email on new exam submissions.

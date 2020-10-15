@@ -66,10 +66,10 @@ class ScoresOrchestration:
         get_subs_url: str = f'{CANVAS_URL_BEGIN}/courses/{self.exam.course_id}/students/submissions'
 
         canvas_params: Dict[str, Any] = {
-            'student_ids': ['all'],
-            'assignment_ids': [str(self.exam.assignment_id)],
+            'student_ids[]': 'all',
+            'assignment_ids[]': str(self.exam.assignment_id),
             'per_page': page_size,
-            'include': ['user'],
+            'include[]': 'user',
             'graded_since': self.sub_time_filter.strftime(ISO8601_FORMAT)
         }
 

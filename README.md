@@ -1,16 +1,16 @@
 # placement-exams
 
 Designed to support University of Michigan placement exams administered through the Canvas LMS,
-the in-development placement-exams application will collect the students' scores from multiple exams
-and send them to M-Pathways so the registrar can grant course enrollment privileges. The UM API Directory
-will be used both to access the Canvas API and send scores to M-Pathways.
+the placement-exams application collects students' scores for multiple exams
+and sends them to M-Pathways so the registrar can grant course enrollment privileges. The UM API Directory
+is used both to access the Canvas API and send scores to M-Pathways.
 
 ## Development
 
 ### Pre-requisities
 
-The sections below provide instructions for configuring, installing, using, and changing 
-the application. Depending on the environment you plan to run the application in, you may 
+The sections below provide instructions for configuring, installing, and using the application.
+Depending on the environment you plan to run the application in, you may
 also need to install some or all of the following:
 
 *   [Python 3.8](https://docs.python.org/3/)
@@ -19,7 +19,7 @@ also need to install some or all of the following:
 *   [OpenShift CLI](https://docs.openshift.com/enterprise/3.1/cli_reference/get_started_cli.html)
 
 While performing any of the actions described below, use a terminal, text editor, or file
-utility as necessary. Some sample command-line instructions are provided for some steps.
+utility as necessary. Sample terminal commands are provided for some steps.
 
 ### Configuration
 
@@ -117,9 +117,9 @@ You can also set up the application using `virtualenv` by doing the following:
 
 1.  Set up a MySQL database for the application using a MySQL installation on your local machine.
    
-    Ensure that you have placed the database credentials in your `.env` file
+    Ensure that you have placed the database credentials in your `.env` file.
 
-2.  Place your `.env` and `fixtures.json` files in `config/secrets`.
+2.  Place your `.env` and `fixtures.json` files in the `config/secrets` directory within the project.
 
 3.  Create a virtual environment using `virtualenv`.
 
@@ -165,7 +165,7 @@ you have provided `SMTP_PORT` and `SMTP_HOST` values pointing to a SMTP server a
 
 ### Deployment: OpenShift
 
-Deploying the application as a job using OpenShift and Jenkins involves several steps, which are beyond the scope of
+Deploying the application as a job using OpenShift and Jenkins involves several steps that are beyond the scope of
 this README. However, some details about how the job is configured are provided below.
 
 The files described in the **Configuration** section above need to be made available to running placement-exams

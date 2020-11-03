@@ -58,10 +58,10 @@ def api_call_with_retries(
     :type subscription: string
     :param method: Request method that should be used (e.g. "GET", "PUT")
     :type method: string
-    :param payload: Optional dictionary for sending in the request body
+    :param payload: Dictionary to include in the request body
     :type payload: Dictionary with string keys or None, optional
     :param max_req_attempts: Number of request attempts to make before logging an error
-    :type max_req_attempts: int
+    :type max_req_attempts: int, optional
     :return: Either a Response object or None
     :rtype: Response or None
     """

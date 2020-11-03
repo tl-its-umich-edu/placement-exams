@@ -1,5 +1,5 @@
 # standard libraries
-import json, logging
+import json, logging, os
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Union
 
@@ -19,6 +19,8 @@ from util import chunk_list
 
 
 LOGGER = logging.getLogger(__name__)
+
+MAX_REQ_ATTEMPTS = int(os.getenv('MAX_REQ_ATTEMPTS', '3'))
 
 
 class ScoresOrchestration:
@@ -86,7 +88,8 @@ class ScoresOrchestration:
                 get_subs_url,
                 CANVAS_SCOPE,
                 'GET',
-                next_params
+                next_params,
+                MAX_REQ_ATTEMPTS
             )
             if response is None:
                 LOGGER.info('api_call_with_retries failed to get a response; no more data will be collected')

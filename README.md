@@ -13,7 +13,7 @@ The sections below provide instructions for configuring, installing, and using t
 Depending on the environment you plan to run the application in, you may
 also need to install some or all of the following:
 
-*   [Python 3.8](https://docs.python.org/3/)
+*   [Python 3.8](https://docs.python.org/3.8/)
 *   [MySQL](https://dev.mysql.com/doc/)
 *   [Docker Desktop](https://www.docker.com/products/docker-desktop)
 *   [OpenShift CLI](https://docs.openshift.com/enterprise/3.1/cli_reference/get_started_cli.html)

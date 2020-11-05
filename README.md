@@ -1,25 +1,25 @@
 # placement-exams
 
 Designed to support University of Michigan placement exams administered through the Canvas LMS,
-the in-development placement-exams application will collect the students' scores from multiple exams
-and send them to M-Pathways so the registrar can grant course enrollment privileges. The UM API Directory
-will be used both to access the Canvas API and send scores to M-Pathways.
+the placement-exams application collects students' scores for multiple exams
+and sends them to M-Pathways so the registrar can grant course enrollment privileges. The UM API Directory
+is used both to access the Canvas API and send scores to M-Pathways.
 
 ## Development
 
 ### Pre-requisities
 
-The sections below provide instructions for configuring, installing, using, and changing 
-the application. Depending on the environment you plan to run the application in, you may 
+The sections below provide instructions for configuring, installing, and using the application.
+Depending on the environment you plan to run the application in, you may
 also need to install some or all of the following:
 
-* [Python 3.8](https://docs.python.org/3/)
-* [MySQL](https://dev.mysql.com/doc/)
-* [Docker Desktop](https://www.docker.com/products/docker-desktop)
-* [OpenShift CLI](https://docs.openshift.com/enterprise/3.1/cli_reference/get_started_cli.html)
+*   [Python 3.8](https://docs.python.org/3.8/)
+*   [MySQL](https://dev.mysql.com/doc/)
+*   [Docker Desktop](https://www.docker.com/products/docker-desktop)
+*   [OpenShift CLI](https://docs.openshift.com/enterprise/3.1/cli_reference/get_started_cli.html)
 
 While performing any of the actions described below, use a terminal, text editor, or file
-utility as necessary. Some sample command-line instructions are provided for some steps.
+utility as necessary. Sample terminal commands are provided for some steps.
 
 ### Configuration
 
@@ -30,27 +30,27 @@ and determine for which exams submission data is collected and sent to M-Pathway
 Both files are described in more detail below. See the **Installation & Usage** section below for details
 on where these files will need to be located.
 
-* `.env`
+*   `.env`
 
-  The `.env` file serves as the primary configuration file, loading credentials for accessing
-  the application's database and the UM API Directory. A template called `.env.sample` has been provided in
-  the `config` directory. The comments before the variables in the template should describe the purpose of
-  each; some recommended values have been provided. If you use the approach described below
-  in **Installation & Usage - With Docker**, you can use the provided values to connect to the database
-  managed by Docker.
+    The `.env` file serves as the primary configuration file, loading credentials for accessing
+    the application's database and the UM API Directory. A template called `.env.sample` has been provided in
+    the `config` directory. The comments before the variables in the template should describe the purpose of
+    each; some recommended values have been provided. If you use the approach described below
+    in **Installation & Usage - With Docker**, you can use the provided values to connect to the database
+    managed by Docker.
 
-* `fixtures.json`
+*   `fixtures.json`
 
-  The `fixtures.json` file allows users to pre-populate the database with records for exams and reports
-  on submissions processed. The JSON file uses the Django model instance
-  [serialization format](https://docs.djangoproject.com/en/3.0/topics/serialization/#serialization-formats-json),
-  and records are loaded using Django's
-  [`loaddata` management command](https://docs.djangoproject.com/en/3.0/ref/django-admin/#loaddata).
-  
-  The file should contain data for one or many `Report` records and one or many `Exam` records
-  connected to a previously defined `Report` by ID number. For an example, take a look `sample_fixtures.json`
-  in the `config` directory. While `Submission` records can also be imported using fixtures, the application
-  will handle creation of all these records.
+    The `fixtures.json` file allows users to pre-populate the database with records for exams and reports
+    on submissions processed. The JSON file uses the Django model instance
+    [serialization format](https://docs.djangoproject.com/en/3.0/topics/serialization/#serialization-formats-json),
+    and records are loaded using Django's
+    [`loaddata` management command](https://docs.djangoproject.com/en/3.0/ref/django-admin/#loaddata).
+
+    The file should contain data for one or many `Report` records and one or many `Exam` records
+    connected to a previously defined `Report` by ID number. For an example, take a look `sample_fixtures.json`
+    in the `config` directory. While `Submission` records can also be imported using fixtures, the application
+    will handle creation of all these records.
 
 Create your own versions of `.env` and `fixtures.json`, and be prepared to move them to specific directories.
 
@@ -65,24 +65,24 @@ inserting and updating submission records.
 
 Before beginning, perform the following additional steps to configure the project for Docker.
 
-1. Create one path in your home directory (i.e., `~` or `${HOME}`): `secrets/placement-exams`
+1.  Create one path in your home directory (i.e., `~` or `${HOME}`): `secrets/placement-exams`
 
     The `docker-compose.yaml` file specifies that there should be a mapping between 
     the `secrets/placement-exams` directory and the repository's `config/secrets` directory.
     In other words, files you place in `secrets/placement-exams` will be available to the application
     in the repository at `config/secrets`.
 
-2. Place the `.env` and `fixtures.json` files described in **Configuration** above in `~/secrets/placement-exams`.
+2.  Place the `.env` and `fixtures.json` files described in **Configuration** above in `~/secrets/placement-exams`.
 
 Once these steps are completed, you can use the standard `docker-compose` commands to build and run the application.
 
-1. Build the images for the `mysql` and `job` services.
+1.  Build the images for the `mysql` and `job` services.
 
     ```sh
     docker-compose build
     ```
 
-2. Start up the services.
+2.  Start up the services.
 
     ```sh
     docker-compose up
@@ -115,36 +115,36 @@ docker-compose run -e TEST_MODE=True job
 
 You can also set up the application using `virtualenv` by doing the following:
 
-1. Set up a MySQL database for the application using a MySQL installation on your local machine.
+1.  Set up a MySQL database for the application using a MySQL installation on your local machine.
    
-   Ensure that you have placed the database credentials in your `.env` file
+    Ensure that you have placed the database credentials in your `.env` file.
 
-2. Place your `.env` and `fixtures.json` files in `config/secrets`.
+2.  Place your `.env` and `fixtures.json` files in the `config/secrets` directory within the project.
 
-3. Create a virtual environment using `virtualenv`.
+3.  Create a virtual environment using `virtualenv`.
 
     ```sh
     virtualenv venv
     source venv/bin/activate  # for Mac OS
     ```
 
-4. Install the dependencies specified in `requirements.txt`.
+4.  Install the dependencies specified in `requirements.txt`.
 
     ```sh
     pip install -r requirements.txt
     ```
 
-5. Prepare the database by running migrations and loading your fixtures.
+5.  Prepare the database by running migrations and loading your fixtures.
 
     ```sh
     python manage.py migrate
     python manage.py loaddata fixtures.json
     ```
 
-6. Run the application.
+6.  Run the application.
 
     ```sh
-    python entry.py
+    python manage.py run
     ```
 
 To run the test suite, use the following commands:
@@ -165,7 +165,7 @@ you have provided `SMTP_PORT` and `SMTP_HOST` values pointing to a SMTP server a
 
 ### Deployment: OpenShift
 
-Deploying the application as a job using OpenShift and Jenkins involves several steps, which are beyond the scope of
+Deploying the application as a job using OpenShift and Jenkins involves several steps that are beyond the scope of
 this README. However, some details about how the job is configured are provided below.
 
 The files described in the **Configuration** section above need to be made available to running placement-exams

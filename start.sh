@@ -14,7 +14,10 @@ fi
 echo "Applying any outstanding migrations"
 python manage.py migrate
 
-python manage.py loaddata "$FIXTURES_FILE"
+if [ "${LOAD_DATA}" == "True" ]; then
+    echo 'Loading data from a fixtures file'
+    python manage.py loaddata "$FIXTURES_FILE"
+fi
 
 if [ "${TEST_MODE}" == "True" ]; then
     echo "Running tests"

@@ -52,14 +52,19 @@ on where these files will need to be located.
     in the `config` directory. While `Submission` records can also be imported using fixtures, the application
     will handle creation of all these records.
 
+    The `LOAD_DATA` environment variable allows the user to control whether the fixtures file is loaded or not;
+    the `True` value will result in fixtures being loaded, while any other value will result in the loading step
+    being skipped. The provided `docker-compose.yml` sets this to `True` by default for development.
+    See **Deployment: OpenShift** for more information about using this flag in that environment.
+
 Create your own versions of `.env` and `fixtures.json`, and be prepared to move them to specific directories.
 
 ### Installation & Usage
 
 #### With Docker
 
-This project provides a `docker-compose.yaml` file to help simplify the development and testing process. 
-Invoking `docker-compose` will set up MySQL and a database in a container. 
+This project provides a `docker-compose.yml` file to help simplify the development and testing process.
+Invoking `docker-compose` will set up MySQL and a database in a container.
 It will then create a separate container for the job, which will interact with the MySQL container's database,
 inserting and updating submission records.
 
@@ -186,10 +191,14 @@ are provided below.
     However, this name can be changed by setting `ENV_FILE` to the desired name. This can be useful when maintaining
     multiple versions of the configuration file, e.g. `test.env` or `prod.env`.
 
-*   `FIXTURES_FILE` (Required): When the `start.sh` script loads fixture data, it references the `FIXTURES_FILE`
-    environment variable; thus, this variable **must** be set in the pod configuration. While using the
-    `fixtures.json` name employed by `docker-compose` for local development is acceptable, this variable can
-    also be used to change the file name as desired.
+*   `LOAD_DATA` (Optional): If this variable is set to `True`, the application will load the fixtures contained
+    within the file specified by `FIXTURES_FILE` (see the next item). If the value is undefined or anything other
+    than `True`, the fixtures will not be loaded.
+
+*   `FIXTURES_FILE` (Conditionally required): If `LOAD_DATA` is set to `True`, when the `start.sh` script
+    loads fixture data, it will reference the `FIXTURES_FILE` environment variable; thus, this variable **must**
+    be set in the pod configuration in this case. While using the `fixtures.json` name employed by `docker-compose`
+    for local development is acceptable, this variable can also be used to change the file name as desired.
 
 When setting all the above variables, the `env` block in the YAML file will look something like this:
 
@@ -199,6 +208,8 @@ When setting all the above variables, the `env` block in the YAML file will look
     value: /config/secrets
   - name: ENV_FILE
     value: test.env
+  - name: LOAD_DATA
+    value: True
   - name: FIXTURES_FILE
     value: some_fixtures.json
 ```

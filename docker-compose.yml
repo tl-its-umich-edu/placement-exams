@@ -1,6 +1,7 @@
 version: '3'
 
 services:
+
   mysql:
     image: mysql:5.7
     restart: on-failure
@@ -19,6 +20,7 @@ services:
       - ./.data/mysql:/var/lib/mysql:delegated
       - ./mysql:/docker-entrypoint-initdb.d:ro
     container_name: placement_exams_mysql
+
   job:
     build:
       context: .
@@ -31,6 +33,7 @@ services:
     environment:
       - ENV_DIR=config/secrets
       - ENV_FILE=.env
+      - LOAD_DATA=True
       - FIXTURES_FILE=fixtures.json
       - HOW_STARTED=DOCKER_COMPOSE
       - MYSQL_HOST=placement_exams_mysql

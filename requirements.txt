@@ -1,5 +1,5 @@
 coverage==5.5
-Django==3.2.5
+Django==3.2.13
 mysqlclient==2.0.3
 python-dotenv==0.14.0
 -e git+https://github.com/tl-its-umich-edu/api-utils-python@v2.0#egg=umich-api

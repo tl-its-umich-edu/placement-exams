@@ -2,7 +2,6 @@
 import logging
 from logging import Logger
 from datetime import datetime, timedelta
-from typing import Dict, List
 
 # third-party libraries
 from django.utils.timezone import utc
@@ -30,10 +29,10 @@ def main(api_util: ApiUtil) -> None:
     start_time: datetime = datetime.now(tz=utc)
     LOGGER.info(f'Starting new run at {start_time}')
 
-    reports: List[Report] = list(Report.objects.all())
+    reports: list[Report] = list(Report.objects.all())
     LOGGER.debug(reports)
 
-    exams: List[Exam] = list(Exam.objects.all())
+    exams: list[Exam] = list(Exam.objects.all())
     LOGGER.debug(exams)
 
     for report in reports:
@@ -44,7 +43,7 @@ def main(api_util: ApiUtil) -> None:
             exam_orca: ScoresOrchestration = ScoresOrchestration(api_util, exam)
             exam_orca.main()
             exam_end_time = datetime.now(tz=utc)
-            metadata: Dict[str, datetime] = {
+            metadata: dict[str, datetime] = {
                 'start_time': exam_start_time,
                 'end_time': exam_end_time,
                 'sub_time_filter': exam_orca.sub_time_filter

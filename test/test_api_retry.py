@@ -1,7 +1,7 @@
 # standard libraries
 import json, logging, os
 from datetime import datetime
-from typing import Any, Dict, List, Union
+from typing import Any, Union
 from unittest.mock import MagicMock, patch
 
 # third-party libraries
@@ -30,9 +30,9 @@ class TestApiRetry(TestCase):
         )
 
         with open(os.path.join(API_FIXTURES_DIR, 'canvas_subs.json'), 'r') as test_canvas_subs_file:
-            canvas_subs_dict: Dict[str, List[Dict[str, Any]]] = json.loads(test_canvas_subs_file.read())
+            canvas_subs_dict: dict[str, list[dict[str, Any]]] = json.loads(test_canvas_subs_file.read())
 
-        self.canvas_potions_val_subs: List[Dict[str, Any]] = canvas_subs_dict['Potions_Validation_1']
+        self.canvas_potions_val_subs: list[dict[str, Any]] = canvas_subs_dict['Potions_Validation_1']
 
         # "Potions Validation" from test_04.json
         some_course_id: int = 888888
@@ -43,7 +43,7 @@ class TestApiRetry(TestCase):
             f'{CANVAS_URL_BEGIN}/courses/{some_course_id}/students/submissions'
         )
 
-        self.canvas_params: Dict[str, Any] = {
+        self.canvas_params: dict[str, Any] = {
             'student_ids': ['all'],
             'assignment_ids': [str(some_assignment_id)],
             'per_page': '50',
@@ -112,7 +112,7 @@ class TestApiRetry(TestCase):
         """api_call_with_retries returns None when no valid Response is found after the maximum number of attempts."""
         full_url: str = '/'.join([self.api_handler.base_url, self.get_scores_url])
         num_attempts: int = 4
-        resp_mocks: List[MagicMock] = [
+        resp_mocks: list[MagicMock] = [
             MagicMock(
                 spec=Response, status_code=504, text=json.dumps({'message': 'Gateway Timeout'}), url=full_url
             )

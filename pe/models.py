@@ -1,7 +1,7 @@
 # standard libaries
 import logging
 from datetime import datetime
-from typing import Dict, List, Union
+from typing import Union
 
 # third-party libraries
 from django.db import models
@@ -72,18 +72,18 @@ class Submission(models.Model):
         )
 
     class Meta:
-        constraints: List[BaseConstraint] = [
+        constraints: list[BaseConstraint] = [
             models.UniqueConstraint(fields=['submission_id', 'graded_timestamp'], name='unique_canvas_submission')
         ]
 
-    def prepare_score(self) -> Dict[str, str]:
+    def prepare_score(self) -> dict[str, str]:
         """
         Return condensed version of the submission needed by M-Pathways.
 
         :return: Dictionary with strings for keys and values.
         :rtype: dictionary
         """
-        score_dict: Dict[str, str] = {
+        score_dict: dict[str, str] = {
             'ID': self.student_uniqname,
             'Form': self.exam.sa_code,
             'GradePoints': str(self.score)

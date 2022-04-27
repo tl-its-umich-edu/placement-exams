@@ -1,6 +1,6 @@
 # standard libraries
 import json, os
-from typing import Any, Dict, List
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 # third-party libraries
@@ -17,7 +17,7 @@ from pe.models import Report
 
 
 class MainTestCase(TestCase):
-    fixtures: List[str] = ['test_03.json']
+    fixtures: list[str] = ['test_03.json']
 
     def setUp(self):
         """
@@ -31,12 +31,12 @@ class MainTestCase(TestCase):
         )
 
         with open(os.path.join(API_FIXTURES_DIR, 'canvas_subs.json'), 'r') as test_canvas_subs_file:
-            canvas_subs_dict: Dict[str, List[Dict[str, Any]]] = json.loads(test_canvas_subs_file.read())
+            canvas_subs_dict: dict[str, list[dict[str, Any]]] = json.loads(test_canvas_subs_file.read())
 
-        self.canvas_dada_place_subs: List[Dict[str, Any]] = canvas_subs_dict['DADA_Placement_1']
+        self.canvas_dada_place_subs: list[dict[str, Any]] = canvas_subs_dict['DADA_Placement_1']
 
         with open(os.path.join(API_FIXTURES_DIR, 'mpathways_resp_data.json'), 'r') as mpathways_resp_data_file:
-            self.mpathways_resp_data: List[Dict[str, Any]] = json.loads(mpathways_resp_data_file.read())
+            self.mpathways_resp_data: list[dict[str, Any]] = json.loads(mpathways_resp_data_file.read())
 
     def test_main_sends_email_when_transmissions_succeed(self):
         """

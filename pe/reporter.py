@@ -2,7 +2,7 @@
 import logging, os
 from datetime import datetime
 from smtplib import SMTPException
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 # third-party libraries
 from django.core.mail import send_mail
@@ -21,7 +21,7 @@ LOGGER = logging.getLogger(__name__)
 class Reporter:
     """Utility class for collecting metadata, preparing report data, rendering templates, and sending email."""
 
-    report_sub_fields: Tuple[str, ...] = ('submission_id', 'student_uniqname', 'score', 'graded_timestamp')
+    report_sub_fields: tuple[str, ...] = ('submission_id', 'student_uniqname', 'score', 'graded_timestamp')
 
     def __init__(self, report: Report) -> None:
         """
@@ -31,11 +31,11 @@ class Reporter:
         :rtype: None
         """
         self.report: Report = report
-        self.exams_time_metadata: Dict[int, Dict[str, datetime]] = dict()
+        self.exams_time_metadata: dict[int, dict[str, datetime]] = dict()
         self.total_successes: int = 0
         self.total_failures: int = 0
         self.total_new: int = 0
-        self.context: Dict[str, Any] = dict()
+        self.context: dict[str, Any] = dict()
 
     def prepare_context(self) -> None:
         """
@@ -45,9 +45,9 @@ class Reporter:
         :return: None
         :rtype: None
         """
-        exam_dicts: List[Dict[str, Any]] = []
+        exam_dicts: list[dict[str, Any]] = []
         for exam in self.report.exams.all():
-            exam_dict: Dict[str, Any] = model_to_dict(exam)
+            exam_dict: dict[str, Any] = model_to_dict(exam)
 
             exam_dict['time'] = self.exams_time_metadata[exam.id]
 
@@ -74,7 +74,7 @@ class Reporter:
             self.total_failures += num_failures
             self.total_new += num_new
 
-        report_dict: Dict[str, Any] = model_to_dict(self.report)
+        report_dict: dict[str, Any] = model_to_dict(self.report)
         report_dict['summary'] = {
             'success_count': self.total_successes,
             'failure_count': self.total_failures,

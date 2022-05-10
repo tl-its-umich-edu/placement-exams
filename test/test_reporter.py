@@ -1,7 +1,7 @@
 # standard libraries
 import json, logging, os
 from datetime import datetime, timedelta
-from typing import Any, Dict, List
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 # third-party libraries
@@ -23,7 +23,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class ReporterTestCase(TestCase):
-    fixtures: List[str] = ['test_01.json', 'test_04.json']
+    fixtures: list[str] = ['test_01.json', 'test_04.json']
 
     def setUp(self):
         """
@@ -37,12 +37,12 @@ class ReporterTestCase(TestCase):
         )
 
         with open(os.path.join(API_FIXTURES_DIR, 'canvas_subs.json'), 'r') as test_canvas_subs_file:
-            canvas_subs_dict: Dict[str, List[Dict[str, Any]]] = json.loads(test_canvas_subs_file.read())
+            canvas_subs_dict: dict[str, list[dict[str, Any]]] = json.loads(test_canvas_subs_file.read())
 
-        canvas_potions_val_subs: List[Dict[str, Any]] = canvas_subs_dict['Potions_Validation_1']
+        canvas_potions_val_subs: list[dict[str, Any]] = canvas_subs_dict['Potions_Validation_1']
 
         with open(os.path.join(API_FIXTURES_DIR, 'mpathways_resp_data.json'), 'r') as mpathways_resp_data_file:
-            mpathways_resp_data: List[Dict[str, Any]] = json.loads(mpathways_resp_data_file.read())
+            mpathways_resp_data: list[dict[str, Any]] = json.loads(mpathways_resp_data_file.read())
 
         self.potions_report = Report.objects.get(id=1)
 
@@ -62,7 +62,7 @@ class ReporterTestCase(TestCase):
                 ]
 
                 fake_running_dt: datetime = datetime(2020, 6, 25, 16, 0, 0, tzinfo=utc)
-                self.exams_time_metadata: Dict[int, Dict[str, datetime]] = dict()
+                self.exams_time_metadata: dict[int, dict[str, datetime]] = dict()
                 for exam in self.potions_report.exams.all():
                     start: datetime = fake_running_dt
                     exam_orca: ScoresOrchestration = ScoresOrchestration(api_handler, exam)
@@ -107,10 +107,10 @@ class ReporterTestCase(TestCase):
         })
         self.assertEqual(len(reporter.context['exams']), 2)
 
-        first_exam_dict: Dict[str, Any] = reporter.context['exams'][0]
-        second_exam_dict: Dict[str, Any] = reporter.context['exams'][1]
+        first_exam_dict: dict[str, Any] = reporter.context['exams'][0]
+        second_exam_dict: dict[str, Any] = reporter.context['exams'][1]
 
-        keys_list: List[List[str]] = [
+        keys_list: list[list[str]] = [
             [
                 'assignment_id', 'course_id', 'default_time_filter', 'failures', 'id', 'name', 'report', 'sa_code',
                 'successes', 'summary', 'time'
@@ -140,7 +140,7 @@ class ReporterTestCase(TestCase):
                 'graded_timestamp': datetime(2020, 6, 12, 16, 0, 0, tzinfo=utc)
             }
         )
-        val_success_ids: List[int] = sorted(
+        val_success_ids: list[int] = sorted(
             [success_dict['submission_id'] for success_dict in second_exam_dict['successes']]
         )
         self.assertEqual(val_success_ids, [123460, 210000, 444444, 444445])

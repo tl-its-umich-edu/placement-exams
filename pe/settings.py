@@ -1,6 +1,6 @@
 # standard libraries
 import os
-from typing import Any, Dict, List
+from typing import Any
 
 # local libraries
 from constants import ROOT_DIR
@@ -12,7 +12,7 @@ BASE_DIR: str = ROOT_DIR
 
 CONFIG_DIR: str = os.path.join(BASE_DIR, os.getenv('ENV_DIR', os.path.join('config', 'secrets')))
 
-DATABASES: Dict[str, Dict[str, Any]] = {
+DATABASES: dict[str, dict[str, Any]] = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.getenv('DB_NAME', 'placement_exams_local'),
@@ -37,12 +37,12 @@ EMAIL_HOST: str = os.getenv('SMTP_HOST', '')
 EMAIL_PORT: int = int(os.getenv('SMTP_PORT', 0))
 EMAIL_USE_TLS: bool = True
 
-FIXTURE_DIRS: List[str] = [
+FIXTURE_DIRS: list[str] = [
     CONFIG_DIR,
     os.path.join(BASE_DIR, 'test', 'fixtures')
 ]
 
-LOGGING: Dict[str, Any] = {
+LOGGING: dict[str, Any] = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
@@ -69,13 +69,13 @@ LOGGING: Dict[str, Any] = {
     }
 }
 
-INSTALLED_APPS: List[str] = [
+INSTALLED_APPS: list[str] = [
     'pe'
 ]
 
 SECRET_KEY: str = os.getenv('SECRET_KEY', '-- A SECRET KEY --')
 
-TEMPLATES: List[Dict[str, Any]] = [
+TEMPLATES: list[dict[str, Any]] = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': ['templates'],

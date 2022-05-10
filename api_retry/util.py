@@ -1,7 +1,7 @@
 # standard libraries
 import json, logging
 from json.decoder import JSONDecodeError
-from typing import Any, Dict, Union
+from typing import Any, Union
 
 # third-party libraries
 from requests import Response
@@ -43,7 +43,7 @@ def api_call_with_retries(
     url: str,
     subscription: str,
     method: str,
-    payload: Union[Dict[str, Any], None] = None,
+    payload: Union[dict[str, Any], None] = None,
     max_req_attempts: int = 3,
 ) -> Union[Response, None]:
     """

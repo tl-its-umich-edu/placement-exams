@@ -13,7 +13,7 @@ The sections below provide instructions for configuring, installing, and using t
 Depending on the environment you plan to run the application in, you may
 also need to install some or all of the following:
 
-*   [Python 3.8](https://docs.python.org/3.8/)
+*   [Python 3.9](https://docs.python.org/3.9/)
 *   [MySQL](https://dev.mysql.com/doc/)
 *   [Docker Desktop](https://www.docker.com/products/docker-desktop)
 *   [OpenShift CLI](https://docs.openshift.com/enterprise/3.1/cli_reference/get_started_cli.html)
@@ -59,7 +59,7 @@ Create your own versions of `.env` and `fixtures.json`, and be prepared to move 
 #### With Docker
 
 This project provides a `docker-compose.yaml` file to help simplify the development and testing process. 
-Invoking `docker-compose` will set up MySQL and a database in a container. 
+Invoking `docker compose` will set up MySQL and a database in a container.
 It will then create a separate container for the job, which will interact with the MySQL container's database,
 inserting and updating submission records.
 
@@ -74,21 +74,21 @@ Before beginning, perform the following additional steps to configure the projec
 
 2.  Place the `.env` and `fixtures.json` files described in **Configuration** above in `~/secrets/placement-exams`.
 
-Once these steps are completed, you can use the standard `docker-compose` commands to build and run the application.
+Once these steps are completed, you can use the standard `docker compose` commands to build and run the application.
 
 1.  Build the images for the `mysql` and `job` services.
 
     ```sh
-    docker-compose build
+    docker compose build
     ```
 
 2.  Start up the services.
 
     ```sh
-    docker-compose up
+    docker compose up
     ```
 
-`docker-compose-up` will first start the MySQL container and then the job container. 
+`docker compose up` will first start the MySQL container and then the job container.
 When the job finishes, the job container will stop, but the MySQL container will continue running.
 This allows you to enter the container and execute queries (or connect to the database via other utilities).
 
@@ -98,22 +98,22 @@ mysql --user=pe_user --password=pe_pw
 ```
 
 Use `^C` to stop the running MySQL container,
-or -- if you used the detached flag `-d` with `docker-compose up` -- use `docker-compose down`.
+or -- if you used the detached flag `-d` with `docker compose up` -- use `docker compose down`.
 
 Data in the MySQL database will persist after the container is stopped.
 The MySQL data is stored in a volume mapped to the `.data/` directory in the project.
 To completely reset the database, delete the `.data` directory.
 
-To run the test suite using `docker-compose`, use the following command, which sets up an environment variable
+To run the test suite using `docker compose`, use the following command, which sets up an environment variable
 checked by the `start.sh` script (the entrypoint for Docker).
 
 ```sh
-docker-compose run -e TEST_MODE=True job
+docker compose run -e TEST_MODE=True job
 ```
 
 #### With a Virtual Environment
 
-You can also set up the application using `virtualenv` by doing the following:
+You can also set up the application using `venv` by doing the following:
 
 1.  Set up a MySQL database for the application using a MySQL installation on your local machine.
    
@@ -121,10 +121,10 @@ You can also set up the application using `virtualenv` by doing the following:
 
 2.  Place your `.env` and `fixtures.json` files in the `config/secrets` directory within the project.
 
-3.  Create a virtual environment using `virtualenv`.
+3.  Create a virtual environment using `venv`.
 
     ```sh
-    virtualenv venv
+    python -m venv venv
     source venv/bin/activate  # for Mac OS
     ```
 
@@ -188,7 +188,7 @@ are provided below.
 
 *   `FIXTURES_FILE` (Required): When the `start.sh` script loads fixture data, it references the `FIXTURES_FILE`
     environment variable; thus, this variable **must** be set in the pod configuration. While using the
-    `fixtures.json` name employed by `docker-compose` for local development is acceptable, this variable can
+    `fixtures.json` name employed by `docker compose` for local development is acceptable, this variable can
     also be used to change the file name as desired.
 
 When setting all the above variables, the `env` block in the YAML file will look something like this:

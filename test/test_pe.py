@@ -1,7 +1,7 @@
 # standard libraries
 import logging
 from datetime import datetime
-from typing import List, Tuple, Union
+from typing import Union
 
 # third-party libraries
 from django.core.management import call_command
@@ -14,7 +14,7 @@ from pe.models import Report, Exam, Submission
 
 LOGGER = logging.getLogger(__name__)
 
-EXAM_FIELDS: Tuple[str, ...] = ('name', 'report_id', 'sa_code', 'course_id', 'assignment_id', 'default_time_filter')
+EXAM_FIELDS: tuple[str, ...] = ('name', 'report_id', 'sa_code', 'course_id', 'assignment_id', 'default_time_filter')
 
 
 class LoadFixturesTestCase(TestCase):
@@ -229,7 +229,7 @@ class LoadFixturesTestCase(TestCase):
 
 
 class StringMethodsTestCase(TestCase):
-    fixtures: List[str] = ['test_01.json', 'test_04.json']
+    fixtures: list[str] = ['test_01.json', 'test_04.json']
 
     def test_report_string_method(self):
         """Report string method presents all variables in the correct format."""
@@ -270,7 +270,7 @@ class StringMethodsTestCase(TestCase):
 
 
 class CustomMethodsTestCase(TestCase):
-    fixtures: List[str] = ['test_01.json', 'test_03.json', 'test_04.json']
+    fixtures: list[str] = ['test_01.json', 'test_03.json', 'test_04.json']
 
     def test_get_last_sub_graded_datetime_with_submissions(self):
         """

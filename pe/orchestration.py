@@ -1,7 +1,7 @@
 # standard libraries
 import json, logging, os
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Union
+from typing import Any, Union
 
 # third-party libraries
 from django.db.models import Count, QuerySet
@@ -56,7 +56,7 @@ class ScoresOrchestration:
             )
         self.sub_time_filter: datetime = sub_time_filter
 
-    def get_sub_dicts_for_exam(self, page_size: int = 50) -> List[Dict[str, Any]]:
+    def get_sub_dicts_for_exam(self, page_size: int = 50) -> list[dict[str, Any]]:
         """
         Gets the graded submissions for the exam using paging.
 
@@ -67,7 +67,7 @@ class ScoresOrchestration:
         """
         get_subs_url: str = f'{CANVAS_URL_BEGIN}/courses/{self.exam.course_id}/students/submissions'
 
-        canvas_params: Dict[str, Any] = {
+        canvas_params: dict[str, Any] = {
             'student_ids[]': 'all',
             'assignment_ids[]': str(self.exam.assignment_id),
             'per_page': page_size,
@@ -77,8 +77,8 @@ class ScoresOrchestration:
 
         more_pages: bool = True
         page_num: int = 1
-        sub_dicts: List[Dict[str, Any]] = []
-        next_params: Dict[str, Any] = canvas_params
+        sub_dicts: list[dict[str, Any]] = []
+        next_params: dict[str, Any] = canvas_params
         LOGGER.debug(f'Params for first request: {next_params}')
 
         while more_pages:
@@ -96,7 +96,7 @@ class ScoresOrchestration:
                 more_pages = False
             else:
                 sub_dicts += json.loads(response.text)
-                page_info: Union[None, Dict[str, Any]] = self.api_handler.get_next_page(response)
+                page_info: Union[None, dict[str, Any]] = self.api_handler.get_next_page(response)
                 if not page_info:
                     more_pages = False
                 else:
@@ -104,7 +104,7 @@ class ScoresOrchestration:
                     next_params = page_info
                     page_num += 1
 
-        sub_dicts_with_scores: List[Dict[str, Any]] = list(filter((lambda x: x['score'] is not None), sub_dicts))
+        sub_dicts_with_scores: list[dict[str, Any]] = list(filter((lambda x: x['score'] is not None), sub_dicts))
         filter_diff: int = len(sub_dicts) - len(sub_dicts_with_scores)
         if filter_diff > 0:
             LOGGER.info(f'Discarded {filter_diff} Canvas submission(s) with no score(s)')
@@ -113,7 +113,7 @@ class ScoresOrchestration:
         LOGGER.debug(sub_dicts_with_scores)
         return sub_dicts_with_scores
 
-    def create_sub_records(self, sub_dicts: List[Dict[str, Any]]) -> None:
+    def create_sub_records(self, sub_dicts: list[dict[str, Any]]) -> None:
         """
         Parses Canvas submission records and writes them to the database.
 
@@ -144,7 +144,7 @@ class ScoresOrchestration:
                 LOGGER.error(e)
                 LOGGER.error('Submissions bulk creation failed')
 
-    def send_scores(self, subs_to_send: List[Submission]) -> None:
+    def send_scores(self, subs_to_send: list[Submission]) -> None:
         """
         Sends scores in bulk for submissions with unique student_uniqname values and updates database when successful.
 
@@ -153,8 +153,8 @@ class ScoresOrchestration:
         :return: None
         :rtype: None
         """
-        scores_to_send: List[Dict[str, str]] = [sub.prepare_score() for sub in subs_to_send]
-        payload: Dict[str, Any] = {'putPlcExamScore': {'Student': scores_to_send}}
+        scores_to_send: list[dict[str, str]] = [sub.prepare_score() for sub in subs_to_send]
+        payload: dict[str, Any] = {'putPlcExamScore': {'Student': scores_to_send}}
         json_payload: str = json.dumps(payload)
         LOGGER.debug(json_payload)
 
@@ -173,18 +173,18 @@ class ScoresOrchestration:
             LOGGER.info('No records will be updated in the database')
             return None
 
-        resp_data: Dict[str, Any] = json.loads(response.text)
+        resp_data: dict[str, Any] = json.loads(response.text)
         LOGGER.debug(resp_data)
 
         schema_name: str = 'putPlcExamScoreResponse'
-        results: Dict[str, Any] = resp_data[schema_name][schema_name]
+        results: dict[str, Any] = resp_data[schema_name][schema_name]
 
         if results['BadCount'] > 0:
             LOGGER.warning(f"Discovered {results['BadCount']} record error(s): {results['Errors']}")
 
         # Hope this can be simplified in the future if API response data can be made to use consistent types
         if results['GoodCount'] > 1:
-            success_uniqnames: List[str] = [success_dict['uniqname'] for success_dict in results['Success']]
+            success_uniqnames: list[str] = [success_dict['uniqname'] for success_dict in results['Success']]
         elif results['GoodCount'] == 1:
             success_uniqnames = [results['Success']['uniqname']]
         else:
@@ -195,7 +195,7 @@ class ScoresOrchestration:
         else:
             timestamp: datetime = datetime.now(tz=utc)
 
-            subs_to_update: List[Submission] = []
+            subs_to_update: list[Submission] = []
             for sub in subs_to_send:
                 if sub.student_uniqname in success_uniqnames:
                     sub.transmitted = True
@@ -213,27 +213,27 @@ class ScoresOrchestration:
         :rtype: None
         """
         # Fetch data from Canvas API and store as submission records in the database
-        sub_dicts: List[Dict[str, Any]] = self.get_sub_dicts_for_exam()
+        sub_dicts: list[dict[str, Any]] = self.get_sub_dicts_for_exam()
         if len(sub_dicts) > 0:
             self.create_sub_records(sub_dicts)
 
         # Find old and new submissions for exam to send to M-Pathways
         sub_to_transmit_qs: QuerySet = self.exam.submissions.filter(transmitted=False)
-        subs_to_transmit: List[Submission] = list(sub_to_transmit_qs.all())
+        subs_to_transmit: list[Submission] = list(sub_to_transmit_qs.all())
 
         # Identify old submissions for debugging purposes
-        redo_subs: List[Submission] = list(sub_to_transmit_qs.filter(graded_timestamp__lt=self.sub_time_filter))
+        redo_subs: list[Submission] = list(sub_to_transmit_qs.filter(graded_timestamp__lt=self.sub_time_filter))
         if len(redo_subs) > 0:
             LOGGER.info(f'Will try to re-send {len(redo_subs)} previously un-transmitted submissions')
             LOGGER.debug(f'Previously un-transmitted submissions: {redo_subs}')
 
         # Identify and separate submissions to send with duplicate uniqnames
         freq_qs: QuerySet = sub_to_transmit_qs.values('student_uniqname').annotate(frequency=Count('student_uniqname'))
-        dup_uniqnames: List[str] = [
+        dup_uniqnames: list[str] = [
             uniqname_dict['student_uniqname'] for uniqname_dict in list(freq_qs) if uniqname_dict['frequency'] > 1
         ]
-        dup_uniqname_subs: List[Submission] = []
-        regular_subs: List[Submission] = []
+        dup_uniqname_subs: list[Submission] = []
+        regular_subs: list[Submission] = []
         for sub_to_transmit in subs_to_transmit:
             if sub_to_transmit.student_uniqname in dup_uniqnames:
                 dup_uniqname_subs.append(sub_to_transmit)
@@ -243,7 +243,7 @@ class ScoresOrchestration:
         # Send scores and update the database
         if len(regular_subs) > 0:
             # Send regular submissions in chunks of 100
-            regular_sub_lists: List[List[Submission]] = chunk_list(regular_subs)
+            regular_sub_lists: list[list[Submission]] = chunk_list(regular_subs)
             for regular_sub_list in regular_sub_lists:
                 self.send_scores(regular_sub_list)
         if len(dup_uniqname_subs) > 0:

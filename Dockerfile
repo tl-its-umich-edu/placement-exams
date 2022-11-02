@@ -1,5 +1,5 @@
 # FROM directive instructing base image to build upon
-FROM python:3.9-slim
+FROM python:3.10-slim
 
 # Installs needed Linux packages
 RUN apt-get update && \

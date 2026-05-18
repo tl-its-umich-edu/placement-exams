@@ -1,6 +1,6 @@
 # standard libraries
 import json, logging, os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from unittest.mock import MagicMock, patch
 from urllib.parse import quote_plus
@@ -8,7 +8,6 @@ from urllib.parse import quote_plus
 # third-party libraries
 from django.db.models import QuerySet
 from django.test import TestCase
-from django.utils.timezone import utc
 from requests import Response
 from umich_api.api_utils import ApiUtil
 
@@ -63,7 +62,7 @@ class ScoresOrchestrationTestCase(TestCase):
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_place_exam)
 
         # Extra second for standard one-second increment
-        self.assertEqual(some_orca.sub_time_filter, datetime(2020, 6, 12, 16, 0, 1, tzinfo=utc))
+        self.assertEqual(some_orca.sub_time_filter, datetime(2020, 6, 12, 16, 0, 1, tzinfo=timezone.utc))
 
     def test_constructor_uses_default_filter_when_no_subs(self):
         """
@@ -72,7 +71,7 @@ class ScoresOrchestrationTestCase(TestCase):
         dada_place_exam: Exam = Exam.objects.get(id=3)
 
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, dada_place_exam)
-        self.assertEqual(some_orca.sub_time_filter, datetime(2020, 7, 1, 0, 0, 0, tzinfo=utc))
+        self.assertEqual(some_orca.sub_time_filter, datetime(2020, 7, 1, 0, 0, 0, tzinfo=timezone.utc))
 
     def test_get_sub_dicts_for_exam_with_null_response(self):
         """
@@ -176,8 +175,8 @@ class ScoresOrchestrationTestCase(TestCase):
                 'attempt_num': 1,
                 'student_uniqname': 'cchang',
                 'score': 200.0,
-                'submitted_timestamp': datetime(2020, 6, 20, 10, 35, 1, tzinfo=utc),
-                'graded_timestamp': datetime(2020, 6, 20, 10, 45, 0, tzinfo=utc)
+                'submitted_timestamp': datetime(2020, 6, 20, 10, 35, 1, tzinfo=timezone.utc),
+                'graded_timestamp': datetime(2020, 6, 20, 10, 45, 0, tzinfo=timezone.utc)
             }
         )
         self.assertEqual(
@@ -187,8 +186,8 @@ class ScoresOrchestrationTestCase(TestCase):
                 'attempt_num': 1,
                 'student_uniqname': 'hpotter',
                 'score': 125.0,
-                'submitted_timestamp': datetime(2020, 6, 19, 17, 30, 5, tzinfo=utc),
-                'graded_timestamp': datetime(2020, 6, 19, 17, 45, 33, tzinfo=utc)
+                'submitted_timestamp': datetime(2020, 6, 19, 17, 30, 5, tzinfo=timezone.utc),
+                'graded_timestamp': datetime(2020, 6, 19, 17, 45, 33, tzinfo=timezone.utc)
             }
         )
 
@@ -214,7 +213,7 @@ class ScoresOrchestrationTestCase(TestCase):
                 'student_uniqname': 'nlongbottom',
                 'score': 500.0,
                 'submitted_timestamp': None,
-                'graded_timestamp': datetime(2020, 7, 7, 13, 22, 49, tzinfo=utc)
+                'graded_timestamp': datetime(2020, 7, 7, 13, 22, 49, tzinfo=timezone.utc)
             }
         )
 
@@ -233,7 +232,7 @@ class ScoresOrchestrationTestCase(TestCase):
         send_scores properly transmits data to M-Pathways API and updates all submission records.
         """
         resp_data: dict[str, Any] = self.mpathways_resp_data[0]
-        current_dt: datetime = datetime.now(tz=utc)
+        current_dt: datetime = datetime.now(tz=timezone.utc)
         potions_val_exam: Exam = Exam.objects.get(id=2)
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_val_exam)
         val_subs: list[Submission] = list(some_orca.exam.submissions.filter(transmitted=False))
@@ -270,7 +269,7 @@ class ScoresOrchestrationTestCase(TestCase):
         send_scores updates exam-specific records with transmitted as True and timestamp only when successful.
         """
         resp_data: dict[str, Any] = self.mpathways_resp_data[1]
-        current_dt: datetime = datetime.now(tz=utc)
+        current_dt: datetime = datetime.now(tz=timezone.utc)
         potions_val_exam: Exam = Exam.objects.get(id=2)
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_val_exam)
         val_subs: list[Submission] = some_orca.exam.submissions.filter(transmitted=False).all()
@@ -366,7 +365,7 @@ class ScoresOrchestrationTestCase(TestCase):
         """
         The main process pulls, stores, and sends scores with duplicate uniqnames on different runs.
         """
-        current_dt: datetime = datetime.now(tz=utc)
+        current_dt: datetime = datetime.now(tz=timezone.utc)
         potions_place_exam: Exam = Exam.objects.get(id=1)
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_place_exam)
 
@@ -399,7 +398,7 @@ class ScoresOrchestrationTestCase(TestCase):
         """
         The main process pulls, stores, and sends scores with duplicate uniqnames on the same run.
         """
-        current_dt: datetime = datetime.now(tz=utc)
+        current_dt: datetime = datetime.now(tz=timezone.utc)
         potions_place_exam: Exam = Exam.objects.get(id=1)
         some_orca: ScoresOrchestration = ScoresOrchestration(self.api_handler, potions_place_exam)
 

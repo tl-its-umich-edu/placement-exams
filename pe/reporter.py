@@ -1,15 +1,16 @@
 # standard libraries
 import logging, os
-from datetime import datetime
+from datetime import datetime, timezone
 from smtplib import SMTPException
 from typing import Any
 
 # third-party libraries
+from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models import QuerySet
 from django.forms.models import model_to_dict
 from django.template.loader import render_to_string
-from django.utils.timezone import localtime, utc
+from django.utils.timezone import localtime
 
 # local libraries
 from pe.models import Report
@@ -50,6 +51,7 @@ class Reporter:
             exam_dict: dict[str, Any] = model_to_dict(exam)
 
             exam_dict['time'] = self.exams_time_metadata[exam.id]
+            LOGGER.debug(f"Exam time metadata for {exam.id}: {exam_dict['time']}")
 
             success_sub_qs: QuerySet = exam.submissions.filter(
                 transmitted=True, transmitted_timestamp__gte=exam_dict['time']['start_time']
@@ -82,7 +84,12 @@ class Reporter:
         }
 
         support_email: str = os.getenv('SUPPORT_EMAIL', 'its.tl.staff@umich.edu')
-        self.context = {'report': report_dict, 'exams': exam_dicts, 'support_email': support_email}
+        self.context = {
+            'report': report_dict,
+            'exams': exam_dicts,
+            'support_email': support_email,
+            'datetime_format': settings.DATETIME_FORMAT
+        }
 
     def get_subject(self) -> str:
         """
@@ -91,7 +98,7 @@ class Reporter:
         :return: Email subject line referencing the report name, summary counts, and exams covered.
         :rtype: str
         """
-        local_time_str: str = localtime(datetime.now(utc)).strftime('%Y-%m-%d %I:%M %p')
+        local_time_str: str = localtime(datetime.now(timezone.utc)).strftime('%Y-%m-%d %I:%M %p')
 
         subject: str = ' - '.join([
             'Placement Exams Report',

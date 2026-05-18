@@ -1,10 +1,9 @@
 # standard libraries
 import logging
 from logging import Logger
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # third-party libraries
-from django.utils.timezone import utc
 from umich_api.api_utils import ApiUtil
 
 # local libraries
@@ -26,7 +25,7 @@ def main(api_util: ApiUtil) -> None:
     :return: None
     :rtype: None
     """
-    start_time: datetime = datetime.now(tz=utc)
+    start_time: datetime = datetime.now(tz=timezone.utc)
     LOGGER.info(f'Starting new run at {start_time}')
 
     reports: list[Report] = list(Report.objects.all())
@@ -39,10 +38,10 @@ def main(api_util: ApiUtil) -> None:
         reporter: Reporter = Reporter(report)
         for exam in report.exams.all():
             LOGGER.info(f'Processing Exam: {exam.name}')
-            exam_start_time = datetime.now(tz=utc)
+            exam_start_time = datetime.now(tz=timezone.utc)
             exam_orca: ScoresOrchestration = ScoresOrchestration(api_util, exam)
             exam_orca.main()
-            exam_end_time = datetime.now(tz=utc)
+            exam_end_time = datetime.now(tz=timezone.utc)
             metadata: dict[str, datetime] = {
                 'start_time': exam_start_time,
                 'end_time': exam_end_time,
@@ -57,7 +56,7 @@ def main(api_util: ApiUtil) -> None:
         else:
             LOGGER.info(f'No email will be sent for the {report.name} report as there was no transmission activity.')
 
-    end_time: datetime = datetime.now(tz=utc)
+    end_time: datetime = datetime.now(tz=timezone.utc)
     delta: timedelta = end_time - start_time
 
     LOGGER.info(f'The run ended at {end_time}')

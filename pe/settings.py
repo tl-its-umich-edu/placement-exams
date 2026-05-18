@@ -29,7 +29,6 @@ DATABASES: dict[str, dict[str, Any]] = {
 }
 
 DATETIME_FORMAT: str = "N j, Y g:i:s a"
-USE_L10N: bool = False
 
 if bool(int(os.getenv('EMAIL_DEBUG', '1'))):
     EMAIL_BACKEND: str = 'django.core.mail.backends.console.EmailBackend'

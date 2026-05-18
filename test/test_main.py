@@ -89,5 +89,5 @@ class MainTestCase(TestCase):
 
         dada_report: Report = Report.objects.get(id=3)
         failed_submissions_qs: QuerySet = dada_report.exams.first().submissions.filter(transmitted=False)
-        self.assertTrue(len(failed_submissions_qs), 2)
+        self.assertEqual(len(failed_submissions_qs), 1)
         self.assertEqual(len(mail.outbox), 1)

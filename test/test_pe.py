@@ -1,12 +1,11 @@
 # standard libraries
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Union
 
 # third-party libraries
 from django.core.management import call_command
 from django.test import TestCase
-from django.utils.timezone import utc
 
 # Local libraries
 from pe.models import Report, Exam, Submission
@@ -45,7 +44,7 @@ class LoadFixturesTestCase(TestCase):
         # Test exams loaded
         exams_queryset = Exam.objects.all()
         self.assertTrue(exams_queryset.exists())
-        self.assertTrue(len(exams_queryset), 2)
+        self.assertEqual(len(exams_queryset), 2)
         if not exams_queryset.exists() and len(exams_queryset) != 2:
             return None
 
@@ -62,7 +61,7 @@ class LoadFixturesTestCase(TestCase):
                 "sa_code": "PP",
                 "course_id": 888888,
                 "assignment_id": 111111,
-                "default_time_filter": datetime(2020, 6, 1, 0, 0, 0, tzinfo=utc)
+                "default_time_filter": datetime(2020, 6, 1, 0, 0, 0, tzinfo=timezone.utc)
             }
         )
 
@@ -79,7 +78,7 @@ class LoadFixturesTestCase(TestCase):
                 "sa_code": "PV",
                 "course_id": 888888,
                 "assignment_id": 111112,
-                "default_time_filter": datetime(2020, 5, 1, 0, 0, 0, tzinfo=utc)
+                "default_time_filter": datetime(2020, 5, 1, 0, 0, 0, tzinfo=timezone.utc)
             }
         )
 
@@ -104,11 +103,11 @@ class LoadFixturesTestCase(TestCase):
         placement_exam = Exam.objects.get(sa_code='PP')
         self.assertEqual(placement_exam.name, 'Potions Placement Advanced')
         self.assertEqual(placement_exam.course_id, 888889)
-        self.assertEqual(placement_exam.default_time_filter, datetime(2020, 6, 2, 12, 0, 0, tzinfo=utc))
+        self.assertEqual(placement_exam.default_time_filter, datetime(2020, 6, 2, 12, 0, 0, tzinfo=timezone.utc))
 
         # Test Potions Validation report and assignment_id changed
         validation_exam = Exam.objects.get(name='Potions Validation')
-        self.assertTrue(validation_exam.assignment_id, 111113)
+        self.assertEqual(validation_exam.assignment_id, 111113)
 
         new_report_queryset = Report.objects.filter(id=2)
         self.assertTrue(new_report_queryset.exists())
@@ -130,7 +129,7 @@ class LoadFixturesTestCase(TestCase):
 
         # Test previous Potions report remains and new DADA report was added
         report_queryset = Report.objects.all()
-        self.assertTrue(len(report_queryset), 2)
+        self.assertEqual(len(report_queryset), 3)
         self.assertTrue(report_queryset.filter(id=1).exists())
 
         dada_queryset = report_queryset.filter(id=3)
@@ -149,9 +148,9 @@ class LoadFixturesTestCase(TestCase):
 
         # Test previous exams remain and new DADA Placement exam added
         exams_queryset = Exam.objects.all()
-        self.assertTrue(len(exams_queryset), 3)
-        previous_queryset = exams_queryset.filter(name__in=['Potions Placement Advancecd', 'Potions Validation'])
-        self.assertTrue(len(previous_queryset), 2)
+        self.assertEqual(len(exams_queryset), 3)
+        previous_queryset = exams_queryset.filter(name__in=['Potions Placement Advanced', 'Potions Validation'])
+        self.assertEqual(len(previous_queryset), 2)
 
         data_exam_queryset = exams_queryset.filter(name='DADA Placement')
         self.assertTrue(data_exam_queryset.exists())
@@ -166,7 +165,7 @@ class LoadFixturesTestCase(TestCase):
                 "report_id": 3,
                 "course_id": 999999,
                 "assignment_id": 222222,
-                "default_time_filter": datetime(2020, 7, 1, 0, 0, 0, tzinfo=utc)
+                "default_time_filter": datetime(2020, 7, 1, 0, 0, 0, tzinfo=timezone.utc)
             }
         )
 
@@ -199,10 +198,10 @@ class LoadFixturesTestCase(TestCase):
                 'attempt_num': 1,
                 "exam_id": 1,
                 "student_uniqname": "hpotter",
-                "submitted_timestamp": datetime(2020, 6, 12, 8, 15, 30, tzinfo=utc),
+                "submitted_timestamp": datetime(2020, 6, 12, 8, 15, 30, tzinfo=timezone.utc),
                 "score": 100.0,
                 "transmitted": True,
-                "transmitted_timestamp": datetime(2020, 6, 12, 12, 0, 30, tzinfo=utc)
+                "transmitted_timestamp": datetime(2020, 6, 12, 12, 0, 30, tzinfo=timezone.utc)
             }
         )
 
@@ -278,7 +277,7 @@ class CustomMethodsTestCase(TestCase):
         """
         potions_exam = Exam.objects.get(id=1)
         last_sub_graded_dt: Union[datetime, None] = potions_exam.get_last_sub_graded_datetime()
-        self.assertTrue(last_sub_graded_dt, datetime(2020, 6, 12, 12, 0, 30, tzinfo=utc))
+        self.assertEqual(last_sub_graded_dt, datetime(2020, 6, 12, 16, 0, 0, tzinfo=timezone.utc))
 
     def test_get_last_sub_graded_datetime_without_submissions(self):
         """

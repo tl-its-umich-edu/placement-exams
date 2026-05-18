@@ -1,10 +1,10 @@
 # FROM directive instructing base image to build upon
-FROM python:3.10-slim-bullseye
+FROM python:3.14-slim-bookworm
 
 # Installs needed Linux packages
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    build-essential default-libmysqlclient-dev git netcat && \
+    build-essential default-libmysqlclient-dev git pkg-config netcat-openbsd && \
     apt-get clean -y
 
 COPY requirements.txt /requirements.txt

@@ -1,11 +1,10 @@
 # standard libraries
 import json, logging, os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Union
 
 # third-party libraries
 from django.db.models import Count, QuerySet
-from django.utils.timezone import utc
 from requests import Response
 from umich_api.api_utils import ApiUtil
 
@@ -193,7 +192,7 @@ class ScoresOrchestration:
         if len(success_uniqnames) == 0:
             LOGGER.warning('No scores were transmitted successfully.')
         else:
-            timestamp: datetime = datetime.now(tz=utc)
+            timestamp: datetime = datetime.now(tz=timezone.utc)
 
             subs_to_update: list[Submission] = []
             for sub in subs_to_send:

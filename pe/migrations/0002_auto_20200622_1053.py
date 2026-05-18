@@ -2,7 +2,6 @@
 
 import datetime
 from django.db import migrations, models
-from django.utils.timezone import utc
 
 
 class Migration(migrations.Migration):
@@ -15,13 +14,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='exam',
             name='default_time_filter',
-            field=models.DateTimeField(default=datetime.datetime(2020, 1, 1, 0, 0, tzinfo=utc), verbose_name='Earliest Date & Time for Submission Search'),
+            field=models.DateTimeField(default=datetime.datetime(2020, 1, 1, 0, 0, tzinfo=datetime.timezone.utc), verbose_name='Earliest Date & Time for Submission Search'),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='submission',
             name='graded_timestamp',
-            field=models.DateTimeField(default=datetime.datetime(2020, 1, 1, 0, 0, tzinfo=utc), verbose_name='Graded At Date & Time'),
+            field=models.DateTimeField(default=datetime.datetime(2020, 1, 1, 0, 0, tzinfo=datetime.timezone.utc), verbose_name='Graded At Date & Time'),
             preserve_default=False,
         ),
         migrations.AlterField(

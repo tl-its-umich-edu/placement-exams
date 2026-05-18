@@ -1,12 +1,11 @@
 # standard libraries
 import json, logging, os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Union
 from unittest.mock import MagicMock, patch
 
 # third-party libraries
 from django.test import TestCase
-from django.utils.timezone import utc
 from requests import Response
 from umich_api.api_utils import ApiUtil
 
@@ -37,7 +36,7 @@ class TestApiRetry(TestCase):
         # "Potions Validation" from test_04.json
         some_course_id: int = 888888
         some_assignment_id: int = 111112
-        some_filter: datetime = datetime(2020, 6, 1, 0, 0, 0, tzinfo=utc)
+        some_filter: datetime = datetime(2020, 6, 1, 0, 0, 0, tzinfo=timezone.utc)
 
         self.get_scores_url: str = (
             f'{CANVAS_URL_BEGIN}/courses/{some_course_id}/students/submissions'

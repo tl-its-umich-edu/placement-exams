@@ -1,6 +1,6 @@
 # standard libraries
 import json, logging, os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -8,7 +8,6 @@ from unittest.mock import MagicMock, patch
 from django.core import mail
 from django.core.mail import EmailMultiAlternatives
 from django.test import TestCase
-from django.utils.timezone import utc
 from requests import Response
 from umich_api.api_utils import ApiUtil
 
@@ -61,7 +60,7 @@ class ReporterTestCase(TestCase):
                     MagicMock(spec=Response, status_code=200, text=json.dumps(mpathways_resp_data[2]))
                 ]
 
-                fake_running_dt: datetime = datetime(2020, 6, 25, 16, 0, 0, tzinfo=utc)
+                fake_running_dt: datetime = datetime(2020, 6, 25, 16, 0, 0, tzinfo=timezone.utc)
                 self.exams_time_metadata: dict[int, dict[str, datetime]] = dict()
                 for exam in self.potions_report.exams.all():
                     start: datetime = fake_running_dt
@@ -98,7 +97,7 @@ class ReporterTestCase(TestCase):
         reporter.prepare_context()
 
         self.assertEqual((reporter.total_successes, reporter.total_failures, reporter.total_new), (4, 1, 2))
-        self.assertEqual(sorted(list(reporter.context.keys())), ['exams', 'report', 'support_email'])
+        self.assertEqual(sorted(list(reporter.context.keys())), ['datetime_format','exams', 'report', 'support_email'])
         self.assertEqual(reporter.context['report'], {
             'id': 1,
             'name': 'Potions',
@@ -137,7 +136,7 @@ class ReporterTestCase(TestCase):
                 'submission_id': 123458,
                 'student_uniqname': 'rweasley',
                 'score': 150.0,
-                'graded_timestamp': datetime(2020, 6, 12, 16, 0, 0, tzinfo=utc)
+                'graded_timestamp': datetime(2020, 6, 12, 16, 0, 0, tzinfo=timezone.utc)
             }
         )
         val_success_ids: list[int] = sorted(

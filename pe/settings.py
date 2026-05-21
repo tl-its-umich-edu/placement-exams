@@ -11,6 +11,7 @@ from constants import ROOT_DIR
 BASE_DIR: str = ROOT_DIR
 
 CONFIG_DIR: str = os.path.join(BASE_DIR, os.getenv('ENV_DIR', os.path.join('config', 'secrets')))
+DEFAULT_SSL_CA_FILEPATH: str = os.path.join(CONFIG_DIR, 'db-ca.pem')
 
 DATABASES: dict[str, dict[str, Any]] = {
     'default': {
@@ -20,7 +21,13 @@ DATABASES: dict[str, dict[str, Any]] = {
         'PASSWORD': os.getenv('DB_PASSWORD', 'pe_pw'),
         'HOST': os.getenv('DB_HOST', 'placement_exams_mysql'),
         'PORT': os.getenv('DB_PORT', '3306'),
-        'OPTIONS': {'charset': 'utf8mb4'},
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+            **({
+                'ssl_mode': os.getenv('SSL_MODE', 'REQUIRED'),
+                'ssl': {'ca': os.getenv('SSL_CA_FILEPATH', DEFAULT_SSL_CA_FILEPATH)}
+            } if os.path.isfile(os.getenv('SSL_CA_FILEPATH', DEFAULT_SSL_CA_FILEPATH)) else {}),
+        },
         'TEST': {
             'CHARSET': 'utf8mb4',
             'COLLATION': 'utf8mb4_unicode_ci'

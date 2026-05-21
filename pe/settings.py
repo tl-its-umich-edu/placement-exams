@@ -23,7 +23,7 @@ DATABASES: dict[str, dict[str, Any]] = {
         'OPTIONS': {
             'charset': 'utf8mb4',
             **({
-                'ssl_mode': 'VERIFY_CA',
+                'ssl_mode': os.getenv('SSL_MODE', 'REQUIRED'),
                 'ssl': {'ca': os.path.join(CONFIG_DIR, 'db-ca.pem')}
             } if os.path.isfile(os.path.join(CONFIG_DIR, 'db-ca.pem')) else {}),
         },

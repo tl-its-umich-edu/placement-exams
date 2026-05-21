@@ -20,7 +20,13 @@ DATABASES: dict[str, dict[str, Any]] = {
         'PASSWORD': os.getenv('DB_PASSWORD', 'pe_pw'),
         'HOST': os.getenv('DB_HOST', 'placement_exams_mysql'),
         'PORT': os.getenv('DB_PORT', '3306'),
-        'OPTIONS': {'charset': 'utf8mb4'},
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+            **({
+                'ssl_mode': 'VERIFY_CA',
+                'ssl': {'ca': os.path.join(CONFIG_DIR, 'db-ca.pem')}
+            } if os.path.isfile(os.path.join(CONFIG_DIR, 'db-ca.pem')) else {}),
+        },
         'TEST': {
             'CHARSET': 'utf8mb4',
             'COLLATION': 'utf8mb4_unicode_ci'

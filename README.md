@@ -171,7 +171,7 @@ this README. However, some details about how the job is configured are provided 
 The files described in the **Configuration** section above need to be made available to running placement-exams
 containers as [OpenShift Secrets](https://docs.openshift.com/container-platform/3.7/dev_guide/secrets.html).
 A volume containing versions of `.env` and `fixtures.json` should be mapped to a configuration directory,
-typically `config/secrets`. These details will be specified in a YAML configuration file defining the pod. 
+typically `config/secrets`. Additionally, this volume could contain a certificate authority file `db-ca.pem` that will connect to your test/production database, which will only be enforced upon start if the file exists. These details will be specified in a YAML configuration file defining the pod. 
 
 In OpenShift, some application settings are controlled by specifying environment variables in the pod
 configuration file. More details on these environment variables -- and whether they are optional or required --
